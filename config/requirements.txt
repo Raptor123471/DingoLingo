@@ -1,0 +1,6 @@
+discord.py[voice]
+python-youtube
+soundcloud
+youtube-dl
+requests
+beautifulsoup4

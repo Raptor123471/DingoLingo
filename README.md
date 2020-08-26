@@ -42,6 +42,7 @@ For Linux:
 Button play feature:
 * Set emoji name in ```config/config.py``` to enable this feature
 * Emote must be in same server as bot
+* Needs Manage Message permissions
 
 ## Commands:
 

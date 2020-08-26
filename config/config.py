@@ -5,6 +5,8 @@ YOUTUBE_TOKEN: str = ""
 BOT_PREFIX = "$"
 BOT_VERISON = ''
 
+BUTTON_NAME = ""
+
 SUPPORTED_EXTENSIONS = ('.webm', '.mp4', '.mp3', '.avi', '.wav', '.m4v')
 
 DEFAULT_NICKNAME = ""

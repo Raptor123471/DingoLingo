@@ -7,6 +7,7 @@ from config import config
 
 from musicbot.commands.general import General
 
+
 class Button(commands.Cog):
     """ A collection of the commands related to music playback.
 
@@ -20,32 +21,34 @@ class Button(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
 
+        if config.BUTTON_NAME == "":
+            return
+
         if message.author == self.bot.user:
             return
 
         host = linkutils.identify_url(message.content)
 
+        guild = message.guild
+        emoji = discord.utils.get(guild.emojis, name=config.BUTTON_NAME)
+
         if host == linkutils.Sites.YouTube:
 
-            base = self.bot.get_guild(456561668428922884)
-            emoji = discord.utils.get(base.emojis, name='musicnotelingo')
             if emoji:
                 await message.add_reaction(emoji)
 
         if host == linkutils.Sites.Spotify:
 
-            base = self.bot.get_guild(456561668428922884)
-            emoji = discord.utils.get(base.emojis, name='musicnotelingo')
             if emoji:
                 await message.add_reaction(emoji)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, reaction):
 
-        base = self.bot.get_guild(456561668428922884)
-        emoji = discord.utils.get(base.emojis, name='musicnotelingo')
+        if config.BUTTON_NAME == "":
+            return
 
-        if reaction.emoji == emoji:
+        if reaction.emoji.name == config.BUTTON_NAME:
             serv = self.bot.get_guild(reaction.guild_id)
             channels = serv.text_channels
 

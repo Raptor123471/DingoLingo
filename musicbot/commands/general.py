@@ -6,8 +6,6 @@ from musicbot import utils
 from musicbot.audiocontroller import AudioController
 from musicbot.utils import guild_to_audiocontroller
 
-#from database import db
-
 
 class General(commands.Cog):
     """ A collection of the commands for moving the bot around in you server.
@@ -39,9 +37,6 @@ class General(commands.Cog):
         if utils.guild_to_audiocontroller[current_guild] is None:
             utils.guild_to_audiocontroller[current_guild] = AudioController(
                 self.bot, current_guild)
-
-        # this original snippet did not work.
-        # await utils.connect_to_channel(current_guild, dest_channel_name, ctx, switch=False, default=True)
 
         guild_to_audiocontroller[current_guild] = AudioController(
             self.bot, current_guild)

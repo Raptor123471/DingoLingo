@@ -79,14 +79,36 @@ class AudioController(object):
             await self.add_song(video)
             return
 
-        playlist_item_by_playlist = self.api.get_playlist_items(
-            playlist_id=listid, count=None)
+        if self.api is not None:
 
-        for vid in playlist_item_by_playlist.items:
+            try:
+                playlist_item_by_playlist = self.api.get_playlist_items(
+                    playlist_id=listid, count=None)
 
-            videocode = vid.snippet.resourceId.videoId
+                for vid in playlist_item_by_playlist.items:
 
-            await self.add_song("https://www.youtube.com/watch?v={}".format(videocode))
+                    videocode = vid.snippet.resourceId.videoId
+
+                    await self.add_song("https://www.youtube.com/watch?v={}".format(videocode))
+                print("API used")
+                return
+            except:
+                print("Error: API key is invalid! Falling back to API-less search.")
+                pass
+
+        options = {
+            'format': 'bestaudio/best',
+            'extract_flat': True
+        }
+
+        with youtube_dl.YoutubeDL(options) as ydl:
+            r = ydl.extract_info(link, download=False)
+
+            for entry in r['entries']:
+
+                videocode = entry['id']
+
+                await self.add_song("https://www.youtube.com/watch?v={}".format(videocode))
 
     async def add_song(self, track):
         """Adds the track to the playlist instance and plays it, if it is the first song"""
@@ -150,6 +172,8 @@ class AudioController(object):
                 r = self.api.search_by_keywords(q=title.replace(
                     '"', ''), search_type=["video"], count=4, limit=4)
                 id = r.items[0].id.videoId
+
+                print("API used")
 
                 return "https://www.youtube.com/watch?v=" + id
             except:

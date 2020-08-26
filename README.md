@@ -10,8 +10,8 @@ A Discord music bot written in Python with support for Youtube, SoundCloud, Spot
 
 #### API Keys
 * Discord - https://discord.com/developers
-* YouTube - https://console.developers.google.com/apis/api/youtube/overview
 * SoundCloud - No official method, must search/ask for key
+* YouTube (optional) - https://console.developers.google.com/apis/api/youtube/overview
 
 Obtained keys must be entered into ```config/config.py```
 

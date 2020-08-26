@@ -14,6 +14,11 @@ initial_extensions = ['musicbot.commands.music',
 bot = commands.Bot(command_prefix=config.BOT_PREFIX, pm_help=True)
 
 if __name__ == '__main__':
+
+    if config.BOT_TOKEN == "":
+        print("Error: No bot token!")
+        exit
+
     for extension in initial_extensions:
         try:
             bot.load_extension(extension)

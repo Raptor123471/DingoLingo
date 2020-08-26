@@ -76,6 +76,10 @@ class Music(commands.Cog):
         # SoundCloud support
         if host == linkutils.Sites.SoundCloud:
 
+            if config.SOUNDCLOUD_TOKEN == "":
+                await ctx.send("Error: No SoundCloud api token")
+                return
+
             # clean mobile links
             track = linkutils.clean_sclink(track)
 
@@ -228,13 +232,6 @@ class Music(commands.Cog):
         audiocontroller = utils.guild_to_audiocontroller[current_guild]
         audiocontroller.clear_queue()
         audiocontroller.playlist.loop = False
-        # if current_guild is None:
-        #     await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
-        #     return
-        # if current_guild.voice_client is None or (
-        #         not current_guild.voice_client.is_paused() and not current_guild.voice_client.is_playing()):
-        #     return
-        # current_guild.voice_client.stop()
         await ctx.send("Cleared queue :no_entry_sign:")
 
     @commands.command(name='prev', description=config.HELP_PREV_LONG, help=config.HELP_PREV_SHORT, aliases=['back'])

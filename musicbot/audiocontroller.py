@@ -28,7 +28,10 @@ class AudioController(object):
         self.current_songinfo = None
         self.guild = guild
         self.voice_client = None
-        self.api = Api(api_key=config.YOUTUBE_TOKEN)
+        if config.YOUTUBE_TOKEN != "":
+            self.api = Api(api_key=config.YOUTUBE_TOKEN)
+        else:
+            self.api = None
 
     async def register_voice_channel(self, channel):
         self.voice_client = await channel.connect(reconnect=True, timeout=None)
@@ -141,11 +144,30 @@ class AudioController(object):
         if linkutils.get_url(title) is not None:
             return title
 
-        r = self.api.search_by_keywords(q=title.replace(
-            '"', ''), search_type=["video"], count=4, limit=4)
-        id = r.items[0].id.videoId
+        if self.api is not None:
 
-        return "https://www.youtube.com/watch?v=" + id
+            try:
+                r = self.api.search_by_keywords(q=title.replace(
+                    '"', ''), search_type=["video"], count=4, limit=4)
+                id = r.items[0].id.videoId
+
+                return "https://www.youtube.com/watch?v=" + id
+            except:
+                print("Error: API key is invalid! Falling back to API-less search.")
+                pass
+
+        options = {
+            'format': 'bestaudio/best',
+            'default_search': 'auto',
+            'noplaylist': True
+        }
+
+        with youtube_dl.YoutubeDL(options) as ydl:
+            r = ydl.extract_info(title, download=False)
+
+        videocode = r['entries'][0]['id']
+
+        return "https://www.youtube.com/watch?v={}".format(videocode)
 
     async def play_youtube(self, youtube_link):
         """Downloads and plays the audio of the youtube link passed"""

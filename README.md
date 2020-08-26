@@ -36,6 +36,10 @@ For Linux:
 2. Complete Prerequisites
 3. Start ```run.py``` in project root
 
+Button play feature:
+* Set emoji name in ```config/config.py``` to enable this feature
+* Emote must be in same server as bot
+
 ## Commands:
 
 ### Music

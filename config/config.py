@@ -16,7 +16,6 @@ STARTUP_COMPLETE_MESSAGE = "Startup Complete"
 
 NO_GUILD_MESSAGE = 'Error: Please join a voice channel or enter the command in guild chat'
 NOT_CONNECTED_MESSAGE = "Error: Bot not connected to any voice channel"
-ALREADY_CONNECTED_MESSAGE = "Error: Already connected to a voice channel"
 CHANNEL_NOT_FOUND_MESSAGE = "Error: Could not find channel "
 DEFAULT_CHANNEL_JOIN_FAILED = "Error: Could not join the default voice channel"
 INVALID_INVITE_MESSAGE = "Error: Invalid invitation link"

@@ -97,6 +97,23 @@ class General(commands.Cog):
 
         guild_to_audiocontroller[current_guild] = AudioController(
             self.bot, current_guild)
+        await guild_to_audiocontroller[current_guild].register_voice_channel(guild.voice_channels[0])
+
+        await ctx.send("{} Connected to {}".format(":white_check_mark:", guild.voice_channels[0].name))
+
+
+    @commands.command(name='changechannel', aliases=['cc'])
+    async def _change_channel(self, ctx):
+        current_guild = utils.get_guild(self.bot, ctx.message)
+
+        if current_guild is None:
+            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+            return
+        await utils.guild_to_audiocontroller[current_guild].stop_player()
+        await current_guild.voice_client.disconnect(force=True)
+
+        guild_to_audiocontroller[current_guild] = AudioController(
+            self.bot, current_guild)
         await guild_to_audiocontroller[current_guild].register_voice_channel(ctx.author.voice.channel)
 
         await ctx.send("{} Connected to {}".format(":white_check_mark:", ctx.author.voice.channel.name))

@@ -104,8 +104,6 @@ class Music(commands.Cog):
         else:
             selfmess = await ctx.send("__Searching for: {}__ :mag_right:".format(track))
 
-        await audiocontroller.add_youtube(track)
-
         if ("list=" in track):
             if "watch?v=" in track:
                 track = track.split('&')[0]
@@ -117,6 +115,7 @@ class Music(commands.Cog):
             track = await audiocontroller.search_youtube(track)
             messagecontent = await self.getytinfo(track, ctx, current_guild, audiocontroller)
 
+        await audiocontroller.add_youtube(track)
         await selfmess.delete()
         await ctx.send(messagecontent)
 

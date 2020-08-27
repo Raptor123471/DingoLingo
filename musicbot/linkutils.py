@@ -5,21 +5,6 @@ from enum import Enum
 from config import config
 
 
-def convert_shortlink(shortlink):
-    """Converts shortlink like  https://youtu.be/SZa9bPia9YM?t=31 to full url"""
-    if("?t=" in shortlink):
-        timestamp = "&{}".format(shortlink.split('?')[1])
-    else:
-        timestamp = ""
-    shortlink = shortlink.split('/')
-    videocode = shortlink[3].split('?')[0]
-    fullformat = "https://www.youtube.com/watch?v={}&feature=youtu.be{}".format(
-        videocode, timestamp)
-    return fullformat
-    # https://www.youtube.com/watch?v=SZa9bPia9YM&feature=youtu.be&t=31
-    # https://youtu.be/SZa9bPia9YM?t=31
-
-
 def clean_sclink(track):
     if track.startswith("https://m."):
         track = track.replace("https://m.", "https://")

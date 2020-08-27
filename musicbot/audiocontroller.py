@@ -139,25 +139,10 @@ class AudioController(object):
                 await self.play_soundcloud(track)
             return
 
-        # If the track is a video title, get the corresponding video link first
-        if not ("watch?v=" in track):
-
-            # shortlink support
-            if "youtu.be" in track:
-                link = linkutils.convert_shortlink(track)
-
-            else:
-                link = await self.search_youtube('"' + track + '"')
-                if link is None:
-                    link = await self.search_youtube(track)
-                    if link is None:
-                        return
-        else:
-            link = track
-        self.playlist.add(link)
+        self.playlist.add(track)
         if len(self.playlist.playque) == 1:
-            print("Playing {}".format(link))
-            await self.play_youtube(link)
+            print("Playing {}".format(track))
+            await self.play_youtube(track)
 
     async def search_youtube(self, title):
         """Searches youtube for the video title and returns the first results video link"""

@@ -24,16 +24,8 @@ class Music(commands.Cog):
     @commands.command(name='play', description=config.HELP_YT_LONG, help=config.HELP_YT_SHORT, aliases=['p', 'yt', 'P', 'pl'])
     async def _play_song(self, ctx, *, track: str):
 
-        vchannel = await utils.is_connected(ctx)
-
-        if vchannel is not None:
-            if ctx.author.voice.channel == vchannel:
-                pass
-            else:
-                current_guild = utils.get_guild(self.bot, ctx.message)
-                await utils.guild_to_audiocontroller[current_guild].stop_player()
-                await current_guild.voice_client.disconnect(force=True)
-
+        if(await utils.is_connected(ctx) == None):
+            await General.uconnect(self, ctx)
         if track.isspace() or not track:
             return
 
@@ -269,7 +261,6 @@ class Music(commands.Cog):
             return
         songinfo = utils.guild_to_audiocontroller[current_guild].current_songinfo
         if songinfo is None:
-            await ctx.send("No audio is currently playing :broken_heart:")
             return
         await ctx.send(songinfo.output.replace("|playtype|", "SongInfo"))
 

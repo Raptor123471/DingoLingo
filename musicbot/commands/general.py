@@ -24,16 +24,9 @@ class General(commands.Cog):
 
     async def uconnect(self, ctx):
 
-        vchannel = await utils.is_connected(ctx)
-
-        if vchannel is not None:
-            if ctx.author.voice.channel == vchannel:
-                return
-
-            else:
-                current_guild = utils.get_guild(self.bot, ctx.message)
-                await utils.guild_to_audiocontroller[current_guild].stop_player()
-                await current_guild.voice_client.disconnect(force=True)
+        if await utils.is_connected(ctx) is not None:
+            await utils.send_message(ctx, config.ALREADY_CONNECTED_MESSAGE)
+            return
 
         current_guild = utils.get_guild(self.bot, ctx.message)
 
@@ -62,7 +55,7 @@ class General(commands.Cog):
             current_guild = guild
 
             await utils.guild_to_audiocontroller[current_guild].stop_player()
-            await current_guild.voice_client.disconnect(force=True)
+            await current_guild.voice_client.disconnect()
 
         else:
             current_guild = utils.get_guild(self.bot, ctx.message)
@@ -72,17 +65,11 @@ class General(commands.Cog):
                 return
 
             if await utils.is_connected(ctx) is None:
-                try:
-                    await utils.guild_to_audiocontroller[current_guild].stop_player()
-                    await current_guild.voice_client.disconnect(force=True)
-                    await ctx.send("Disconnected from voice channel. Use '{}c' to rejoin.".format(config.BOT_PREFIX))
-                except:
-                    pass
                 await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
                 return
 
             await utils.guild_to_audiocontroller[current_guild].stop_player()
-            await current_guild.voice_client.disconnect(force=True)
+            await current_guild.voice_client.disconnect()
             await ctx.send("Disconnected from voice channel. Use '{}c' to rejoin.".format(config.BOT_PREFIX))
 
     @commands.command(name='reset', description=config.HELP_DISCONNECT_LONG, help=config.HELP_DISCONNECT_SHORT, aliases=['rs', 'restart'])
@@ -93,7 +80,7 @@ class General(commands.Cog):
             await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
             return
         await utils.guild_to_audiocontroller[current_guild].stop_player()
-        await current_guild.voice_client.disconnect(force=True)
+        await current_guild.voice_client.disconnect()
 
         guild_to_audiocontroller[current_guild] = AudioController(
             self.bot, current_guild)

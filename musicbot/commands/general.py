@@ -24,7 +24,9 @@ class General(commands.Cog):
 
     async def uconnect(self, ctx):
 
-        if await utils.is_connected(ctx) is not None:
+        vchannel = await utils.is_connected(ctx)
+
+        if vchannel is not None:
             await utils.send_message(ctx, config.ALREADY_CONNECTED_MESSAGE)
             return
 
@@ -87,6 +89,28 @@ class General(commands.Cog):
         await guild_to_audiocontroller[current_guild].register_voice_channel(ctx.author.voice.channel)
 
         await ctx.send("{} Connected to {}".format(":white_check_mark:", ctx.author.voice.channel.name))
+
+
+    @commands.command(name='changechannel', aliases=['cc'])
+    async def _change_channel(self, ctx):
+        current_guild = utils.get_guild(self.bot, ctx.message)
+
+        vchannel = await utils.is_connected(ctx)
+        if vchannel == ctx.author.voice.channel:
+            await ctx.send("{} Already connected to {}".format(":white_check_mark:", vchannel.name))
+            return
+
+        if current_guild is None:
+            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+            return
+        await utils.guild_to_audiocontroller[current_guild].stop_player()
+        await current_guild.voice_client.disconnect()
+
+        guild_to_audiocontroller[current_guild] = AudioController(
+            self.bot, current_guild)
+        await guild_to_audiocontroller[current_guild].register_voice_channel(ctx.author.voice.channel)
+
+        await ctx.send("{} Switched to {}".format(":white_check_mark:", ctx.author.voice.channel.name))
 
     @commands.command(name='ping')
     async def _ping(self, ctx):

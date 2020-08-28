@@ -103,6 +103,8 @@ class Music(commands.Cog):
                 selfmess = await ctx.send("__Searching for: {}__ :mag_right:".format(track))
                 track = await audiocontroller.search_youtube(track)
                 messagecontent = await self.getytinfo(track, ctx, current_guild, audiocontroller)
+                await audiocontroller.add_youtube(track)
+
 
         if selfmess is not None:
             await selfmess.delete()

@@ -75,6 +75,7 @@ class Music(commands.Cog):
 
             try:
                 messagecontent = await self.getscinfo(track, ctx, current_guild, audiocontroller)
+                selfmess = None
             except:
                 await ctx.send("Error: artist has disabled API playback for this song.")
                 return

@@ -112,6 +112,12 @@ $c
 * Connects the bot to the user's voice channel
 
 ```
+$cc
+```
+
+* Switch the bot to the user's voice channel
+
+```
 $dc
 ```
 

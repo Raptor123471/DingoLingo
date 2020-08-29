@@ -45,35 +45,25 @@ class Music(commands.Cog):
             track = await audiocontroller.search_youtube(title)
             await audiocontroller.add_song(track)
             messagecontent = await self.getytinfo(track, ctx, current_guild, audiocontroller)
-            await selfmess.delete()
-            await ctx.send(messagecontent)
-            return
 
-        # twitter support
         if host == linkutils.Sites.Twitter:
 
             await ctx.send("Twitter beta queued")
             await audiocontroller.add_song(track)
-
             return
 
-        # bandcamp support
         if host == linkutils.Sites.Bandcamp:
 
             await ctx.send("Bandcamp beta queued")
             await audiocontroller.add_song(track)
-
             return
 
-        # File support
         if host == linkutils.Sites.Custom:
 
             await ctx.send("File queued")
             await audiocontroller.add_song(track)
-
             return
 
-        # SoundCloud support
         if host == linkutils.Sites.SoundCloud:
 
             if config.SOUNDCLOUD_TOKEN == "":
@@ -85,39 +75,42 @@ class Music(commands.Cog):
 
             try:
                 messagecontent = await self.getscinfo(track, ctx, current_guild, audiocontroller)
+                selfmess = None
             except:
                 await ctx.send("Error: artist has disabled API playback for this song.")
                 return
+            await audiocontroller.add_song(track)
+
+        if host == linkutils.Sites.YouTube:
+
+            selfmess = await ctx.send("__Loading YouTube link...__ :mag_right:")
+
+            if ("list=" in track):
+                if "watch?v=" in track:
+                    track = track.split('&')[0]
+                    messagecontent = await self.getytinfo(track, ctx, current_guild, audiocontroller)
+                else:
+                    print("Skipping playlist contentinfo")
+                    messagecontent = "Queued playlist :page_with_curl:"
 
             await audiocontroller.add_youtube(track)
-            await ctx.send(messagecontent)
 
-        # Do not play unknown sites
         if host == linkutils.Sites.Unknown:
             if linkutils.get_url(track) is not None:
                 await ctx.send(":question: Unknown website")
                 return
-
-        # YouTube support, must be last
-        if(linkutils.get_url(track) is not None):
-            selfmess = await ctx.send("__Loading YouTube link...__ :mag_right:")
-        else:
-            selfmess = await ctx.send("__Searching for: {}__ :mag_right:".format(track))
-
-        if ("list=" in track):
-            if "watch?v=" in track:
-                track = track.split('&')[0]
-                messagecontent = await self.getytinfo(track, ctx, current_guild, audiocontroller)
             else:
-                print("Skipping playlist contentinfo")
-                messagecontent = "Queued playlist :page_with_curl:"
-        else:
-            track = await audiocontroller.search_youtube(track)
-            messagecontent = await self.getytinfo(track, ctx, current_guild, audiocontroller)
+                # search here
+                selfmess = await ctx.send("__Searching for: {}__ :mag_right:".format(track))
+                track = await audiocontroller.search_youtube(track)
+                messagecontent = await self.getytinfo(track, ctx, current_guild, audiocontroller)
+                await audiocontroller.add_youtube(track)
 
-        await audiocontroller.add_youtube(track)
-        await selfmess.delete()
-        await ctx.send(messagecontent)
+
+        if selfmess is not None:
+            await selfmess.delete()
+        if messagecontent is not None:
+            await ctx.send(messagecontent)
 
     async def getytinfo(self, track, ctx, current_guild, audiocontroller):
         await audiocontroller.getsonginfo(track)

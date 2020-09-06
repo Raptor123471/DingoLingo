@@ -42,6 +42,11 @@ class Button(commands.Cog):
             if emoji:
                 await message.add_reaction(emoji)
 
+        if host == linkutils.Sites.Spotify_Playlist:
+
+            if emoji:
+                await message.add_reaction(emoji)
+
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, reaction):
 
@@ -70,12 +75,22 @@ class Button(commands.Cog):
             current_guild = utils.get_guild(self.bot, message)
             audiocontroller = utils.guild_to_audiocontroller[current_guild]
 
-            host = linkutils.identify_url(message.content)
+            url = linkutils.get_url(message.content)
+
+            host = linkutils.identify_url(url)
 
             if host == linkutils.Sites.Spotify:
 
                 title = linkutils.convert_spotify(message.content)
                 track = await audiocontroller.search_youtube(title)
+
+            if host == linkutils.Sites.Spotify.Spotify_Playlist:
+                
+                links = linkutils.get_spotify_playlist(url)
+
+                for link in links:
+                    await audiocontroller.add_song(link)
+                return
 
             if host == linkutils.Sites.YouTube:
                 track = linkutils.get_url(message.content)

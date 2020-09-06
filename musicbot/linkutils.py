@@ -81,7 +81,7 @@ def identify_url(url):
     if "https://open.spotify.com/track" in url:
         return Sites.Spotify
 
-    if "https://open.spotify.com/playlist" in url:
+    if "https://open.spotify.com/playlist"in url or "https://open.spotify.com/album" in url:
         return Sites.Spotify_Playlist
 
     if "bandcamp.com/track/" in url:

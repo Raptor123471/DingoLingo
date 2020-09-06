@@ -29,6 +29,9 @@ class Playlist:
 
     def next(self):
 
+        if len(self.playque) == 0:
+            return None
+
         song_played = self.playque.popleft()
 
         if self.loop == True:
@@ -41,8 +44,6 @@ class Playlist:
             if len(self.playhistory) > config.MAX_HISTORY_LENGTH:
                 self.playhistory.popleft()
 
-        if len(self.playque) == 0:
-            return None
         return self.playque[0]
 
     def prev(self):

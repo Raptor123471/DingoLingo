@@ -53,6 +53,8 @@ class AudioController(object):
         if host is not linkutils.Sites.Unknown:
             if host == linkutils.Sites.YouTube:
                 coro = self.play_youtube(next_song)
+            if host == linkutils.Sites.Spotify:
+                coro = self.play_spotify(next_song)
             if host == linkutils.Sites.Custom:
                 coro = self.play_file(next_song)
             if host == linkutils.Sites.Twitter:
@@ -115,6 +117,13 @@ class AudioController(object):
 
         host = linkutils.identify_url(track)
 
+
+        if host == linkutils.Sites.Spotify:
+            self.playlist.add(track)
+            if len(self.playlist.playque) == 1:
+                await self.play_spotify(track)
+            return
+
         if host == linkutils.Sites.Twitter:
             self.playlist.add(track)
             if len(self.playlist.playque) == 1:
@@ -144,14 +153,14 @@ class AudioController(object):
             print("Playing {}".format(track))
             await self.play_youtube(track)
 
-    async def search_youtube(self, title):
+    async def search_youtube(self, title, api_less = False):
         """Searches youtube for the video title and returns the first results video link"""
 
         # if title is already a link
         if linkutils.get_url(title) is not None:
             return title
 
-        if self.api is not None:
+        if self.api is not None and api_less == False:
 
             try:
                 r = self.api.search_by_keywords(q=title.replace(
@@ -312,6 +321,36 @@ class AudioController(object):
         self.voice_client.play(discord.FFmpegPCMAudio(
             extracted_info.get('url')), after=lambda e: self.next_song(e))
         self.playlist.add_name("Twitter Video")
+
+
+    async def play_spotify(self, spotify_link):
+
+
+        if self.voice_client is None:
+            await self.register_voice_channel(self.guild.voice_channels[0])
+
+
+        title = linkutils.convert_spotify(spotify_link)
+        track = await self.search_youtube(title, api_less=True)
+
+        downloader = youtube_dl.YoutubeDL(
+            {'format': 'bestaudio', 'title': True})
+        extracted_info = downloader.extract_info(
+            track, download=False)
+
+
+        self.voice_client.play(discord.FFmpegPCMAudio(extracted_info.get(
+            'url'), before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'), after=lambda e: self.next_song(e))
+
+        # Update the songinfo to reflect the current song
+        self.current_songinfo = Songinfo(extracted_info.get('uploader'), extracted_info.get('creator'),
+                                         extracted_info.get(
+                                             'title'), extracted_info.get('duration'),
+                                         extracted_info.get('like_count'), extracted_info.get(
+                                             'dislike_count'),
+                                         extracted_info.get('webpage_url'))
+
+        self.playlist.add_name(extracted_info.get('title'))
 
     async def getsonginfo(self, link):
         """Gets passed song info and sets Localsonginfo in songinfo.py"""

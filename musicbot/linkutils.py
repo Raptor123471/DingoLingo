@@ -31,6 +31,22 @@ def convert_spotify(url):
     return title
 
 
+def get_spotify_playlist(url):
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36"}
+    
+    page = requests.get(url, headers=headers)
+    soup = BeautifulSoup(page.content, 'html.parser')
+    
+    results = soup.find_all(property="music:song",attrs={"content":True})
+
+    links = []
+    
+    for item in results:
+        links.append(item['content'])
+
+    return links
+
+
 def get_url(content):
 
     regex = re.compile(
@@ -46,6 +62,7 @@ def get_url(content):
 
 class Sites(Enum):
     Spotify = "Spotify"
+    Spotify_Playlist = "Spotify Playlist"
     YouTube = "YouTube"
     Twitter = "Twitter"
     SoundCloud = "SoundCloud"
@@ -61,8 +78,11 @@ def identify_url(url):
     if "https://www.youtu" in url or "https://youtu.be" in url:
         return Sites.YouTube
 
-    if "https://open.spotify.com/track/" in url:
+    if "https://open.spotify.com/track" in url:
         return Sites.Spotify
+
+    if "https://open.spotify.com/playlist" in url:
+        return Sites.Spotify_Playlist
 
     if "bandcamp.com/track/" in url:
         return Sites.Bandcamp

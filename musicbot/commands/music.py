@@ -48,14 +48,11 @@ class Music(commands.Cog):
 
         if host == linkutils.Sites.Spotify_Playlist:
 
-
             links = linkutils.get_spotify_playlist(track)
 
-            selfmess = await ctx.send("Queued playlist :page_with_curl:")
+            messagecontent = await ctx.send("Queued playlist :page_with_curl:")
             for link in links:
                 await audiocontroller.add_song(link)
-                print(link)
-            messagecontent = None
 
         if host == linkutils.Sites.Twitter:
 
@@ -116,7 +113,6 @@ class Music(commands.Cog):
                 track = await audiocontroller.search_youtube(track)
                 messagecontent = await self.getytinfo(track, ctx, current_guild, audiocontroller)
                 await audiocontroller.add_youtube(track)
-
 
         if selfmess is not None:
             await selfmess.delete()

@@ -86,9 +86,9 @@ class Button(commands.Cog):
 
             if host == linkutils.Sites.Spotify.Spotify_Playlist:
                 
-                links = linkutils.get_spotify_playlist(url)
+                playlist = linkutils.get_spotify_playlist(url)
 
-                for link in links:
+                for link in playlist.links:
                     await audiocontroller.add_song(link)
                 return
 

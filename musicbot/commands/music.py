@@ -48,10 +48,11 @@ class Music(commands.Cog):
 
         if host == linkutils.Sites.Spotify_Playlist:
 
-            links = linkutils.get_spotify_playlist(track)
+            playlist = linkutils.get_spotify_playlist(track)
 
-            messagecontent = await ctx.send("Queued playlist :page_with_curl:")
-            for link in links:
+            messagecontent = "Queued: **{}**".format(playlist.title)
+            selfmess = None
+            for link in playlist.links:
                 await audiocontroller.add_song(link)
 
         if host == linkutils.Sites.Twitter:

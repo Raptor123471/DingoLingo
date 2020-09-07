@@ -32,19 +32,26 @@ def convert_spotify(url):
 
 
 def get_spotify_playlist(url):
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36"}
-    
+    """Return Spotify_Playlist class"""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36"}
+
     page = requests.get(url, headers=headers)
     soup = BeautifulSoup(page.content, 'html.parser')
-    
-    results = soup.find_all(property="music:song",attrs={"content":True})
+
+    results = soup.find_all(property="music:song", attrs={"content": True})
 
     links = []
-    
+
     for item in results:
         links.append(item['content'])
 
-    return links
+    title = soup.find('title')
+    title = title.string
+
+    playlist = Spotify_Playlist(title, links)
+
+    return playlist
 
 
 def get_url(content):
@@ -69,6 +76,12 @@ class Sites(Enum):
     Bandcamp = "Bandcamp"
     Custom = "Custom"
     Unknown = "Unknown"
+
+
+class Spotify_Playlist(object):
+    def __init__(self, title, links):
+        self.title = title
+        self.links = links
 
 
 def identify_url(url):

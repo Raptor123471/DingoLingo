@@ -4,6 +4,17 @@ from bs4 import BeautifulSoup
 from enum import Enum
 from config import config
 
+import spotipy
+from spotipy.oauth2 import SpotifyClientCredentials
+
+
+try:
+    sp_api = spotipy.Spotify(auth_manager=SpotifyClientCredentials(
+        client_id=config.SPOTIFY_ID, client_secret=config.SPOTIFY_SECRET))
+    api = True
+except:
+    api = False
+
 
 def clean_sclink(track):
     if track.startswith("https://m."):
@@ -31,6 +42,75 @@ def convert_spotify(url):
     return title
 
 
+def get_spotify_playlist(url):
+    """Return Spotify_Playlist class"""
+
+    code = url.split('/')[4].split('?')[0]
+
+    if api == True:
+
+        if "open.spotify.com/album" in url:
+            try:
+                results = sp_api.album_tracks(code)
+                tracks = results['items']
+
+                while results['next']:
+                    results = sp_api.next(results)
+                    tracks.extend(results['items'])
+
+                links = []
+
+                for track in tracks:
+                    try:
+                        links.append(track['external_urls']['spotify'])
+                    except:
+                        pass
+                return links
+            except:
+                if config.SPOTIFY_ID != "" or config.SPOTIFY_SECRET != "":
+                    print("ERROR: Check spotify CLIENT_ID and SECRET")
+
+        if "open.spotify.com/playlist" in url:
+            try:
+                results = sp_api.playlist_items(code)
+                tracks = results['items']
+                while results['next']:
+                    results = sp_api.next(results)
+                    tracks.extend(results['items'])
+
+                links = []
+
+                for track in tracks:
+                    try:
+                        links.append(
+                            track['track']['external_urls']['spotify'])
+                    except:
+                        pass
+                return links
+
+            except:
+                if config.SPOTIFY_ID != "" or config.SPOTIFY_SECRET != "":
+                    print("ERROR: Check spotify CLIENT_ID and SECRET")
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36"}
+
+    page = requests.get(url, headers=headers)
+    soup = BeautifulSoup(page.content, 'html.parser')
+
+    results = soup.find_all(property="music:song", attrs={"content": True})
+
+    links = []
+
+    for item in results:
+        links.append(item['content'])
+
+    title = soup.find('title')
+    title = title.string
+
+    return links
+
+
 def get_url(content):
 
     regex = re.compile(
@@ -46,6 +126,7 @@ def get_url(content):
 
 class Sites(Enum):
     Spotify = "Spotify"
+    Spotify_Playlist = "Spotify Playlist"
     YouTube = "YouTube"
     Twitter = "Twitter"
     SoundCloud = "SoundCloud"
@@ -61,8 +142,11 @@ def identify_url(url):
     if "https://www.youtu" in url or "https://youtu.be" in url:
         return Sites.YouTube
 
-    if "https://open.spotify.com/track/" in url:
+    if "https://open.spotify.com/track" in url:
         return Sites.Spotify
+
+    if "https://open.spotify.com/playlist"in url or "https://open.spotify.com/album" in url:
+        return Sites.Spotify_Playlist
 
     if "bandcamp.com/track/" in url:
         return Sites.Bandcamp

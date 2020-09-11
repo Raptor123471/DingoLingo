@@ -1,6 +1,9 @@
 BOT_TOKEN: str = ""
-SOUNDCLOUD_TOKEN: str = ""
 YOUTUBE_TOKEN: str = ""
+SPOTIFY_ID: str = ""
+SPOTIFY_SECRET: str = ""
+SOUNDCLOUD_TOKEN: str = ""
+
 
 BOT_PREFIX = "$"
 BOT_VERISON = ''

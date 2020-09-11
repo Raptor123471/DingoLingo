@@ -1,4 +1,5 @@
 from collections import deque
+import random
 
 from config import config
 
@@ -53,6 +54,9 @@ class Playlist:
             return dummy
         self.playque.appendleft(self.playhistory.pop())
         return self.playque[0]
+
+    def shuffle(self):
+        random.shuffle(self.playque)
 
     def empty(self):
         self.playque.clear()

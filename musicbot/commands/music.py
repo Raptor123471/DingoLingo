@@ -50,9 +50,9 @@ class Music(commands.Cog):
 
             playlist = linkutils.get_spotify_playlist(track)
 
-            messagecontent = "Queued: **{}**".format(playlist.title)
+            messagecontent = "Queued playlist :page_with_curl:"
             selfmess = None
-            for link in playlist.links:
+            for link in playlist:
                 await audiocontroller.add_song(link)
 
         if host == linkutils.Sites.Twitter:

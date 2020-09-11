@@ -5,3 +5,4 @@ youtube-dl
 requests
 beautifulsoup4
 google-api-python-client
+spotipy

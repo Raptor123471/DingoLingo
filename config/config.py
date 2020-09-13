@@ -1,16 +1,13 @@
 BOT_TOKEN: str = ""
-YOUTUBE_TOKEN: str = ""
 SPOTIFY_ID: str = ""
 SPOTIFY_SECRET: str = ""
-SOUNDCLOUD_TOKEN: str = ""
-
 
 BOT_PREFIX = "$"
 BOT_VERISON = ''
 
 BUTTON_NAME = ""
 
-SUPPORTED_EXTENSIONS = ('.webm', '.mp4', '.mp3', '.avi', '.wav', '.m4v')
+SUPPORTED_EXTENSIONS = ('.webm', '.mp4', '.mp3', '.avi', '.wav', '.m4v', '.ogg')
 
 DEFAULT_NICKNAME = ""
 
@@ -32,7 +29,7 @@ INFO_HISTORY_TITLE = "Songs Played:"
 MAX_HISTORY_LENGTH = 10
 MAX_TRACKNAME_HISTORY_LENGTH = 15
 
-SONGINFO_UPLOADER = "Channel name: "
+SONGINFO_UPLOADER = "Uploader: "
 SONGINFO_DURATION = "Duration: "
 SONGINFO_SECONDS = "s"
 SONGINFO_LIKES = "Likes: "

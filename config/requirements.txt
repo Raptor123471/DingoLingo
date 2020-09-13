@@ -1,8 +1,5 @@
 discord.py[voice]
-python-youtube
-soundcloud
 youtube-dl
 requests
 beautifulsoup4
-google-api-python-client
 spotipy

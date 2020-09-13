@@ -33,17 +33,14 @@ class Button(commands.Cog):
         emoji = discord.utils.get(guild.emojis, name=config.BUTTON_NAME)
 
         if host == linkutils.Sites.YouTube:
-
             if emoji:
                 await message.add_reaction(emoji)
 
         if host == linkutils.Sites.Spotify:
-
             if emoji:
                 await message.add_reaction(emoji)
 
         if host == linkutils.Sites.Spotify_Playlist:
-
             if emoji:
                 await message.add_reaction(emoji)
 
@@ -80,22 +77,13 @@ class Button(commands.Cog):
             host = linkutils.identify_url(url)
 
             if host == linkutils.Sites.Spotify:
-
-                title = linkutils.convert_spotify(message.content)
-                track = await audiocontroller.search_youtube(title)
+                await audiocontroller.process_song(url)
 
             if host == linkutils.Sites.Spotify.Spotify_Playlist:
-                
-                playlist = linkutils.get_spotify_playlist(url)
-
-                for link in playlist:
-                    await audiocontroller.add_song(link)
-                return
+                await audiocontroller.process_song(url)
 
             if host == linkutils.Sites.YouTube:
-                track = linkutils.get_url(message.content)
-
-            await audiocontroller.add_youtube(track)
+                await audiocontroller.process_song(url)
 
 
 def setup(bot):

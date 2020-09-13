@@ -21,9 +21,6 @@ https://discord.gg/4angwPm
   - Client ID
   - Client Secret
   - Note: Limited to 50 playlist items without API
-* YouTube (optional) - https://console.developers.google.com/apis/api/youtube/overview
-  - All features supported without API
-* SoundCloud - No official method, must search/ask for key
 
 Obtained keys must be entered into ```config/config.py```
 

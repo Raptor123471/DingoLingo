@@ -36,117 +36,20 @@ class Music(commands.Cog):
             await ctx.send("Loop is enabled! Use {}loop to disable".format(config.BOT_PREFIX))
             return
 
-        host = linkutils.identify_url(track)
+        song = await audiocontroller.process_song(track)
 
-        if host == linkutils.Sites.Spotify:
+        if song is None:
+            ctx.send("Unknown site :question:")
 
-            title = linkutils.convert_spotify(track)
-            selfmess = await ctx.send("__Searching for: {}__ :mag_right:".format(title))
-            track = await audiocontroller.search_youtube(title)
-            await audiocontroller.add_song(track)
-            messagecontent = await self.getytinfo(track, ctx, current_guild, audiocontroller)
+        if song.origin == linkutils.Origins.Default:
 
-        if host == linkutils.Sites.Spotify_Playlist:
-
-            playlist = linkutils.get_spotify_playlist(track)
-
-            messagecontent = "Queued playlist :page_with_curl:"
-            selfmess = None
-            for link in playlist:
-                await audiocontroller.add_song(link)
-
-        if host == linkutils.Sites.Twitter:
-
-            await ctx.send("Twitter beta queued")
-            await audiocontroller.add_song(track)
-            return
-
-        if host == linkutils.Sites.Bandcamp:
-
-            await ctx.send("Bandcamp beta queued")
-            await audiocontroller.add_song(track)
-            return
-
-        if host == linkutils.Sites.Custom:
-
-            await ctx.send("File queued")
-            await audiocontroller.add_song(track)
-            return
-
-        if host == linkutils.Sites.SoundCloud:
-
-            if config.SOUNDCLOUD_TOKEN == "":
-                await ctx.send("Error: No SoundCloud api token")
-                return
-
-            # clean mobile links
-            track = linkutils.clean_sclink(track)
-
-            try:
-                messagecontent = await self.getscinfo(track, ctx, current_guild, audiocontroller)
-                selfmess = None
-            except:
-                await ctx.send("Error: artist has disabled API playback for this song.")
-                return
-            await audiocontroller.add_song(track)
-
-        if host == linkutils.Sites.YouTube:
-
-            selfmess = await ctx.send("__Loading YouTube link...__ :mag_right:")
-
-            if ("list=" in track):
-                if "watch?v=" in track:
-                    track = track.split('&')[0]
-                    messagecontent = await self.getytinfo(track, ctx, current_guild, audiocontroller)
-                else:
-                    print("Skipping playlist contentinfo")
-                    messagecontent = "Queued playlist :page_with_curl:"
-
-            await audiocontroller.add_youtube(track)
-
-        if host == linkutils.Sites.Unknown:
-            if linkutils.get_url(track) is not None:
-                await ctx.send(":question: Unknown website")
-                return
+            if len(audiocontroller.playlist.playque) == 1:
+                await ctx.send(song.Info.format_output("Now playing"))
             else:
-                # search here
-                selfmess = await ctx.send("__Searching for: {}__ :mag_right:".format(track))
-                track = await audiocontroller.search_youtube(track)
-                messagecontent = await self.getytinfo(track, ctx, current_guild, audiocontroller)
-                await audiocontroller.add_youtube(track)
+                await ctx.send(song.Info.format_output("Added to queue"))
 
-        if selfmess is not None:
-            await selfmess.delete()
-        if messagecontent is not None:
-            await ctx.send(messagecontent)
-
-    async def getytinfo(self, track, ctx, current_guild, audiocontroller):
-        await audiocontroller.getsonginfo(track)
-        localsonginfo = audiocontroller.local_songinfo
-
-        playlist = audiocontroller.playlist
-
-        playtype = "placeholder"
-        if len(playlist.playque) > 1:
-
-            playtype = "Added to queue"
-        else:
-            playtype = "Now Playing"
-        return localsonginfo.output.replace("|playtype|", playtype)
-
-    async def getscinfo(self, track, ctx, current_guild, audiocontroller):
-        sclink = track
-        await audiocontroller.getsonginfo(sclink)
-        scsonginfo = audiocontroller.soundcloud_songinfo
-
-        playlist = audiocontroller.playlist
-
-        playtype = "placeholder"
-        if len(playlist.playque) > 1:
-            playtype = "Added to queue"
-        else:
-            playtype = "Now Playing"
-        return scsonginfo.output.replace("|playtype|", playtype)
+        elif song.origin == linkutils.Origins.Playlist:
+            await ctx.send("Queued playlist :page_with_curl:")
 
     @commands.command(name='loop', aliases=['l', 'L'])
     async def _loop(self, ctx):
@@ -192,7 +95,7 @@ class Music(commands.Cog):
         counter = 1
 
         for song in playlist.playque:
-            entry = "{}. {}".format(str(counter), song)
+            entry = "{}. {}".format(str(counter), song.Info.webpage_url)
             songlist.append(entry)
             counter = counter + 1
 
@@ -231,6 +134,7 @@ class Music(commands.Cog):
         current_guild = utils.get_guild(self.bot, ctx.message)
         audiocontroller = utils.guild_to_audiocontroller[current_guild]
         audiocontroller.clear_queue()
+        current_guild.voice_client.stop()
         audiocontroller.playlist.loop = False
         await ctx.send("Cleared queue :no_entry_sign:")
 
@@ -287,6 +191,16 @@ class Music(commands.Cog):
 
         audiocontroller.playlist.shuffle()
         await ctx.send("Shuffled queue :twisted_rightwards_arrows:")
+
+    @commands.command(name='debug')
+    async def _debug(self, ctx):
+        current_guild = utils.get_guild(self.bot, ctx.message)
+        audiocontroller = utils.guild_to_audiocontroller[current_guild]
+
+        print("PLAYQUE")
+        print(audiocontroller.playlist.playque)
+        print("PLAYLISTZ")
+        print(audiocontroller.playlist)
 
 
 def setup(bot):

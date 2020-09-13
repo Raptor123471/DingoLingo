@@ -135,6 +135,18 @@ class Sites(Enum):
     Unknown = "Unknown"
 
 
+class Playlist_Types(Enum):
+    Spotify_Playlist = "Spotify Playlist"
+    YouTube_Playlist = "YouTube Playlist"
+    Unknown = "Unknown"
+
+
+class Origins(Enum):
+    Default = "Default"
+    Playlist = "Playlist"
+    Search = "Search"
+
+
 def identify_url(url):
     if url is None:
         return Sites.Unknown
@@ -162,3 +174,16 @@ def identify_url(url):
 
     # If no match
     return Sites.Unknown
+
+
+def identify_playlist(url):
+    if url is None:
+        return Sites.Unknown
+
+    if "playlist?list=" in url:
+        return Playlist_Types.YouTube_Playlist
+
+    if "https://open.spotify.com/playlist"in url or "https://open.spotify.com/album" in url:
+        return Playlist_Types.Spotify_Playlist
+
+    return Playlist_Types.Unknown

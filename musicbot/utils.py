@@ -56,10 +56,14 @@ async def is_connected(ctx):
         return None
 
 
-# DB EXTRAS
-###############################################
-async def channel_exists(bot, channel_id):
-    if bot.get_channel(channel_id) is None:
-        return False
-    else:
-        return True
+def _js_parseInt(string):
+    return int(''.join([x for x in string if x.isdigit()]))
+
+
+def YTDurationToSeconds(duration):
+    match = re.match(
+        'PT(\d+H)?(\d+M)?(\d+S)?', duration).groups()
+    hours = _js_parseInt(match[0]) if match[0] else 0
+    minutes = _js_parseInt(match[1]) if match[1] else 0
+    seconds = _js_parseInt(match[2]) if match[2] else 0
+    return hours * 3600 + minutes * 60 + seconds

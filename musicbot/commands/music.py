@@ -39,7 +39,8 @@ class Music(commands.Cog):
         song = await audiocontroller.process_song(track)
 
         if song is None:
-            ctx.send("Unknown site :question:")
+            await ctx.send("Unknown site :question:")
+            return
 
         if song.origin == linkutils.Origins.Default:
 

@@ -74,6 +74,12 @@ $q
 * Show the list of songs in queue
 
 ```
+$shuffle
+```
+
+* Shuffle the queue
+
+```
 $l
 ```
 

@@ -68,6 +68,21 @@ class Music(commands.Cog):
             audiocontroller.playlist.loop = False
             await ctx.send("Loop disabled :x:")
 
+    @commands.command(name='shuffle', aliases=["sh"])
+    async def _shuffle(self, ctx):
+        current_guild = utils.get_guild(self.bot, ctx.message)
+        audiocontroller = utils.guild_to_audiocontroller[current_guild]
+
+        if current_guild is None:
+            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+            return
+        if current_guild.voice_client is None or not current_guild.voice_client.is_playing():
+            await ctx.send("Queue is empty :x:")
+            return
+
+        audiocontroller.playlist.shuffle()
+        await ctx.send("Shuffled queue :twisted_rightwards_arrows:")
+
     @commands.command(name='pause', description=config.HELP_PAUSE_LONG, help=config.HELP_PAUSE_SHORT)
     async def _pause(self, ctx):
         current_guild = utils.get_guild(self.bot, ctx.message)
@@ -176,21 +191,6 @@ class Music(commands.Cog):
             await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
             return
         await utils.send_message(ctx, utils.guild_to_audiocontroller[current_guild].track_history())
-
-    @commands.command(name='shuffle', aliases=["sh"])
-    async def _shuffle(self, ctx):
-        current_guild = utils.get_guild(self.bot, ctx.message)
-        audiocontroller = utils.guild_to_audiocontroller[current_guild]
-
-        if current_guild is None:
-            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
-            return
-        if current_guild.voice_client is None or not current_guild.voice_client.is_playing():
-            await ctx.send("Queue is empty :x:")
-            return
-
-        audiocontroller.playlist.shuffle()
-        await ctx.send("Shuffled queue :twisted_rightwards_arrows:")
 
     @commands.command(name='debug')
     async def _debug(self, ctx):

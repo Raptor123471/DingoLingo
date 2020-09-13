@@ -193,16 +193,6 @@ class Music(commands.Cog):
             return
         await utils.send_message(ctx, utils.guild_to_audiocontroller[current_guild].track_history())
 
-    @commands.command(name='debug')
-    async def _debug(self, ctx):
-        current_guild = utils.get_guild(self.bot, ctx.message)
-        audiocontroller = utils.guild_to_audiocontroller[current_guild]
-
-        print("PLAYQUE")
-        print(audiocontroller.playlist.playque)
-        print("PLAYLISTZ")
-        print(audiocontroller.playlist)
-
 
 def setup(bot):
     bot.add_cog(Music(bot))

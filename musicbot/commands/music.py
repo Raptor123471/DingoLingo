@@ -52,7 +52,7 @@ class Music(commands.Cog):
         elif song.origin == linkutils.Origins.Playlist:
             await ctx.send("Queued playlist :page_with_curl:")
 
-    @commands.command(name='loop', aliases=['l', 'L'])
+    @commands.command(name='loop', description=config.HELP_LOOP_LONG, help=config.HELP_LOOP_SHORT, aliases=['l', 'L'])
     async def _loop(self, ctx):
 
         current_guild = utils.get_guild(self.bot, ctx.message)
@@ -69,7 +69,7 @@ class Music(commands.Cog):
             audiocontroller.playlist.loop = False
             await ctx.send("Loop disabled :x:")
 
-    @commands.command(name='shuffle', aliases=["sh"])
+    @commands.command(name='shuffle', description=config.HELP_SHUFFLE_LONG, help=config.HELP_SHUFFLE_SHORT, aliases=["sh"])
     async def _shuffle(self, ctx):
         current_guild = utils.get_guild(self.bot, ctx.message)
         audiocontroller = utils.guild_to_audiocontroller[current_guild]
@@ -95,7 +95,7 @@ class Music(commands.Cog):
         current_guild.voice_client.pause()
         await ctx.send("Playback Paused :pause_button:")
 
-    @commands.command(name='queue', aliases=['playlist', 'q', 'Q'])
+    @commands.command(name='queue', description=config.HELP_QUEUE_LONG, help=config.HELP_QUEUE_SHORT, aliases=['playlist', 'q', 'Q'])
     async def _queue(self, ctx):
         current_guild = utils.get_guild(self.bot, ctx.message)
         if current_guild is None:
@@ -145,7 +145,7 @@ class Music(commands.Cog):
         current_guild.voice_client.stop()
         await ctx.send("Skipped current song :fast_forward:")
 
-    @commands.command(name='clear', aliases=['cl'])
+    @commands.command(name='clear', description=config.HELP_CLEAR_LONG, help=config.HELP_CLEAR_SHORT, aliases=['cl'])
     async def _clear(self, ctx):
         current_guild = utils.get_guild(self.bot, ctx.message)
         audiocontroller = utils.guild_to_audiocontroller[current_guild]

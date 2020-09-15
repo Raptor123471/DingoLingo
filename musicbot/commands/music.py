@@ -129,7 +129,7 @@ class Music(commands.Cog):
             await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
             return
         await utils.guild_to_audiocontroller[current_guild].stop_player()
-        await ctx.send("Stopped all sessions :stop:")
+        await ctx.send("Stopped all sessions :octagonal_sign:")
 
     @commands.command(name='skip', description=config.HELP_SKIP_LONG, help=config.HELP_SKIP_SHORT, aliases=['s', 'S'])
     async def _skip(self, ctx):

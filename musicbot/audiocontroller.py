@@ -44,9 +44,8 @@ class AudioController(object):
         if next_song is None:
             return
 
-        if next_song.host is not linkutils.Sites.Unknown:
-            coro = self.play_song(next_song)
-            self.bot.loop.create_task(coro)
+        coro = self.play_song(next_song)
+        self.bot.loop.create_task(coro)
 
     async def play_song(self, song):
         """Plays a song object"""
@@ -67,14 +66,7 @@ class AudioController(object):
             song.Info.duration = r.get('duration')
             song.Info.webpage_url = r.get('webpage_url')
 
-        if song.origin == linkutils.Origins.Search:
-
-            downloader = youtube_dl.YoutubeDL(
-                {'format': 'bestaudio', 'title': True})
-            r = downloader.extract_info(
-                song.Info.webpage_url, download=False)
-
-            song.base_url = r.get('url')
+        self.playlist.add_name(song.Info.title)
 
         self.voice_client.play(discord.FFmpegPCMAudio(
             song.base_url, before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'), after=lambda e: self.next_song(e))

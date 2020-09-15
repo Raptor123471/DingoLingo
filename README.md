@@ -74,16 +74,16 @@ $q
 * Show the list of songs in queue
 
 ```
-$shuffle
+$shuffle /$sh
 ```
 
 * Shuffle the queue
 
 ```
-$l
+$l / $loop
 ```
 
-* Loop the current playing song
+* Loop the current playing song, toggle on/off
 
 ```
 $pause
@@ -98,10 +98,10 @@ $resume
 * Resumes the paused song.
 
 ```
-$stop
+$skip / $s
 ```
 
-* Stops the current song and clears the playqueue.
+* Skips the current song and plays nex in queue.
 
 ```
 $prev
@@ -114,6 +114,12 @@ $np
 ```
 
 * Shows more details about the current song.
+
+```
+$stop
+```
+
+* Stops the current song and clears the playqueue.
 
 ### General
 
@@ -150,7 +156,7 @@ $version
 * Show verison information
 
 ```
-$reset
+$reset / $rs
 ```
 
 * Disconnect and reconnect to the voice channel

@@ -144,7 +144,6 @@ class Playlist_Types(Enum):
 class Origins(Enum):
     Default = "Default"
     Playlist = "Playlist"
-    Search = "Search"
 
 
 def identify_url(url):

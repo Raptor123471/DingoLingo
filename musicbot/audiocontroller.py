@@ -15,14 +15,14 @@ class AudioController(object):
             Attributes:
                 bot: The instance of the bot that will be playing the music.
                 playlist: A Playlist object that stores the history and queue of songs.
-                current_songinfo: A Songinfo object that stores details of the current song.
+                current_song: A Song object that stores details of the current song.
                 guild: The guild in which the Audiocontroller operates.
         """
 
     def __init__(self, bot, guild):
         self.bot = bot
         self.playlist = Playlist()
-        self.current_songinfo = None
+        self.current_song = None
         self.guild = guild
         self.voice_client = None
 
@@ -38,7 +38,7 @@ class AudioController(object):
     def next_song(self, error):
         """Invoked after a song is finished. Plays the next song if there is one."""
 
-        self.current_songinfo = None
+        self.current_song = None
         next_song = self.playlist.next()
 
         if next_song is None:
@@ -52,21 +52,22 @@ class AudioController(object):
 
         if song.origin == linkutils.Origins.Playlist:
             if song.host == linkutils.Sites.Spotify:
-                conversion = await self.search_youtube(linkutils.convert_spotify(song.Info.webpage_url))
-                song.Info.webpage_url = conversion
+                conversion = await self.search_youtube(linkutils.convert_spotify(song.info.webpage_url))
+                song.info.webpage_url = conversion
 
             downloader = youtube_dl.YoutubeDL(
                 {'format': 'bestaudio', 'title': True})
             r = downloader.extract_info(
-                song.Info.webpage_url, download=False)
+                song.info.webpage_url, download=False)
 
             song.base_url = r.get('url')
-            song.Info.uploader = r.get('uploader')
-            song.Info.title = r.get('title')
-            song.Info.duration = r.get('duration')
-            song.Info.webpage_url = r.get('webpage_url')
+            song.info.uploader = r.get('uploader')
+            song.info.title = r.get('title')
+            song.info.duration = r.get('duration')
+            song.info.webpage_url = r.get('webpage_url')
 
-        self.playlist.add_name(song.Info.title)
+        self.playlist.add_name(song.info.title)
+        self.current_song = song
 
         self.voice_client.play(discord.FFmpegPCMAudio(
             song.base_url, before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'), after=lambda e: self.next_song(e))
@@ -95,7 +96,7 @@ class AudioController(object):
                             linkutils.Sites.YouTube, "", "", "", "", "")
 
             if start == True:
-                await self.play_song(self.playlist.next())
+                await self.play_song(self.playlist.playque[0])
                 print("Playing {}".format(track))
             return song
 

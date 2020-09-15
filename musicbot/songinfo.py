@@ -7,7 +7,7 @@ class Song():
         self.host = host
         self.origin = origin
         self.base_url = base_url
-        self.Info = self.Sinfo(uploader, title, duration, webpage_url)
+        self.info = self.Sinfo(uploader, title, duration, webpage_url)
 
     class Sinfo:
         def __init__(self, uploader, title, duration, webpage_url):

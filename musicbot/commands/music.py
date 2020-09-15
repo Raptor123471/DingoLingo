@@ -45,9 +45,9 @@ class Music(commands.Cog):
         if song.origin == linkutils.Origins.Default:
 
             if len(audiocontroller.playlist.playque) == 1:
-                await ctx.send(song.Info.format_output("Now playing"))
+                await ctx.send(song.info.format_output("Now playing"))
             else:
-                await ctx.send(song.Info.format_output("Added to queue"))
+                await ctx.send(song.info.format_output("Added to queue"))
 
         elif song.origin == linkutils.Origins.Playlist:
             await ctx.send("Queued playlist :page_with_curl:")
@@ -111,7 +111,7 @@ class Music(commands.Cog):
         counter = 1
 
         for song in playlist.playque:
-            entry = "{}. {}".format(str(counter), song.Info.webpage_url)
+            entry = "{}. {}".format(str(counter), song.info.webpage_url)
             songlist.append(entry)
             counter = counter + 1
 
@@ -129,7 +129,7 @@ class Music(commands.Cog):
             await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
             return
         await utils.guild_to_audiocontroller[current_guild].stop_player()
-        await ctx.send("Stopped all sessions :stop:")
+        await ctx.send("Stopped all sessions :octagonal_sign:")
 
     @commands.command(name='skip', description=config.HELP_SKIP_LONG, help=config.HELP_SKIP_SHORT, aliases=['s', 'S'])
     async def _skip(self, ctx):
@@ -180,10 +180,10 @@ class Music(commands.Cog):
         if current_guild is None:
             await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
             return
-        songinfo = utils.guild_to_audiocontroller[current_guild].current_songinfo
-        if songinfo is None:
+        song = utils.guild_to_audiocontroller[current_guild].current_song
+        if song is None:
             return
-        await ctx.send(songinfo.output.replace("|playtype|", "SongInfo"))
+        await ctx.send(song.info.format_output("Songinfo"))
 
     @commands.command(name='history', description=config.HELP_HISTORY_LONG, help=config.HELP_HISTORY_SHORT)
     async def _history(self, ctx):

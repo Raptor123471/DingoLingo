@@ -68,6 +68,12 @@ $p [link/video title/key words/playlist-link/soundcloud link/spotify link/bandca
 * If a song is playing, it will be added to queue
 
 ```
+$skip / $s
+```
+
+* Skips the current song and plays next in queue.
+
+```
 $q
 ```
 
@@ -96,12 +102,6 @@ $resume
 ```
 
 * Resumes the paused song.
-
-```
-$skip / $s
-```
-
-* Skips the current song and plays nex in queue.
 
 ```
 $prev

@@ -90,7 +90,7 @@ class General(commands.Cog):
         await ctx.send("{} Connected to {}".format(":white_check_mark:", ctx.author.voice.channel.name))
 
 
-    @commands.command(name='changechannel', aliases=['cc'])
+    @commands.command(name='changechannel',description=config.HELP_CHANGECHANNEL_LONG, help=config.HELP_CHANGECHANNEL_SHORT, aliases=['cc'])
     async def _change_channel(self, ctx):
         current_guild = utils.get_guild(self.bot, ctx.message)
 
@@ -111,11 +111,11 @@ class General(commands.Cog):
 
         await ctx.send("{} Switched to {}".format(":white_check_mark:", ctx.author.voice.channel.name))
 
-    @commands.command(name='ping')
+    @commands.command(name='ping', description=config.HELP_PING_LONG, help=config.HELP_PING_SHORT)
     async def _ping(self, ctx):
         await ctx.send("Pong")
 
-    @commands.command(name='version', aliases=['v'])
+    @commands.command(name='version',description=config.HELP_VERSION_LONG, help=config.HELP_VERSION_SHORT, aliases=['v'])
     async def _version(self, ctx):
         await ctx.send(config.BOT_VERISON)
 

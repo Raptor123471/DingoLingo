@@ -35,13 +35,13 @@ class Playlist:
 
         song_played = self.playque.popleft()
 
-        if len(self.playque) == 0:
-            return None
-
         if self.loop == True:
             if song_played != "Dummy":
                 self.playque.clear()
                 self.add(song_played)
+
+        if len(self.playque) == 0:
+            return None
 
         if song_played != "Dummy":
             self.playhistory.append(song_played)

@@ -56,7 +56,7 @@ class AudioController(object):
                 song.info.webpage_url = conversion
 
             downloader = youtube_dl.YoutubeDL(
-                {'format': 'bestaudio', 'title': True})
+                {'format': 'bestaudio', 'title': True, "cookiefile": config.COOKIE_PATH})
             r = downloader.extract_info(
                 song.info.webpage_url, download=False)
 
@@ -116,7 +116,7 @@ class AudioController(object):
             r = downloader.extract_info(
                 track, download=False)
         except:
-            downloader = youtube_dl.YoutubeDL({'title': True})
+            downloader = youtube_dl.YoutubeDL({'title': True, "cookiefile": config.COOKIE_PATH})
             r = downloader.extract_info(
                 track, download=False)
 
@@ -143,7 +143,8 @@ class AudioController(object):
 
             options = {
                 'format': 'bestaudio/best',
-                'extract_flat': True
+                'extract_flat': True,
+                "cookiefile": config.COOKIE_PATH
             }
 
             with youtube_dl.YoutubeDL(options) as ydl:
@@ -176,7 +177,8 @@ class AudioController(object):
         options = {
             'format': 'bestaudio/best',
             'default_search': 'auto',
-            'noplaylist': True
+            'noplaylist': True,
+            "cookiefile": config.COOKIE_PATH
         }
 
         with youtube_dl.YoutubeDL(options) as ydl:

@@ -50,6 +50,11 @@ Button play feature:
 * Emote must be in same server as bot
 * Needs Manage Message permissions
 
+Custom Cookies:
+* Extract cookies.txt from you browser using your preferred method
+* Overwrite the existing cookies.txt in /config/cookies/
+* (Optional) Set a custom cookies.txt location by modifying COOKIE_PATH in config.py
+
 ## Commands:
 
 ### Music

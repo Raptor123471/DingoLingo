@@ -9,6 +9,8 @@ BUTTON_NAME = ""
 
 SUPPORTED_EXTENSIONS = ('.webm', '.mp4', '.mp3', '.avi', '.wav', '.m4v', '.ogg')
 
+COOKIE_PATH = "/config/cookies/cookies.txt"
+
 STARTUP_MESSAGE = "Starting Bot..."
 STARTUP_COMPLETE_MESSAGE = "Startup Complete"
 
@@ -72,3 +74,4 @@ HELP_CHANGECHANNEL_SHORT = "Change the bot channel"
 HELP_CHANGECHANNEL_LONG = "Change the bot channel to the VC you are in"
 
 BOT_VERISON = '' #do not modify
+ABSOLUTE_PATH = '' #do not modify

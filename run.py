@@ -1,4 +1,5 @@
 import discord
+import os
 from discord.ext import commands
 
 from config import config
@@ -13,7 +14,11 @@ initial_extensions = ['musicbot.commands.music',
                       'musicbot.commands.general', 'musicbot.button']
 bot = commands.Bot(command_prefix=config.BOT_PREFIX, pm_help=True)
 
+
 if __name__ == '__main__':
+
+    config.ABSOLUTE_PATH = os.path.dirname(os.path.abspath(__file__))
+    config.COOKIE_PATH = config.ABSOLUTE_PATH + config.COOKIE_PATH
 
     if config.BOT_TOKEN == "":
         print("Error: No bot token!")
@@ -31,7 +36,7 @@ async def on_ready():
     print(config.STARTUP_MESSAGE)
     await bot.change_presence(status=discord.Status.online, activity=discord.Game(name="Music, type {}help".format(config.BOT_PREFIX)))
 
-    config.BOT_VERISON = "0.9.7"
+    config.BOT_VERISON = "0.9.8"
 
     for guild in bot.guilds:
 

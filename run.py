@@ -36,7 +36,7 @@ async def on_ready():
     print(config.STARTUP_MESSAGE)
     await bot.change_presence(status=discord.Status.online, activity=discord.Game(name="Music, type {}help".format(config.BOT_PREFIX)))
 
-    config.BOT_VERISON = "0.9.7"
+    config.BOT_VERISON = "0.9.8"
 
     for guild in bot.guilds:
 

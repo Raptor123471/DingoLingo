@@ -1,5 +1,5 @@
 discord.py[voice]
-youtube-dl
+youtube-dl==2020.9.20
 requests
 beautifulsoup4
 spotipy

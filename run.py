@@ -13,7 +13,7 @@ from musicbot.commands.general import General
 initial_extensions = ['musicbot.commands.music',
                       'musicbot.commands.general', 'musicbot.button']
 bot = commands.Bot(command_prefix=config.BOT_PREFIX, pm_help=True)
-
+#client = discord.Client()
 
 if __name__ == '__main__':
 
@@ -47,21 +47,48 @@ async def on_ready():
         await General.udisconnect(self=None, ctx=None, guild=guild)
 
         try:
-            await guild_to_audiocontroller[guild].register_voice_channel(guild.voice_channels[0])
+            await current_guild.voice_client.disconnect(force=True)
         except:
             pass
 
         print("Joined {}".format(guild.name))
+        print('We have logged in as {0.user}'.format(bot))
 
     print(config.STARTUP_COMPLETE_MESSAGE)
 
 
+#embed_obj = discord.Embed(description = "test")
+
+
 @bot.event
 async def on_guild_join(guild):
-    print(guild.name)
+    print("Join to " + guild.name)
     guild_to_audiocontroller[guild] = AudioController(bot, guild)
-
     await guild_to_audiocontroller[guild].register_voice_channel(guild.voice_channels[0])
+
+@bot.event
+async def on_guild_join(guild):
+    await guild.text_channels[0].send(config.JOIN_MASSAGE)
+
+#    await bot.change_presence(status=discord.Status.idle, activity=discord.Game(name="{}info".format(config.BOT_PREFIX)))
+
+#    config.BOT_VERISON = "0.2.35"
+
+    for guild in bot.guilds:
+
+        guild_to_audiocontroller[guild] = AudioController(bot, guild)
+
+        await guild_to_audiocontroller[guild].register_voice_channel(guild.voice_channels[0])
+
+        await General.udisconnect(self=None, ctx=None, guild=guild)
+
+        try:
+            await current_guild.voice_client.disconnect(force=True)
+        except:
+            pass
+        print('New Server')
+
+
 
 
 bot.run(config.BOT_TOKEN, bot=True, reconnect=True)

@@ -11,6 +11,8 @@ SUPPORTED_EXTENSIONS = ('.webm', '.mp4', '.mp3', '.avi', '.wav', '.m4v', '.ogg')
 
 COOKIE_PATH = "/config/cookies/cookies.txt"
 
+JOIN_MASSAGE = "Hi, thank you for adding the bot :) \n If you need help: https://discord.gg/4angwPm \n GitHub: https://github.com/Raptor123471/DingoLingo"
+
 STARTUP_MESSAGE = "Starting Bot..."
 STARTUP_COMPLETE_MESSAGE = "Startup Complete"
 

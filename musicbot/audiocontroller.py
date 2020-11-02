@@ -1,5 +1,5 @@
 import discord
-import youtube_dl
+import youtube_dlc
 
 from musicbot import linkutils
 from musicbot import utils
@@ -55,7 +55,7 @@ class AudioController(object):
                 conversion = await self.search_youtube(linkutils.convert_spotify(song.info.webpage_url))
                 song.info.webpage_url = conversion
 
-            downloader = youtube_dl.YoutubeDL(
+            downloader = youtube_dlc.YoutubeDL(
                 {'format': 'bestaudio', 'title': True, "cookiefile": config.COOKIE_PATH})
             r = downloader.extract_info(
                 song.info.webpage_url, download=False)
@@ -111,12 +111,12 @@ class AudioController(object):
             track = await self.search_youtube(title)
 
         try:
-            downloader = youtube_dl.YoutubeDL(
-                {'format': 'bestaudio', 'title': True})
+            downloader = youtube_dlc.YoutubeDL(
+                {'format': 'bestaudio', 'title': True, "cookiefile": config.COOKIE_PATH})
             r = downloader.extract_info(
                 track, download=False)
         except:
-            downloader = youtube_dl.YoutubeDL({'title': True, "cookiefile": config.COOKIE_PATH})
+            downloader = youtube_dlc.YoutubeDL({'title': True, "cookiefile": config.COOKIE_PATH})
             r = downloader.extract_info(
                 track, download=False)
 
@@ -147,7 +147,7 @@ class AudioController(object):
                 "cookiefile": config.COOKIE_PATH
             }
 
-            with youtube_dl.YoutubeDL(options) as ydl:
+            with youtube_dlc.YoutubeDL(options) as ydl:
                 r = ydl.extract_info(url, download=False)
 
                 for entry in r['entries']:
@@ -181,7 +181,7 @@ class AudioController(object):
             "cookiefile": config.COOKIE_PATH
         }
 
-        with youtube_dl.YoutubeDL(options) as ydl:
+        with youtube_dlc.YoutubeDL(options) as ydl:
             r = ydl.extract_info(title, download=False)
 
         videocode = r['entries'][0]['id']

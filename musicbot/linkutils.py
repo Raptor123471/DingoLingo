@@ -138,6 +138,7 @@ class Sites(Enum):
 class Playlist_Types(Enum):
     Spotify_Playlist = "Spotify Playlist"
     YouTube_Playlist = "YouTube Playlist"
+    BandCamp_Playlist = "BandCamp Playlist"
     Unknown = "Unknown"
 
 
@@ -184,5 +185,8 @@ def identify_playlist(url):
 
     if "https://open.spotify.com/playlist"in url or "https://open.spotify.com/album" in url:
         return Playlist_Types.Spotify_Playlist
+
+    if "bandcamp.com/album/" in url:
+        return Playlist_Types.BandCamp_Playlist
 
     return Playlist_Types.Unknown

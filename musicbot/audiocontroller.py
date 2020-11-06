@@ -80,24 +80,16 @@ class AudioController(object):
 
         if is_playlist != linkutils.Playlist_Types.Unknown:
 
-            if len(self.playlist.playque) == 0:
-                start = True
-            else:
-                start = False
+            queue_scan = len(self.playlist.playque)
 
             await self.process_playlist(is_playlist, track)
 
-            if is_playlist == linkutils.Playlist_Types.Spotify_Playlist:
-                song = Song(linkutils.Origins.Playlist,
-                            linkutils.Sites.Spotify, "", "", "", "", "")
-
-            if is_playlist == linkutils.Playlist_Types.YouTube_Playlist:
-                song = Song(linkutils.Origins.Playlist,
-                            linkutils.Sites.YouTube, "", "", "", "", "")
-
-            if start == True:
+            if queue_scan == 0:
                 await self.play_song(self.playlist.playque[0])
                 print("Playing {}".format(track))
+
+            song = Song(linkutils.Origins.Playlist,
+                        linkutils.Sites.Unknown)
             return song
 
         if host == linkutils.Sites.Unknown:
@@ -116,12 +108,13 @@ class AudioController(object):
             r = downloader.extract_info(
                 track, download=False)
         except:
-            downloader = youtube_dlc.YoutubeDL({'title': True, "cookiefile": config.COOKIE_PATH})
+            downloader = youtube_dlc.YoutubeDL(
+                {'title': True, "cookiefile": config.COOKIE_PATH})
             r = downloader.extract_info(
                 track, download=False)
 
-        song = Song(linkutils.Origins.Default, host, r.get('url'), r.get('uploader'), r.get(
-            'title'), r.get('duration'), r.get('webpage_url'))
+        song = Song(linkutils.Origins.Default, host, base_url=r.get('url'), uploader=r.get('uploader'), title=r.get(
+            'title'), duration=r.get('duration'), webpage_url=r.get('webpage_url'))
 
         self.playlist.add(song)
         if len(self.playlist.playque) == 1:
@@ -156,7 +149,7 @@ class AudioController(object):
                         entry['id'])
 
                     song = Song(linkutils.Origins.Playlist,
-                                linkutils.Sites.YouTube, "", "", "", "", link)
+                                linkutils.Sites.YouTube, webpage_url=link)
 
                     self.playlist.add(song)
 
@@ -164,8 +157,25 @@ class AudioController(object):
             links = linkutils.get_spotify_playlist(url)
             for link in links:
                 song = Song(linkutils.Origins.Playlist,
-                            linkutils.Sites.Spotify, "", "", "", "", link)
+                            linkutils.Sites.Spotify, webpage_url=link)
                 self.playlist.add(song)
+
+        if playlist_type == linkutils.Playlist_Types.BandCamp_Playlist:
+            options = {
+                'format': 'bestaudio/best',
+                'extract_flat': True
+            }
+            with youtube_dlc.YoutubeDL(options) as ydl:
+                r = ydl.extract_info(url, download=False)
+
+                for entry in r['entries']:
+
+                    link = entry.get('url')
+
+                    song = Song(linkutils.Origins.Playlist,
+                                linkutils.Sites.Bandcamp, webpage_url=link)
+
+                    self.playlist.add(song)
 
     async def search_youtube(self, title):
         """Searches youtube for the video title and returns the first results video link"""

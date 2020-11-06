@@ -80,14 +80,16 @@ class AudioController(object):
 
         if is_playlist != linkutils.Playlist_Types.Unknown:
 
+            queue_scan = len(self.playlist.playque)
+
             await self.process_playlist(is_playlist, track)
+
+            if queue_scan == 0:
+                await self.play_song(self.playlist.playque[0])
+                print("Playing {}".format(track))
 
             song = Song(linkutils.Origins.Playlist,
                         linkutils.Sites.Unknown)
-
-            if len(self.playlist.playque) == 0:
-                await self.play_song(self.playlist.playque[0])
-                print("Playing {}".format(track))
             return song
 
         if host == linkutils.Sites.Unknown:

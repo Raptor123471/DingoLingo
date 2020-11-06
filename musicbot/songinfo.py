@@ -3,7 +3,7 @@ from config import config
 
 
 class Song():
-    def __init__(self, origin, host, base_url, uploader, title, duration, webpage_url):
+    def __init__(self, origin, host, base_url = None, uploader = None, title = None, duration = None, webpage_url = None):
         self.host = host
         self.origin = origin
         self.base_url = base_url

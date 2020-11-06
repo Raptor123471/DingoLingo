@@ -116,7 +116,8 @@ class AudioController(object):
             r = downloader.extract_info(
                 track, download=False)
         except:
-            downloader = youtube_dlc.YoutubeDL({'title': True, "cookiefile": config.COOKIE_PATH})
+            downloader = youtube_dlc.YoutubeDL(
+                {'title': True, "cookiefile": config.COOKIE_PATH})
             r = downloader.extract_info(
                 track, download=False)
 
@@ -166,6 +167,23 @@ class AudioController(object):
                 song = Song(linkutils.Origins.Playlist,
                             linkutils.Sites.Spotify, "", "", "", "", link)
                 self.playlist.add(song)
+
+        if playlist_type == linkutils.Playlist_Types.BandCamp_Playlist:
+            options = {
+                'format': 'bestaudio/best',
+                'extract_flat': True
+            }
+            with youtube_dlc.YoutubeDL(options) as ydl:
+                r = ydl.extract_info(url, download=False)
+
+                for entry in r['entries']:
+
+                    link = entry.get('url')
+
+                    song = Song(linkutils.Origins.Playlist,
+                                linkutils.Sites.Bandcamp, "", "", "", "", link)
+
+                    self.playlist.add(song)
 
     async def search_youtube(self, title):
         """Searches youtube for the video title and returns the first results video link"""

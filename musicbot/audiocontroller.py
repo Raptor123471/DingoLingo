@@ -80,22 +80,12 @@ class AudioController(object):
 
         if is_playlist != linkutils.Playlist_Types.Unknown:
 
-            if len(self.playlist.playque) == 0:
-                start = True
-            else:
-                start = False
-
             await self.process_playlist(is_playlist, track)
 
-            if is_playlist == linkutils.Playlist_Types.Spotify_Playlist:
-                song = Song(linkutils.Origins.Playlist,
-                            linkutils.Sites.Spotify)
+            song = Song(linkutils.Origins.Playlist,
+                        linkutils.Sites.Unknown)
 
-            if is_playlist == linkutils.Playlist_Types.YouTube_Playlist:
-                song = Song(linkutils.Origins.Playlist,
-                            linkutils.Sites.YouTube)
-
-            if start == True:
+            if len(self.playlist.playque) == 0:
                 await self.play_song(self.playlist.playque[0])
                 print("Playing {}".format(track))
             return song

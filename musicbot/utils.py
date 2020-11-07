@@ -55,6 +55,21 @@ async def is_connected(ctx):
     except:
         return None
 
+async def play_check(ctx):
+    if config.COMMAND_CHANNEL != 0:
+        if config.COMMAND_CHANNEL != ctx.message.channel.id:
+            await ctx.send(config.WRONG_CHANNEL_MESSAGE)
+            return False
+
+    if config.USER_MUST_BE_IN_VC == True:
+        author_voice = ctx.message.author.voice
+        bot_vc = ctx.guild.voice_client.channel
+        if author_voice == None:
+            await ctx.send(config.USER_NOT_IN_VC_MESSAGE)
+            return False
+        elif ctx.message.author.voice.channel != bot_vc:
+            await ctx.send(config.USER_NOT_IN_VC_MESSAGE)
+            return False
 
 def _js_parseInt(string):
     return int(''.join([x for x in string if x.isdigit()]))

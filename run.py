@@ -36,20 +36,30 @@ async def on_ready():
     print(config.STARTUP_MESSAGE)
     await bot.change_presence(status=discord.Status.online, activity=discord.Game(name="Music, type {}help".format(config.BOT_PREFIX)))
 
-    config.BOT_VERISON = "0.9.8"
+    config.BOT_VERISON = "0.9.9"
 
     for guild in bot.guilds:
 
         guild_to_audiocontroller[guild] = AudioController(bot, guild)
 
-        await guild_to_audiocontroller[guild].register_voice_channel(guild.voice_channels[0])
+        vc_channels = guild.voice_channels
 
-        await General.udisconnect(self=None, ctx=None, guild=guild)
-
-        try:
+        if config.START_VOICE_CHANNEL != 0:
+            for vc in vc_channels:
+                if vc.id == config.START_VOICE_CHANNEL:
+                    await guild_to_audiocontroller[guild].register_voice_channel(vc_channels[vc_channels.index(vc)])
+                    await General.udisconnect(self=None, ctx=None, guild=guild)
+                    try:
+                        await guild_to_audiocontroller[guild].register_voice_channel(vc_channels[vc_channels.index(vc)])
+                    except:
+                        pass
+        else:
             await guild_to_audiocontroller[guild].register_voice_channel(guild.voice_channels[0])
-        except:
-            pass
+            await General.udisconnect(self=None, ctx=None, guild=guild)
+            try:
+                await guild_to_audiocontroller[guild].register_voice_channel(guild.voice_channels[0])
+            except:
+                pass
 
         print("Joined {}".format(guild.name))
 

@@ -23,14 +23,21 @@ class Song():
         def format_output(self, playtype):
 
             embed = discord.Embed(title=":musical_note:  __**{}**__  :musical_note:".format(
-                self.title), description="***{}***".format(playtype), url=self.webpage_url, color=0x4dd4d0)
+                self.title), description="***{}***".format(playtype), url=self.webpage_url, color=config.EMBED_COLOR)
 
             if self.thumbnail is not None:
                 embed.set_thumbnail(url=self.thumbnail)
 
             embed.add_field(name=config.SONGINFO_UPLOADER,
                             value=self.uploader, inline=False)
-            embed.add_field(name=config.SONGINFO_DURATION,
-                            value="{}{}".format(self.duration, config.SONGINFO_SECONDS), inline=False)
+
+            print(self.duration)
+
+            if self.duration is not None:
+                embed.add_field(name=config.SONGINFO_DURATION,
+                                value="{}{}".format(self.duration, config.SONGINFO_SECONDS), inline=False)
+            else:
+                embed.add_field(name=config.SONGINFO_DURATION,
+                                value="Unknown", inline=False)
 
             return embed

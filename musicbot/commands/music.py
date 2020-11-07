@@ -45,9 +45,9 @@ class Music(commands.Cog):
         if song.origin == linkutils.Origins.Default:
 
             if len(audiocontroller.playlist.playque) == 1:
-                await ctx.send(song.info.format_output("Now playing"))
+                await ctx.send(embed=song.info.format_output("Now playing"))
             else:
-                await ctx.send(song.info.format_output("Added to queue"))
+                await ctx.send(embed=song.info.format_output("Added to queue"))
 
         elif song.origin == linkutils.Origins.Playlist:
             await ctx.send("Queued playlist :page_with_curl:")
@@ -183,7 +183,7 @@ class Music(commands.Cog):
         song = utils.guild_to_audiocontroller[current_guild].current_song
         if song is None:
             return
-        await ctx.send(song.info.format_output("Songinfo"))
+        await ctx.send(embed=song.info.format_output("Song Info"))
 
     @commands.command(name='history', description=config.HELP_HISTORY_LONG, help=config.HELP_HISTORY_SHORT)
     async def _history(self, ctx):

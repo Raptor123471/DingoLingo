@@ -38,6 +38,6 @@ class Song():
                                 value="{}{}".format(self.duration, config.SONGINFO_SECONDS), inline=False)
             else:
                 embed.add_field(name=config.SONGINFO_DURATION,
-                                value="Unknown", inline=False)
+                                value=config.SONGINFO_UNKNOWN_DURATION , inline=False)
 
             return embed

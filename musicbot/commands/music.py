@@ -42,18 +42,18 @@ class Music(commands.Cog):
         song = await audiocontroller.process_song(track)
 
         if song is None:
-            await ctx.send("Unknown site :question:")
+            await ctx.send(config.SONGINFO_UNKNOWN_SITE)
             return
 
         if song.origin == linkutils.Origins.Default:
 
             if len(audiocontroller.playlist.playque) == 1:
-                await ctx.send(embed=song.info.format_output("Now playing"))
+                await ctx.send(embed=song.info.format_output(config.SONGINFO_NOW_PLAYING))
             else:
-                await ctx.send(embed=song.info.format_output("Added to queue"))
+                await ctx.send(embed=song.info.format_output(config.SONGINFO_QUEUE_ADDED))
 
         elif song.origin == linkutils.Origins.Playlist:
-            await ctx.send("Queued playlist :page_with_curl:")
+            await ctx.send(config.SONGINFO_PLAYLIST_QUEUED)
 
     @commands.command(name='loop', description=config.HELP_LOOP_LONG, help=config.HELP_LOOP_SHORT, aliases=['l', 'L'])
     async def _loop(self, ctx):
@@ -200,7 +200,7 @@ class Music(commands.Cog):
 
         if await utils.play_check(ctx) == False:
             return
-            
+
         if current_guild is None:
             await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
             return
@@ -216,7 +216,7 @@ class Music(commands.Cog):
         song = utils.guild_to_audiocontroller[current_guild].current_song
         if song is None:
             return
-        await ctx.send(embed=song.info.format_output("Song Info"))
+        await ctx.send(embed=song.info.format_output(config.SONGINFO_SONGINFO))
 
     @commands.command(name='history', description=config.HELP_HISTORY_LONG, help=config.HELP_HISTORY_SHORT)
     async def _history(self, ctx):

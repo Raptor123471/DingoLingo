@@ -44,6 +44,7 @@ For Linux:
 1. Download release if available, alternatively download repository zip
 2. Complete Prerequisites
 3. Start ```run.py``` in project root
+4. See configuration options in /config/config.py
 
 Button play feature:
 * Set emoji name in ```config/config.py``` to enable this feature

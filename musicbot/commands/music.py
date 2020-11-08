@@ -82,7 +82,7 @@ class Music(commands.Cog):
 
         if await utils.play_check(ctx) == False:
             return
-        
+
         if current_guild is None:
             await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
             return
@@ -99,7 +99,7 @@ class Music(commands.Cog):
 
         if await utils.play_check(ctx) == False:
             return
-            
+
         if current_guild is None:
             await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
             return
@@ -111,6 +111,10 @@ class Music(commands.Cog):
     @commands.command(name='queue', description=config.HELP_QUEUE_LONG, help=config.HELP_QUEUE_SHORT, aliases=['playlist', 'q', 'Q'])
     async def _queue(self, ctx):
         current_guild = utils.get_guild(self.bot, ctx.message)
+
+        if await utils.play_check(ctx) == False:
+            return
+            
         if current_guild is None:
             await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
             return
@@ -210,6 +214,10 @@ class Music(commands.Cog):
     @commands.command(name='songinfo', description=config.HELP_SONGINFO_LONG, help=config.HELP_SONGINFO_SHORT, aliases=["np"])
     async def _songinfo(self, ctx):
         current_guild = utils.get_guild(self.bot, ctx.message)
+
+        if await utils.play_check(ctx) == False:
+            return
+
         if current_guild is None:
             await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
             return
@@ -221,6 +229,10 @@ class Music(commands.Cog):
     @commands.command(name='history', description=config.HELP_HISTORY_LONG, help=config.HELP_HISTORY_SHORT)
     async def _history(self, ctx):
         current_guild = utils.get_guild(self.bot, ctx.message)
+
+        if await utils.play_check(ctx) == False:
+            return
+            
         if current_guild is None:
             await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
             return

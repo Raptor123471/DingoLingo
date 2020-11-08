@@ -6,8 +6,12 @@ BOT_PREFIX = "$"
 DEFAULT_NICKNAME = ""
 
 BUTTON_NAME = ""
+EMBED_COLOR = 0x4dd4d0  #replace afer'0x' with desired hex code ex. '#ff0188' >> '0xff0188'
 
 SUPPORTED_EXTENSIONS = ('.webm', '.mp4', '.mp3', '.avi', '.wav', '.m4v', '.ogg')
+START_VOICE_CHANNEL = 0 #must be channel id
+COMMAND_CHANNEL = 0 #must be channel id
+USER_MUST_BE_IN_VC = False # must be capitalized
 
 COOKIE_PATH = "/config/cookies/cookies.txt"
 
@@ -15,6 +19,8 @@ STARTUP_MESSAGE = "Starting Bot..."
 STARTUP_COMPLETE_MESSAGE = "Startup Complete"
 
 NO_GUILD_MESSAGE = 'Error: Please join a voice channel or enter the command in guild chat'
+USER_NOT_IN_VC_MESSAGE = "Error: Please join the active voice channel to use commands"
+WRONG_CHANNEL_MESSAGE = "Error: Please use configured command channel"
 NOT_CONNECTED_MESSAGE = "Error: Bot not connected to any voice channel"
 ALREADY_CONNECTED_MESSAGE = "Error: Already connected to a voice channel"
 CHANNEL_NOT_FOUND_MESSAGE = "Error: Could not find channel "
@@ -34,6 +40,12 @@ SONGINFO_DURATION = "Duration: "
 SONGINFO_SECONDS = "s"
 SONGINFO_LIKES = "Likes: "
 SONGINFO_DISLIKES = "Dislikes: "
+SONGINFO_NOW_PLAYING = "Now Playing"
+SONGINFO_QUEUE_ADDED = "Added to queue"
+SONGINFO_SONGINFO = "Song info"
+SONGINFO_UNKNOWN_SITE = "Unknown site :question:"
+SONGINFO_PLAYLIST_QUEUED = "Queued playlist :page_with_curl:"
+SONGINFO_UNKNOWN_DURATION = "Unknown"
 
 HELP_ADDBOT_SHORT = "Add Bot to another server"
 HELP_ADDBOT_LONG = "Gives you the link for adding this bot to another server of yours."

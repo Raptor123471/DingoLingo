@@ -1,27 +1,43 @@
+import discord
 from discord.ext import commands
 from config import config
 
 
 class Song():
-    def __init__(self, origin, host, base_url = None, uploader = None, title = None, duration = None, webpage_url = None):
+    def __init__(self, origin, host, base_url=None, uploader=None, title=None, duration=None, webpage_url=None, thumbnail=None):
         self.host = host
         self.origin = origin
         self.base_url = base_url
-        self.info = self.Sinfo(uploader, title, duration, webpage_url)
+        self.info = self.Sinfo(uploader, title, duration,
+                               webpage_url, thumbnail)
 
     class Sinfo:
-        def __init__(self, uploader, title, duration, webpage_url):
+        def __init__(self, uploader, title, duration, webpage_url, thumbnail):
             self.uploader = uploader
             self.title = title
             self.duration = duration
             self.webpage_url = webpage_url
+            self.thumbnail = thumbnail
             self.output = ""
 
         def format_output(self, playtype):
-            self.output = "> :musical_note: **" + playtype + \
-                ": " + self.title + "** :musical_note:\n```"
-            self.output += config.SONGINFO_UPLOADER + str(self.uploader) + "\n"
-            self.output += config.SONGINFO_DURATION + \
-                str(self.duration) + config.SONGINFO_SECONDS + "\n"
-            self.output += "```\n" + "<" + str(self.webpage_url) + ">"
-            return self.output
+
+            embed = discord.Embed(title=":musical_note:  __**{}**__  :musical_note:".format(
+                self.title), description="***{}***".format(playtype), url=self.webpage_url, color=config.EMBED_COLOR)
+
+            if self.thumbnail is not None:
+                embed.set_thumbnail(url=self.thumbnail)
+
+            embed.add_field(name=config.SONGINFO_UPLOADER,
+                            value=self.uploader, inline=False)
+
+            print(self.duration)
+
+            if self.duration is not None:
+                embed.add_field(name=config.SONGINFO_DURATION,
+                                value="{}{}".format(self.duration, config.SONGINFO_SECONDS), inline=False)
+            else:
+                embed.add_field(name=config.SONGINFO_DURATION,
+                                value=config.SONGINFO_UNKNOWN_DURATION , inline=False)
+
+            return embed

@@ -65,6 +65,7 @@ class AudioController(object):
             song.info.title = r.get('title')
             song.info.duration = r.get('duration')
             song.info.webpage_url = r.get('webpage_url')
+            song.info.thumbnail = r.get('thumbnails')[0]['url']
 
         self.playlist.add_name(song.info.title)
         self.current_song = song
@@ -113,8 +114,14 @@ class AudioController(object):
             r = downloader.extract_info(
                 track, download=False)
 
+
+        if r.get('thumbnails') is not None:
+            thumbnail = r.get('thumbnails')[len(r.get('thumbnails')) - 1]['url']
+        else:
+            thumbnail = None
+
         song = Song(linkutils.Origins.Default, host, base_url=r.get('url'), uploader=r.get('uploader'), title=r.get(
-            'title'), duration=r.get('duration'), webpage_url=r.get('webpage_url'))
+            'title'), duration=r.get('duration'), webpage_url=r.get('webpage_url'), thumbnail=thumbnail)
 
         self.playlist.add(song)
         if len(self.playlist.playque) == 1:

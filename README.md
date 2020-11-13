@@ -1,5 +1,5 @@
 
-<img width="600" height="326" src="https://i.imgur.com/HCJl72U.gif">
+<img width="585" height="318" src="https://i.imgur.com/HCJl72U.gif">
 
 
 # DingoLingo
@@ -10,7 +10,7 @@ A Discord music bot written in Python with support for Youtube, SoundCloud, Spot
 * This bot is in a pre-relase state and I would consider incomplete. Known problems are listed in Issues. If you are interested in this project feel free to submit an Issue or ask a question in the demo server.
 
 ### DEMO SERVER:
-https://discord.gg/4angwPm
+#### https://discord.gg/4angwPm
 
 
 <h3>What's Coming?</h1>

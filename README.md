@@ -1,5 +1,5 @@
 
-![features](https://i.imgur.com/HCJl72U.gif)
+<img width="600" height="326" src="https://i.imgur.com/HCJl72U.gif">
 
 
 # DingoLingo

@@ -1,5 +1,5 @@
 
-<img width="585" height="318" src="https://i.imgur.com/HCJl72U.gif">
+<img src="https://i.imgur.com/Urnk21Y.gif">
 
 
 # DingoLingo

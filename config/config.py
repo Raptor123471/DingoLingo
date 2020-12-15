@@ -3,15 +3,10 @@ SPOTIFY_ID: str = ""
 SPOTIFY_SECRET: str = ""
 
 BOT_PREFIX = "$"
-DEFAULT_NICKNAME = ""
 
-BUTTON_NAME = ""
 EMBED_COLOR = 0x4dd4d0  #replace afer'0x' with desired hex code ex. '#ff0188' >> '0xff0188'
 
-SUPPORTED_EXTENSIONS = ('.webm', '.mp4', '.mp3', '.avi', '.wav', '.m4v', '.ogg')
-START_VOICE_CHANNEL = 0 #must be channel id
-COMMAND_CHANNEL = 0 #must be channel id
-USER_MUST_BE_IN_VC = False # must be capitalized
+SUPPORTED_EXTENSIONS = ('.webm', '.mp4', '.mp3', '.avi', '.wav', '.m4v', '.ogg', '.mov')
 
 COOKIE_PATH = "/config/cookies/cookies.txt"
 

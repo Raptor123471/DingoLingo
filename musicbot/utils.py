@@ -3,6 +3,9 @@ from config import config
 # A dictionary that remembers which guild belongs to which audiocontroller
 guild_to_audiocontroller = {}
 
+# A dictionary that remembers which settings belongs to which guild
+guild_to_settings = {}
+
 
 def get_guild(bot, command):
     """Gets the guild a command belongs to. Useful, if the command was sent via pm."""
@@ -55,13 +58,20 @@ async def is_connected(ctx):
     except:
         return None
 
+
 async def play_check(ctx):
-    if config.COMMAND_CHANNEL != 0:
-        if config.COMMAND_CHANNEL != ctx.message.channel.id:
+
+    sett = guild_to_settings[ctx.guild]
+
+    cm_channel = sett.get('command_channel')
+    vc_rule = sett.get('user_must_be_in_vc')
+
+    if cm_channel != 0:
+        if cm_channel != ctx.message.channel.id:
             await ctx.send(config.WRONG_CHANNEL_MESSAGE)
             return False
 
-    if config.USER_MUST_BE_IN_VC == True:
+    if vc_rule == True:
         author_voice = ctx.message.author.voice
         bot_vc = ctx.guild.voice_client.channel
         if author_voice == None:
@@ -70,15 +80,3 @@ async def play_check(ctx):
         elif ctx.message.author.voice.channel != bot_vc:
             await ctx.send(config.USER_NOT_IN_VC_MESSAGE)
             return False
-
-def _js_parseInt(string):
-    return int(''.join([x for x in string if x.isdigit()]))
-
-
-def YTDurationToSeconds(duration):
-    match = re.match(
-        'PT(\d+H)?(\d+M)?(\d+S)?', duration).groups()
-    hours = _js_parseInt(match[0]) if match[0] else 0
-    minutes = _js_parseInt(match[1]) if match[1] else 0
-    seconds = _js_parseInt(match[2]) if match[2] else 0
-    return hours * 3600 + minutes * 60 + seconds

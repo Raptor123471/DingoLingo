@@ -50,8 +50,8 @@ For Linux:
 3. Start ```run.py``` in project root
 4. See configuration options in /config/config.py
 
-Button play feature:
-* Set emoji name in ```config/config.py``` to enable this feature
+Button play plugin:
+* Set emoji with the setting command to enable this feature
 * Emote must be in same server as bot
 * Needs Manage Message permissions
 
@@ -132,6 +132,14 @@ $stop
 * Stops the current song and clears the playqueue.
 
 ### General
+
+```
+$setting / $set / $st
+```
+* No Arguments: Lists server settings
+* Arguments: (setting) (value)
+* Example: $setting start_voice_channel ChannelName
+* Administrators only
 
 ```
 $c

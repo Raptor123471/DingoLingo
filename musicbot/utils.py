@@ -66,7 +66,7 @@ async def play_check(ctx):
     cm_channel = sett.get('command_channel')
     vc_rule = sett.get('user_must_be_in_vc')
 
-    if cm_channel != 0:
+    if cm_channel != None:
         if cm_channel != ctx.message.channel.id:
             await ctx.send(config.WRONG_CHANNEL_MESSAGE)
             return False

@@ -18,8 +18,8 @@ class Settings():
         self.settings_template = {
             "id": 0,
             "default_nickname": "",
-            "command_channel": 0,
-            "start_voice_channel": 0,
+            "command_channel": None,
+            "start_voice_channel": None,
             "user_must_be_in_vc": True,
             "button_emote": "",
         }
@@ -88,14 +88,13 @@ class Settings():
             if key in exclusion_keys:
                 continue
 
-            # False evaluates  to 0, therefore it IS 0
-            if self.config.get(key) == "" or self.config.get(key) is 0:
+            if self.config.get(key) == "" or self.config.get(key) == None:
 
                 embed.add_field(name=key, value="Not Set", inline=False)
                 continue
 
             elif key == "start_voice_channel":
-                if self.config.get(key) != 0:
+                if self.config.get(key) != None:
                     found = False
                     for vc in self.guild.voice_channels:
                         if vc.id == self.config.get(key):
@@ -109,7 +108,7 @@ class Settings():
                     continue
 
             elif key == "command_channel":
-                if self.config.get(key) != 0:
+                if self.config.get(key) != None:
                     found = False
                     for chan in self.guild.text_channels:
                         if chan.id == self.config.get(key):

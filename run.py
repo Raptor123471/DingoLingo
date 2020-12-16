@@ -49,7 +49,7 @@ async def on_ready():
         await guild.me.edit(nick=guild_to_settings[guild].get('default_nickname'))
         start_vc = guild_to_settings[guild].get('start_voice_channel')
 
-        if start_vc != 0:
+        if start_vc != None:
             for vc in vc_channels:
                 if vc.id == start_vc:
                     await guild_to_audiocontroller[guild].register_voice_channel(vc_channels[vc_channels.index(vc)])

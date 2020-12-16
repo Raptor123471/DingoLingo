@@ -134,7 +134,7 @@ $stop
 ### General
 
 ```
-$setting / $set / $st
+$settings /$setting/ $set / $st
 ```
 * No Arguments: Lists server settings
 * Arguments: (setting) (value)

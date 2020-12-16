@@ -74,16 +74,54 @@ class Settings():
     def get(self, setting):
         return self.config[setting]
 
-    def format(self):
+    async def format(self):
         embed = discord.Embed(
-            title="Settings", color=config.EMBED_COLOR)
+            title="Settings", description=self.guild.name, color=config.EMBED_COLOR)
+
+        embed.set_thumbnail(url=self.guild.icon_url)
+        embed.set_footer(
+            text="Usage: {}set setting_name value".format(config.BOT_PREFIX))
+
+        exclusion_keys = ['id']
 
         for key in self.config.keys():
-            if self.config.get(key) == "":
-                embed.add_field(name=key, value="None", inline=False)
-            else:
-                embed.add_field(
-                    name=key, value=self.config.get(key), inline=False)
+            if key in exclusion_keys:
+                continue
+
+            # False evaluates  to 0, therefore it IS 0
+            if self.config.get(key) == "" or self.config.get(key) is 0:
+
+                embed.add_field(name=key, value="Not Set", inline=False)
+                continue
+
+            elif key == "start_voice_channel":
+                if self.config.get(key) != 0:
+                    found = False
+                    for vc in self.guild.voice_channels:
+                        if vc.id == self.config.get(key):
+                            embed.add_field(
+                                name=key, value=vc.name, inline=False)
+                            found = True
+                    if found == False:
+                        embed.add_field(
+                            name=key, value="Invalid VChannel", inline=False)
+
+                    continue
+
+            elif key == "command_channel":
+                if self.config.get(key) != 0:
+                    found = False
+                    for chan in self.guild.text_channels:
+                        if chan.id == self.config.get(key):
+                            embed.add_field(
+                                name=key, value=chan.name, inline=False)
+                            found = True
+                    if found == False:
+                        embed.add_field(
+                            name=key, value="Invalid Channel", inline=False)
+                    continue
+
+            embed.add_field(name=key, value=self.config.get(key), inline=False)
 
         return embed
 
@@ -99,35 +137,58 @@ class Settings():
         func = switcher.get(setting)
 
         if func is None:
-            return False
+            return None
         else:
-            return await func()
+            answer = await func()
+            if answer == None:
+                return True
+            else:
+                return answer
 
     # -----setting methods-----
 
     async def default_nickname(self, setting, value, ctx):
+
+        if value.lower() == "unset":
+            self.config[setting] = ""
+            return
+
         if len(value) > 32:
-            return "Error: Nickname is too long"
+            await ctx.send("`Error: Nickname exceeds character limit`\nUsage: {}set {} nickname\nOther options: unset".format(config.BOT_PREFIX, setting))
+            return False
         else:
             self.config[setting] = value
+            await self.guild.me.edit(nick=value)
 
     async def command_channel(self, setting, value, ctx):
+
+        if value.lower() == "unset":
+            self.config[setting] = ""
+            return
+
         found = False
         for chan in self.guild.text_channels:
             if chan.name.lower() == value.lower():
                 self.config[setting] = chan.id
                 found = True
         if found == False:
-            await ctx.send("Error: Channel name not found")
+            await ctx.send("`Error: Channel name not found`\nUsage: {}set {} channelname\nOther options: unset".format(config.BOT_PREFIX, setting))
+            return False
 
     async def start_voice_channel(self, setting, value, ctx):
+
+        if value.lower() == "unset":
+            self.config[setting] = ""
+            return
+
         found = False
         for vc in self.guild.voice_channels:
             if vc.name.lower() == value.lower():
                 self.config[setting] = vc.id
                 found = True
         if found == False:
-            await ctx.send("Error: Voice channel name not found")
+            await ctx.send("`Error: Voice channel name not found`\nUsage: {}set {} vchannelname\nOther options: unset".format(config.BOT_PREFIX, setting))
+            return False
 
     async def user_must_be_in_vc(self, setting, value, ctx):
         if value.lower() == "true":
@@ -135,11 +196,18 @@ class Settings():
         elif value.lower() == "false":
             self.config[setting] = False
         else:
-            await ctx.send("Error: Value must be True/False")
+            await ctx.send("`Error: Value must be True/False`\nUsage: {}set {} True/False".format(config.BOT_PREFIX, setting))
+            return False
 
     async def button_emote(self, setting, value, ctx):
+
+        if value.lower() == "unset":
+            self.config[setting] = ""
+            return
+
         emoji = discord.utils.get(self.guild.emojis, name=value)
         if emoji is None:
-            await ctx.send("Error: Emote name not found on server")
+            await ctx.send("`Error: Emote name not found on server`\nUsage: {}set {} emotename\nOther options: unset".format(config.BOT_PREFIX, setting))
+            return False
         else:
             self.config[setting] = value

@@ -44,15 +44,14 @@ class Button(commands.Cog):
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, reaction):
 
-        serv = self.bot.get_guild(reaction.guild_id)
-
-        sett = utils.guild_to_settings[serv]
+        sett = utils.guild_to_settings[message.guild]
         button_name = sett.get('button_emote')
 
         if button_name == "":
             return
 
         if reaction.emoji.name == button_name:
+            serv = self.bot.get_guild(reaction.guild_id)
             channels = serv.text_channels
 
             for chan in channels:

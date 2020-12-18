@@ -49,6 +49,9 @@ HELP_CONNECT_LONG = "Connects the bot to the voice channel you are currently in"
 HELP_DISCONNECT_SHORT = "Disonnect bot from voicechannel"
 HELP_DISCONNECT_LONG = "Disconnect the bot from the voice channel and stop audio."
 
+HELP_SETTINGS_SHORT = "View and set bot settings"
+HELP_SETTINGS_LONG = "View and set bot settings in the server. Usage: {}settings setting_name value".format(BOT_PREFIX)
+
 HELP_HISTORY_SHORT = "Show history of songs"
 HELP_HISTORY_LONG = "Shows the " + str(MAX_TRACKNAME_HISTORY_LENGTH) + " last played songs."
 HELP_PAUSE_SHORT = "Pause Music"

@@ -162,7 +162,7 @@ class Settings():
     async def command_channel(self, setting, value, ctx):
 
         if value.lower() == "unset":
-            self.config[setting] = ""
+            self.config[setting] = None
             return
 
         found = False
@@ -177,7 +177,7 @@ class Settings():
     async def start_voice_channel(self, setting, value, ctx):
 
         if value.lower() == "unset":
-            self.config[setting] = ""
+            self.config[setting] = None
             return
 
         found = False

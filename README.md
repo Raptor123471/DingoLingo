@@ -138,6 +138,7 @@ $settings /$setting/ $set / $st
 ```
 * No Arguments: Lists server settings
 * Arguments: (setting) (value)
+* Use "unset" as an argument to reset a setting
 * Example: $setting start_voice_channel ChannelName
 * Administrators only
 

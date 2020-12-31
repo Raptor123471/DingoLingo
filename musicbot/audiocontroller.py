@@ -103,6 +103,9 @@ class AudioController(object):
             title = linkutils.convert_spotify(track)
             track = await self.search_youtube(title)
 
+        if host == linkutils.Sites.YouTube:
+            track = track.split("&list=")[0]
+
         try:
             downloader = youtube_dlc.YoutubeDL(
                 {'format': 'bestaudio', 'title': True, "cookiefile": config.COOKIE_PATH})

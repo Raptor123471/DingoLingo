@@ -3,17 +3,11 @@ from discord.ext import commands
 
 from musicbot import utils
 from musicbot import linkutils
-from config import config
 
 from musicbot.commands.general import General
 
 
 class Button(commands.Cog):
-    """ A collection of the commands related to music playback.
-
-        Attributes:
-            bot: The instance of the bot that is executing the commands.
-    """
 
     def __init__(self, bot):
         self.bot = bot
@@ -21,7 +15,10 @@ class Button(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
 
-        if config.BUTTON_NAME == "":
+        sett = utils.guild_to_settings[message.guild]
+        button_name = sett.get('button_emote')
+
+        if button_name == "":
             return
 
         if message.author == self.bot.user:
@@ -30,7 +27,7 @@ class Button(commands.Cog):
         host = linkutils.identify_url(message.content)
 
         guild = message.guild
-        emoji = discord.utils.get(guild.emojis, name=config.BUTTON_NAME)
+        emoji = discord.utils.get(guild.emojis, name=button_name)
 
         if host == linkutils.Sites.YouTube:
             if emoji:
@@ -47,11 +44,15 @@ class Button(commands.Cog):
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, reaction):
 
-        if config.BUTTON_NAME == "":
+        serv = self.bot.get_guild(reaction.guild_id)
+
+        sett = utils.guild_to_settings[serv]
+        button_name = sett.get('button_emote')
+
+        if button_name == "":
             return
 
-        if reaction.emoji.name == config.BUTTON_NAME:
-            serv = self.bot.get_guild(reaction.guild_id)
+        if reaction.emoji.name == button_name:
             channels = serv.text_channels
 
             for chan in channels:

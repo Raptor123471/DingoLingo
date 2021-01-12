@@ -1,9 +1,10 @@
 from discord.ext import commands
+from discord.ext.commands import has_permissions
 
 from config import config
 from musicbot import utils
 from musicbot.audiocontroller import AudioController
-from musicbot.utils import guild_to_audiocontroller
+from musicbot.utils import guild_to_audiocontroller, guild_to_settings
 
 
 class General(commands.Cog):
@@ -89,8 +90,7 @@ class General(commands.Cog):
 
         await ctx.send("{} Connected to {}".format(":white_check_mark:", ctx.author.voice.channel.name))
 
-
-    @commands.command(name='changechannel',description=config.HELP_CHANGECHANNEL_LONG, help=config.HELP_CHANGECHANNEL_SHORT, aliases=['cc'])
+    @commands.command(name='changechannel', description=config.HELP_CHANGECHANNEL_LONG, help=config.HELP_CHANGECHANNEL_SHORT, aliases=['cc'])
     async def _change_channel(self, ctx):
         current_guild = utils.get_guild(self.bot, ctx.message)
 
@@ -115,9 +115,29 @@ class General(commands.Cog):
     async def _ping(self, ctx):
         await ctx.send("Pong")
 
-    @commands.command(name='version',description=config.HELP_VERSION_LONG, help=config.HELP_VERSION_SHORT, aliases=['v'])
+    @commands.command(name='version', description=config.HELP_VERSION_LONG, help=config.HELP_VERSION_SHORT, aliases=['v'])
     async def _version(self, ctx):
         await ctx.send(config.BOT_VERISON)
+
+    @commands.command(name='setting', description=config.HELP_SHUFFLE_LONG, help=config.HELP_SETTINGS_SHORT, aliases=['settings', 'set', 'st'])
+    @has_permissions(administrator=True)
+    async def _settings(self, ctx, *args):
+
+        sett = guild_to_settings[ctx.guild]
+
+        if len(args) == 0:
+            await ctx.send(embed=await sett.format())
+            return
+
+        args_list = list(args)
+        args_list.remove(args[0])
+
+        response = await sett.write(args[0], " ".join(args_list), ctx)
+
+        if response is None:
+            await ctx.send("`Error: Setting not found`")
+        elif response is True:
+            await ctx.send("Setting updated!")
 
 
 def setup(bot):

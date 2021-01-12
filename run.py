@@ -4,14 +4,15 @@ from discord.ext import commands
 
 from config import config
 from musicbot.audiocontroller import AudioController
+from musicbot.settings import Settings
 from musicbot import utils
-from musicbot.utils import guild_to_audiocontroller
+from musicbot.utils import guild_to_audiocontroller, guild_to_settings
 
 from musicbot.commands.general import General
 
 
 initial_extensions = ['musicbot.commands.music',
-                      'musicbot.commands.general', 'musicbot.button']
+                      'musicbot.commands.general', 'musicbot.plugins.button']
 bot = commands.Bot(command_prefix=config.BOT_PREFIX, pm_help=True)
 
 
@@ -41,25 +42,29 @@ async def on_ready():
     for guild in bot.guilds:
 
         guild_to_audiocontroller[guild] = AudioController(bot, guild)
+        guild_to_settings[guild] = Settings(guild)
 
         vc_channels = guild.voice_channels
 
-        if config.START_VOICE_CHANNEL != 0:
+        await guild.me.edit(nick=guild_to_settings[guild].get('default_nickname'))
+        start_vc = guild_to_settings[guild].get('start_voice_channel')
+
+        if start_vc != None:
             for vc in vc_channels:
-                if vc.id == config.START_VOICE_CHANNEL:
+                if vc.id == start_vc:
                     await guild_to_audiocontroller[guild].register_voice_channel(vc_channels[vc_channels.index(vc)])
                     await General.udisconnect(self=None, ctx=None, guild=guild)
                     try:
                         await guild_to_audiocontroller[guild].register_voice_channel(vc_channels[vc_channels.index(vc)])
-                    except:
-                        pass
+                    except Exception as e:
+                        print(e)
         else:
             await guild_to_audiocontroller[guild].register_voice_channel(guild.voice_channels[0])
             await General.udisconnect(self=None, ctx=None, guild=guild)
             try:
                 await guild_to_audiocontroller[guild].register_voice_channel(guild.voice_channels[0])
-            except:
-                pass
+            except Exception as e:
+                print(e)
 
         print("Joined {}".format(guild.name))
 
@@ -70,6 +75,7 @@ async def on_ready():
 async def on_guild_join(guild):
     print(guild.name)
     guild_to_audiocontroller[guild] = AudioController(bot, guild)
+    guild_to_settings[guild] = Settings(guild)
 
     await guild_to_audiocontroller[guild].register_voice_channel(guild.voice_channels[0])
 

@@ -3,15 +3,10 @@ SPOTIFY_ID: str = ""
 SPOTIFY_SECRET: str = ""
 
 BOT_PREFIX = "$"
-DEFAULT_NICKNAME = ""
 
-BUTTON_NAME = ""
-EMBED_COLOR = 0x4dd4d0  #replace afer'0x' with desired hex code ex. '#ff0188' >> '0xff0188'
+EMBED_COLOR = 0x4dd4d0  #replace after'0x' with desired hex code ex. '#ff0188' >> '0xff0188'
 
-SUPPORTED_EXTENSIONS = ('.webm', '.mp4', '.mp3', '.avi', '.wav', '.m4v', '.ogg')
-START_VOICE_CHANNEL = 0 #must be channel id
-COMMAND_CHANNEL = 0 #must be channel id
-USER_MUST_BE_IN_VC = False # must be capitalized
+SUPPORTED_EXTENSIONS = ('.webm', '.mp4', '.mp3', '.avi', '.wav', '.m4v', '.ogg', '.mov')
 
 COOKIE_PATH = "/config/cookies/cookies.txt"
 
@@ -53,6 +48,9 @@ HELP_CONNECT_SHORT = "Connect bot to voicechannel"
 HELP_CONNECT_LONG = "Connects the bot to the voice channel you are currently in"
 HELP_DISCONNECT_SHORT = "Disonnect bot from voicechannel"
 HELP_DISCONNECT_LONG = "Disconnect the bot from the voice channel and stop audio."
+
+HELP_SETTINGS_SHORT = "View and set bot settings"
+HELP_SETTINGS_LONG = "View and set bot settings in the server. Usage: {}settings setting_name value".format(BOT_PREFIX)
 
 HELP_HISTORY_SHORT = "Show history of songs"
 HELP_HISTORY_LONG = "Shows the " + str(MAX_TRACKNAME_HISTORY_LENGTH) + " last played songs."

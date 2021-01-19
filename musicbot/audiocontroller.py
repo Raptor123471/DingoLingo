@@ -8,6 +8,8 @@ from config import config
 from musicbot.playlist import Playlist
 from musicbot.songinfo import Song
 
+from musicbot.utils import guild_to_settings
+
 
 class AudioController(object):
     """ Controls the playback of audio and the sequential playing of the songs.
@@ -25,6 +27,21 @@ class AudioController(object):
         self.current_song = None
         self.guild = guild
         self.voice_client = None
+
+        sett = utils.guild_to_settings[guild]
+        self._volume = sett.get('default_volume')
+
+    @property
+    def volume(self):
+        return self._volume
+
+    @volume.setter
+    def volume(self, value):
+        self._volume = value
+        try:
+            self.voice_client.source.volume = float(value) / 100.0
+        except Exception as e:
+            pass
 
     async def register_voice_channel(self, channel):
         self.voice_client = await channel.connect(reconnect=True, timeout=None)
@@ -73,6 +90,10 @@ class AudioController(object):
         self.voice_client.play(discord.FFmpegPCMAudio(
             song.base_url, before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'), after=lambda e: self.next_song(e))
 
+        self.voice_client.source = discord.PCMVolumeTransformer(
+            self.guild.voice_client.source)
+        self.voice_client.source.volume = float(self.volume) / 100.0
+
     async def process_song(self, track):
         """Adds the track to the playlist instance and plays it, if it is the first song"""
 
@@ -117,9 +138,9 @@ class AudioController(object):
             r = downloader.extract_info(
                 track, download=False)
 
-
         if r.get('thumbnails') is not None:
-            thumbnail = r.get('thumbnails')[len(r.get('thumbnails')) - 1]['url']
+            thumbnail = r.get('thumbnails')[len(
+                r.get('thumbnails')) - 1]['url']
         else:
             thumbnail = None
 

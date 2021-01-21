@@ -41,9 +41,9 @@ async def on_ready():
 
     for guild in bot.guilds:
 
-        guild_to_audiocontroller[guild] = AudioController(bot, guild)
         guild_to_settings[guild] = Settings(guild)
-
+        guild_to_audiocontroller[guild] = AudioController(bot, guild)
+        
         vc_channels = guild.voice_channels
 
         await guild.me.edit(nick=guild_to_settings[guild].get('default_nickname'))

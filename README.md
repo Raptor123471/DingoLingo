@@ -126,10 +126,17 @@ $np
 * Shows more details about the current song.
 
 ```
-$stop
+$volume / $vol
 ```
 
+* Adjust the volume 1-100%
+* Pass no arguments for current volume
+
+```
+$stop
+```
 * Stops the current song and clears the playqueue.
+
 
 ### General
 

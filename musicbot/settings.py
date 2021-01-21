@@ -22,6 +22,7 @@ class Settings():
             "start_voice_channel": None,
             "user_must_be_in_vc": True,
             "button_emote": "",
+            "default_volume": 100
         }
 
         self.reload()
@@ -132,6 +133,7 @@ class Settings():
             'start_voice_channel': lambda: self.start_voice_channel(setting, value, ctx),
             'user_must_be_in_vc': lambda: self.user_must_be_in_vc(setting, value, ctx),
             'button_emote': lambda: self.button_emote(setting, value, ctx),
+            'default_volume': lambda: self.default_volume(setting, value, ctx),
         }
         func = switcher.get(setting)
 
@@ -210,3 +212,16 @@ class Settings():
             return False
         else:
             self.config[setting] = value
+
+    async def default_volume(self, setting, value, ctx):
+        try:
+            value = int(value)
+        except:
+            await ctx.send("`Error: Value must be a number`\nUsage: {}set {} 0-100".format(config.BOT_PREFIX, setting))
+            return False
+
+        if value > 100 or value < 0:
+            await ctx.send("`Error: Value must be a number`\nUsage: {}set {} 0-100".format(config.BOT_PREFIX, setting))
+            return False
+
+        self.config[setting] = value

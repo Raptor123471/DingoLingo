@@ -238,10 +238,14 @@ class Music(commands.Cog):
             return
         await utils.send_message(ctx, utils.guild_to_audiocontroller[current_guild].track_history())
 
-    @commands.command(name='vol', aliases=["volume"], description = config.HELP_VOL_LONG, help = config.HELP_VOL_SHORT)
+    @commands.command(name='volume', aliases=["vol"], description=config.HELP_VOL_LONG, help=config.HELP_VOL_SHORT)
     async def _volume(self, ctx, *args):
         if ctx.guild is None:
             await ctx.send(config.NO_GUILD_MESSAGE)
+            return
+
+        if len(args) == 0:
+            await ctx.send("Current volume: {}% :speaker:".format(utils.guild_to_audiocontroller[ctx.guild]._volume))
             return
 
         try:

@@ -40,32 +40,7 @@ async def on_ready():
     config.BOT_VERISON = "0.9.9"
 
     for guild in bot.guilds:
-
-        guild_to_settings[guild] = Settings(guild)
-        guild_to_audiocontroller[guild] = AudioController(bot, guild)
-        
-        vc_channels = guild.voice_channels
-
-        await guild.me.edit(nick=guild_to_settings[guild].get('default_nickname'))
-        start_vc = guild_to_settings[guild].get('start_voice_channel')
-
-        if start_vc != None:
-            for vc in vc_channels:
-                if vc.id == start_vc:
-                    await guild_to_audiocontroller[guild].register_voice_channel(vc_channels[vc_channels.index(vc)])
-                    await General.udisconnect(self=None, ctx=None, guild=guild)
-                    try:
-                        await guild_to_audiocontroller[guild].register_voice_channel(vc_channels[vc_channels.index(vc)])
-                    except Exception as e:
-                        print(e)
-        else:
-            await guild_to_audiocontroller[guild].register_voice_channel(guild.voice_channels[0])
-            await General.udisconnect(self=None, ctx=None, guild=guild)
-            try:
-                await guild_to_audiocontroller[guild].register_voice_channel(guild.voice_channels[0])
-            except Exception as e:
-                print(e)
-
+        await register(guild)
         print("Joined {}".format(guild.name))
 
     print(config.STARTUP_COMPLETE_MESSAGE)
@@ -74,10 +49,33 @@ async def on_ready():
 @bot.event
 async def on_guild_join(guild):
     print(guild.name)
-    guild_to_audiocontroller[guild] = AudioController(bot, guild)
-    guild_to_settings[guild] = Settings(guild)
+    await register(guild)
 
-    await guild_to_audiocontroller[guild].register_voice_channel(guild.voice_channels[0])
+
+async def register(guild):
+
+    guild_to_settings[guild] = Settings(guild)
+    guild_to_audiocontroller[guild] = AudioController(bot, guild)
+
+    vc_channels = guild.voice_channels
+    await guild.me.edit(nick=guild_to_settings[guild].get('default_nickname'))
+    start_vc = guild_to_settings[guild].get('start_voice_channel')
+    if start_vc != None:
+        for vc in vc_channels:
+            if vc.id == start_vc:
+                await guild_to_audiocontroller[guild].register_voice_channel(vc_channels[vc_channels.index(vc)])
+                await General.udisconnect(self=None, ctx=None, guild=guild)
+                try:
+                    await guild_to_audiocontroller[guild].register_voice_channel(vc_channels[vc_channels.index(vc)])
+                except Exception as e:
+                    print(e)
+    else:
+        await guild_to_audiocontroller[guild].register_voice_channel(guild.voice_channels[0])
+        await General.udisconnect(self=None, ctx=None, guild=guild)
+        try:
+            await guild_to_audiocontroller[guild].register_voice_channel(guild.voice_channels[0])
+        except Exception as e:
+            print(e)
 
 
 bot.run(config.BOT_TOKEN, bot=True, reconnect=True)

@@ -124,18 +124,20 @@ class Music(commands.Cog):
 
         playlist = utils.guild_to_audiocontroller[current_guild].playlist
 
-        songlist = []
-        counter = 1
+        embed = discord.Embed(title=":scroll: Queue [{}]".format(
+            len(playlist.playque)), color=config.EMBED_COLOR, inline=False)
 
-        for song in playlist.playque:
-            entry = "{}. {}".format(str(counter), song.info.webpage_url)
-            songlist.append(entry)
+        counter = 1
+        for song in list(playlist.playque)[:10]:
+            if song.info.title is None:
+                embed.add_field(name="{}.".format(str(counter)), value="[(PL) | {}]({})".format(
+                    song.info.webpage_url, song.info.webpage_url), inline=False)
+            else:
+                embed.add_field(name="{}.".format(str(counter)), value="[{}]({})".format(
+                    song.info.title, song.info.webpage_url), inline=False)
             counter = counter + 1
 
-        try:
-            await ctx.send("Queue[**{}**]:\n{}".format(len(songlist), '\n'.join(songlist[:10])))
-        except:
-            await ctx.send("Queue to long to post. Working on this feature.")
+        await ctx.send(embed=embed)
 
     @commands.command(name='stop', description=config.HELP_STOP_LONG, help=config. HELP_STOP_SHORT)
     async def _stop(self, ctx):

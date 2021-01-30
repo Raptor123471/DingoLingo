@@ -246,6 +246,9 @@ class Music(commands.Cog):
             await ctx.send(config.NO_GUILD_MESSAGE)
             return
 
+        if await utils.play_check(ctx) == False:
+            return
+
         if len(args) == 0:
             await ctx.send("Current volume: {}% :speaker:".format(utils.guild_to_audiocontroller[ctx.guild]._volume))
             return

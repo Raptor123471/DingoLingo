@@ -18,10 +18,6 @@ def get_guild(bot, command):
     return None
 
 
-async def send_message(ctx, message):
-    await ctx.send("```\n" + message + "\n```")
-
-
 async def connect_to_channel(guild, dest_channel_name, ctx, switch=False, default=True):
     """Connects the bot to the specified voice channel.
 
@@ -36,7 +32,7 @@ async def connect_to_channel(guild, dest_channel_name, ctx, switch=False, defaul
                 try:
                     await guild.voice_client.disconnect()
                 except:
-                    await send_message(ctx, config.NOT_CONNECTED_MESSAGE)
+                    await ctx.send(config.NOT_CONNECTED_MESSAGE)
 
             await channel.connect()
             return
@@ -45,9 +41,9 @@ async def connect_to_channel(guild, dest_channel_name, ctx, switch=False, defaul
         try:
             await guild.voice_channels[0].connect()
         except:
-            await send_message(ctx, config.DEFAULT_CHANNEL_JOIN_FAILED)
+            await ctx.send(config.DEFAULT_CHANNEL_JOIN_FAILED)
     else:
-        await send_message(ctx, config.CHANNEL_NOT_FOUND_MESSAGE + str(dest_channel_name))
+        await ctx.send(config.CHANNEL_NOT_FOUND_MESSAGE + str(dest_channel_name))
 
 
 async def is_connected(ctx):

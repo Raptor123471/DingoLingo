@@ -84,7 +84,7 @@ class Music(commands.Cog):
             return
 
         if current_guild is None:
-            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+            await ctx.send(config.NO_GUILD_MESSAGE)
             return
         if current_guild.voice_client is None or not current_guild.voice_client.is_playing():
             await ctx.send("Queue is empty :x:")
@@ -101,7 +101,7 @@ class Music(commands.Cog):
             return
 
         if current_guild is None:
-            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+            await ctx.send(config.NO_GUILD_MESSAGE)
             return
         if current_guild.voice_client is None or not current_guild.voice_client.is_playing():
             return
@@ -116,7 +116,7 @@ class Music(commands.Cog):
             return
 
         if current_guild is None:
-            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+            await ctx.send(config.NO_GUILD_MESSAGE)
             return
         if current_guild.voice_client is None or not current_guild.voice_client.is_playing():
             await ctx.send("Queue is empty :x:")
@@ -149,7 +149,7 @@ class Music(commands.Cog):
         audiocontroller = utils.guild_to_audiocontroller[current_guild]
         audiocontroller.playlist.loop = False
         if current_guild is None:
-            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+            await ctx.send(config.NO_GUILD_MESSAGE)
             return
         await utils.guild_to_audiocontroller[current_guild].stop_player()
         await ctx.send("Stopped all sessions :octagonal_sign:")
@@ -164,7 +164,7 @@ class Music(commands.Cog):
         audiocontroller = utils.guild_to_audiocontroller[current_guild]
         audiocontroller.playlist.loop = False
         if current_guild is None:
-            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+            await ctx.send(config.NO_GUILD_MESSAGE)
             return
         if current_guild.voice_client is None or (
                 not current_guild.voice_client.is_paused() and not current_guild.voice_client.is_playing()):
@@ -195,7 +195,7 @@ class Music(commands.Cog):
         audiocontroller = utils.guild_to_audiocontroller[current_guild]
         audiocontroller.playlist.loop = False
         if current_guild is None:
-            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+            await ctx.send(config.NO_GUILD_MESSAGE)
             return
         await utils.guild_to_audiocontroller[current_guild].prev_song()
         await ctx.send("Playing previous song :track_previous:")
@@ -208,7 +208,7 @@ class Music(commands.Cog):
             return
 
         if current_guild is None:
-            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+            await ctx.send(config.NO_GUILD_MESSAGE)
             return
         current_guild.voice_client.resume()
         await ctx.send("Resumed playback :arrow_forward:")
@@ -221,7 +221,7 @@ class Music(commands.Cog):
             return
 
         if current_guild is None:
-            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+            await ctx.send(config.NO_GUILD_MESSAGE)
             return
         song = utils.guild_to_audiocontroller[current_guild].current_song
         if song is None:
@@ -236,9 +236,9 @@ class Music(commands.Cog):
             return
 
         if current_guild is None:
-            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+            await ctx.send(config.NO_GUILD_MESSAGE)
             return
-        await utils.send_message(ctx, utils.guild_to_audiocontroller[current_guild].track_history())
+        await ctx.send(utils.guild_to_audiocontroller[current_guild].track_history())
 
     @commands.command(name='volume', aliases=["vol"], description=config.HELP_VOL_LONG, help=config.HELP_VOL_SHORT)
     async def _volume(self, ctx, *args):

@@ -27,13 +27,13 @@ class General(commands.Cog):
         vchannel = await utils.is_connected(ctx)
 
         if vchannel is not None:
-            await utils.send_message(ctx, config.ALREADY_CONNECTED_MESSAGE)
+            await ctx.send(config.ALREADY_CONNECTED_MESSAGE)
             return
 
         current_guild = utils.get_guild(self.bot, ctx.message)
 
         if current_guild is None:
-            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+            await ctx.send(config.NO_GUILD_MESSAGE)
             return
 
         if utils.guild_to_audiocontroller[current_guild] is None:
@@ -63,11 +63,11 @@ class General(commands.Cog):
             current_guild = utils.get_guild(self.bot, ctx.message)
 
             if current_guild is None:
-                await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+                await ctx.send(config.NO_GUILD_MESSAGE)
                 return
 
             if await utils.is_connected(ctx) is None:
-                await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+                await ctx.send(config.NO_GUILD_MESSAGE)
                 return
 
             await utils.guild_to_audiocontroller[current_guild].stop_player()
@@ -79,7 +79,7 @@ class General(commands.Cog):
         current_guild = utils.get_guild(self.bot, ctx.message)
 
         if current_guild is None:
-            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+            await ctx.send(config.NO_GUILD_MESSAGE)
             return
         await utils.guild_to_audiocontroller[current_guild].stop_player()
         await current_guild.voice_client.disconnect(force=True)
@@ -100,7 +100,7 @@ class General(commands.Cog):
             return
 
         if current_guild is None:
-            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+            await ctx.send(config.NO_GUILD_MESSAGE)
             return
         await utils.guild_to_audiocontroller[current_guild].stop_player()
         await current_guild.voice_client.disconnect(force=True)

@@ -115,10 +115,6 @@ class General(commands.Cog):
     async def _ping(self, ctx):
         await ctx.send("Pong")
 
-    @commands.command(name='version', description=config.HELP_VERSION_LONG, help=config.HELP_VERSION_SHORT, aliases=['v'])
-    async def _version(self, ctx):
-        await ctx.send(config.BOT_VERISON)
-
     @commands.command(name='setting', description=config.HELP_SHUFFLE_LONG, help=config.HELP_SETTINGS_SHORT, aliases=['settings', 'set', 'st'])
     @has_permissions(administrator=True)
     async def _settings(self, ctx, *args):

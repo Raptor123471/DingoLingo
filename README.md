@@ -176,12 +176,6 @@ $history
 ### Utility
 
 ```
-$version
-```
-
-* Show verison information
-
-```
 $reset / $rs
 ```
 

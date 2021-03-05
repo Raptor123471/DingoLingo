@@ -84,7 +84,7 @@ class Music(commands.Cog):
             return
 
         if current_guild is None:
-            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+            await ctx.send(config.NO_GUILD_MESSAGE)
             return
         if current_guild.voice_client is None or not current_guild.voice_client.is_playing():
             await ctx.send("Queue is empty :x:")
@@ -101,7 +101,7 @@ class Music(commands.Cog):
             return
 
         if current_guild is None:
-            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+            await ctx.send(config.NO_GUILD_MESSAGE)
             return
         if current_guild.voice_client is None or not current_guild.voice_client.is_playing():
             return
@@ -116,7 +116,7 @@ class Music(commands.Cog):
             return
 
         if current_guild is None:
-            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+            await ctx.send(config.NO_GUILD_MESSAGE)
             return
         if current_guild.voice_client is None or not current_guild.voice_client.is_playing():
             await ctx.send("Queue is empty :x:")
@@ -124,18 +124,20 @@ class Music(commands.Cog):
 
         playlist = utils.guild_to_audiocontroller[current_guild].playlist
 
-        songlist = []
-        counter = 1
+        embed = discord.Embed(title=":scroll: Queue [{}]".format(
+            len(playlist.playque)), color=config.EMBED_COLOR, inline=False)
 
-        for song in playlist.playque:
-            entry = "{}. {}".format(str(counter), song.info.webpage_url)
-            songlist.append(entry)
+        counter = 1
+        for song in list(playlist.playque)[:10]:
+            if song.info.title is None:
+                embed.add_field(name="{}.".format(str(counter)), value="[(PL) | {}]({})".format(
+                    song.info.webpage_url, song.info.webpage_url), inline=False)
+            else:
+                embed.add_field(name="{}.".format(str(counter)), value="[{}]({})".format(
+                    song.info.title, song.info.webpage_url), inline=False)
             counter = counter + 1
 
-        try:
-            await ctx.send("Queue[**{}**]:\n{}".format(len(songlist), '\n'.join(songlist[:10])))
-        except:
-            await ctx.send("Queue to long to post. Working on this feature.")
+        await ctx.send(embed=embed)
 
     @commands.command(name='stop', description=config.HELP_STOP_LONG, help=config. HELP_STOP_SHORT)
     async def _stop(self, ctx):
@@ -147,7 +149,7 @@ class Music(commands.Cog):
         audiocontroller = utils.guild_to_audiocontroller[current_guild]
         audiocontroller.playlist.loop = False
         if current_guild is None:
-            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+            await ctx.send(config.NO_GUILD_MESSAGE)
             return
         await utils.guild_to_audiocontroller[current_guild].stop_player()
         await ctx.send("Stopped all sessions :octagonal_sign:")
@@ -162,7 +164,7 @@ class Music(commands.Cog):
         audiocontroller = utils.guild_to_audiocontroller[current_guild]
         audiocontroller.playlist.loop = False
         if current_guild is None:
-            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+            await ctx.send(config.NO_GUILD_MESSAGE)
             return
         if current_guild.voice_client is None or (
                 not current_guild.voice_client.is_paused() and not current_guild.voice_client.is_playing()):
@@ -193,7 +195,7 @@ class Music(commands.Cog):
         audiocontroller = utils.guild_to_audiocontroller[current_guild]
         audiocontroller.playlist.loop = False
         if current_guild is None:
-            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+            await ctx.send(config.NO_GUILD_MESSAGE)
             return
         await utils.guild_to_audiocontroller[current_guild].prev_song()
         await ctx.send("Playing previous song :track_previous:")
@@ -206,7 +208,7 @@ class Music(commands.Cog):
             return
 
         if current_guild is None:
-            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+            await ctx.send(config.NO_GUILD_MESSAGE)
             return
         current_guild.voice_client.resume()
         await ctx.send("Resumed playback :arrow_forward:")
@@ -219,7 +221,7 @@ class Music(commands.Cog):
             return
 
         if current_guild is None:
-            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+            await ctx.send(config.NO_GUILD_MESSAGE)
             return
         song = utils.guild_to_audiocontroller[current_guild].current_song
         if song is None:
@@ -234,14 +236,17 @@ class Music(commands.Cog):
             return
 
         if current_guild is None:
-            await utils.send_message(ctx, config.NO_GUILD_MESSAGE)
+            await ctx.send(config.NO_GUILD_MESSAGE)
             return
-        await utils.send_message(ctx, utils.guild_to_audiocontroller[current_guild].track_history())
+        await ctx.send(utils.guild_to_audiocontroller[current_guild].track_history())
 
     @commands.command(name='volume', aliases=["vol"], description=config.HELP_VOL_LONG, help=config.HELP_VOL_SHORT)
     async def _volume(self, ctx, *args):
         if ctx.guild is None:
             await ctx.send(config.NO_GUILD_MESSAGE)
+            return
+
+        if await utils.play_check(ctx) == False:
             return
 
         if len(args) == 0:

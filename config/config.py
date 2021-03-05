@@ -72,8 +72,6 @@ HELP_YT_SHORT = "Play a supported link or search on youtube"
 HELP_YT_LONG = ("$p [link/video title/key words/playlist-link/soundcloud link/spotify link/bandcamp link/twitter link]")
 HELP_PING_SHORT = "Pong"
 HELP_PING_LONG = "Test bot response status"
-HELP_VERSION_SHORT = "Show version."
-HELP_VERSION_LONG = "Show embedded verion number."
 HELP_CLEAR_SHORT = "Clear the queue."
 HELP_CLEAR_LONG = "Clears the queue and skips the current song."
 HELP_LOOP_SHORT = "Loops the currently playing song, toggle on/off."
@@ -85,5 +83,4 @@ HELP_SHUFFLE_LONG = "Randomly sort the songs in the current queue"
 HELP_CHANGECHANNEL_SHORT = "Change the bot channel"
 HELP_CHANGECHANNEL_LONG = "Change the bot channel to the VC you are in"
 
-BOT_VERISON = '' #do not modify
 ABSOLUTE_PATH = '' #do not modify

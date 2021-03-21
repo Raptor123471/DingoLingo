@@ -115,7 +115,7 @@ class General(commands.Cog):
     async def _ping(self, ctx):
         await ctx.send("Pong")
 
-    @commands.command(name='setting', description=config.HELP_SHUFFLE_LONG, help=config.HELP_SETTINGS_SHORT, aliases=['settings', 'set', 'st'])
+    @commands.command(name='setting', description=config.HELP_SHUFFLE_LONG, help=config.HELP_SETTINGS_SHORT, aliases=['settings', 'set'])
     @has_permissions(administrator=True)
     async def _settings(self, ctx, *args):
 

@@ -20,7 +20,7 @@ class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='play', description=config.HELP_YT_LONG, help=config.HELP_YT_SHORT, aliases=['p', 'yt', 'P', 'pl'])
+    @commands.command(name='play', description=config.HELP_YT_LONG, help=config.HELP_YT_SHORT, aliases=['p', 'yt', 'pl'])
     async def _play_song(self, ctx, *, track: str):
 
         if(await utils.is_connected(ctx) == None):
@@ -54,7 +54,7 @@ class Music(commands.Cog):
         elif song.origin == linkutils.Origins.Playlist:
             await ctx.send(config.SONGINFO_PLAYLIST_QUEUED)
 
-    @commands.command(name='loop', description=config.HELP_LOOP_LONG, help=config.HELP_LOOP_SHORT, aliases=['l', 'L'])
+    @commands.command(name='loop', description=config.HELP_LOOP_LONG, help=config.HELP_LOOP_SHORT, aliases=['l'])
     async def _loop(self, ctx):
 
         current_guild = utils.get_guild(self.bot, ctx.message)
@@ -107,7 +107,7 @@ class Music(commands.Cog):
         current_guild.voice_client.pause()
         await ctx.send("Playback Paused :pause_button:")
 
-    @commands.command(name='queue', description=config.HELP_QUEUE_LONG, help=config.HELP_QUEUE_SHORT, aliases=['playlist', 'q', 'Q'])
+    @commands.command(name='queue', description=config.HELP_QUEUE_LONG, help=config.HELP_QUEUE_SHORT, aliases=['playlist', 'q'])
     async def _queue(self, ctx):
         current_guild = utils.get_guild(self.bot, ctx.message)
 
@@ -138,7 +138,7 @@ class Music(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(name='stop', description=config.HELP_STOP_LONG, help=config. HELP_STOP_SHORT)
+    @commands.command(name='stop', description=config.HELP_STOP_LONG, help=config. HELP_STOP_SHORT, aliases=['st'])
     async def _stop(self, ctx):
         current_guild = utils.get_guild(self.bot, ctx.message)
 
@@ -153,7 +153,7 @@ class Music(commands.Cog):
         await utils.guild_to_audiocontroller[current_guild].stop_player()
         await ctx.send("Stopped all sessions :octagonal_sign:")
 
-    @commands.command(name='skip', description=config.HELP_SKIP_LONG, help=config.HELP_SKIP_SHORT, aliases=['s', 'S'])
+    @commands.command(name='skip', description=config.HELP_SKIP_LONG, help=config.HELP_SKIP_SHORT, aliases=['s'])
     async def _skip(self, ctx):
         current_guild = utils.get_guild(self.bot, ctx.message)
 

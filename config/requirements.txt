@@ -1,5 +1,5 @@
 discord.py[voice]
 youtube-dlc
-requests
+aiohttp
 beautifulsoup4
 spotipy

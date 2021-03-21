@@ -7,7 +7,6 @@ from config import config
 
 from musicbot.commands.general import General
 
-import requests
 import datetime
 
 

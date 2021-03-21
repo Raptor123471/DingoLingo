@@ -69,7 +69,7 @@ class AudioController(object):
 
         if song.origin == linkutils.Origins.Playlist:
             if song.host == linkutils.Sites.Spotify:
-                conversion = await self.search_youtube(linkutils.convert_spotify(song.info.webpage_url))
+                conversion = await self.search_youtube(await linkutils.convert_spotify(song.info.webpage_url))
                 song.info.webpage_url = conversion
 
             downloader = youtube_dlc.YoutubeDL(
@@ -121,7 +121,7 @@ class AudioController(object):
             track = await self.search_youtube(track)
 
         if host == linkutils.Sites.Spotify:
-            title = linkutils.convert_spotify(track)
+            title = await linkutils.convert_spotify(track)
             track = await self.search_youtube(title)
 
         if host == linkutils.Sites.YouTube:
@@ -185,7 +185,7 @@ class AudioController(object):
                     self.playlist.add(song)
 
         if playlist_type == linkutils.Playlist_Types.Spotify_Playlist:
-            links = linkutils.get_spotify_playlist(url)
+            links = await linkutils.get_spotify_playlist(url)
             for link in links:
                 song = Song(linkutils.Origins.Playlist,
                             linkutils.Sites.Spotify, webpage_url=link)

@@ -1,6 +1,9 @@
 import discord
 import youtube_dlc
 
+import asyncio
+import concurrent.futures
+
 from musicbot import linkutils
 from musicbot import utils
 
@@ -67,7 +70,7 @@ class AudioController(object):
     async def play_song(self, song):
         """Plays a song object"""
 
-        if song.origin == linkutils.Origins.Playlist:
+        if song.info.title == None:
             if song.host == linkutils.Sites.Spotify:
                 conversion = await self.search_youtube(await linkutils.convert_spotify(song.info.webpage_url))
                 song.info.webpage_url = conversion
@@ -93,6 +96,9 @@ class AudioController(object):
         self.voice_client.source = discord.PCMVolumeTransformer(
             self.guild.voice_client.source)
         self.voice_client.source.volume = float(self.volume) / 100.0
+
+        for song in list(self.playlist.playque)[:5]:
+            asyncio.ensure_future(self.preload(song))
 
     async def process_song(self, track):
         """Adds the track to the playlist instance and plays it, if it is the first song"""
@@ -207,6 +213,31 @@ class AudioController(object):
                                 linkutils.Sites.Bandcamp, webpage_url=link)
 
                     self.playlist.add(song)
+
+    async def preload(self, song):
+
+        if song.info.title != None:
+            return
+
+        def down(song):
+            downloader = youtube_dlc.YoutubeDL(
+                {'format': 'bestaudio', 'title': True, "cookiefile": config.COOKIE_PATH})
+            r = downloader.extract_info(
+                song.info.webpage_url, download=False)
+            song.base_url = r.get('url')
+            song.info.uploader = r.get('uploader')
+            song.info.title = r.get('title')
+            song.info.duration = r.get('duration')
+            song.info.webpage_url = r.get('webpage_url')
+            song.info.thumbnail = r.get('thumbnails')[0]['url']
+
+        if song.host == linkutils.Sites.Spotify:
+            conversion = await self.search_youtube(await linkutils.convert_spotify(song.info.webpage_url))
+            song.info.webpage_url = conversion
+
+        loop = asyncio.get_event_loop()
+        executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
+        await asyncio.wait(fs={loop.run_in_executor(executor, down, song)}, return_when=asyncio.ALL_COMPLETED)
 
     async def search_youtube(self, title):
         """Searches youtube for the video title and returns the first results video link"""

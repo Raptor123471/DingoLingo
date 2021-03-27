@@ -97,6 +97,8 @@ class AudioController(object):
             self.guild.voice_client.source)
         self.voice_client.source.volume = float(self.volume) / 100.0
 
+        self.playlist.playque.popleft()
+
         for song in list(self.playlist.playque)[:5]:
             asyncio.ensure_future(self.preload(song))
 

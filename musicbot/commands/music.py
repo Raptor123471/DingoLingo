@@ -1,6 +1,8 @@
 import discord
 from discord.ext import commands
 
+import asyncio
+
 from musicbot import utils
 from musicbot import linkutils
 from config import config
@@ -91,6 +93,9 @@ class Music(commands.Cog):
 
         audiocontroller.playlist.shuffle()
         await ctx.send("Shuffled queue :twisted_rightwards_arrows:")
+
+        for song in list(audiocontroller.playlist.playque)[:5]:
+            asyncio.ensure_future(audiocontroller.preload(song))
 
     @commands.command(name='pause', description=config.HELP_PAUSE_LONG, help=config.HELP_PAUSE_SHORT)
     async def _pause(self, ctx):

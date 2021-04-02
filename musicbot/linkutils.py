@@ -37,13 +37,13 @@ async def convert_spotify(url):
         async with session.get(url) as response:
             page = await response.text()
 
-    soup = BeautifulSoup(page, 'html.parser')
+            soup = BeautifulSoup(page, 'html.parser')
 
-    title = soup.find('title')
-    title = title.string
-    title = title.replace(', a song by', '').replace(' on Spotify', '')
+            title = soup.find('title')
+            title = title.string
+            title = title.replace('Spotify – ', '')
 
-    return title
+            return title
 
 
 async def get_spotify_playlist(url):

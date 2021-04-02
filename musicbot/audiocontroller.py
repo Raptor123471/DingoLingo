@@ -72,7 +72,7 @@ class AudioController(object):
 
         if song.info.title == None:
             if song.host == linkutils.Sites.Spotify:
-                conversion = await self.search_youtube(await linkutils.convert_spotify(song.info.webpage_url))
+                conversion = self.search_youtube(await linkutils.convert_spotify(song.info.webpage_url))
                 song.info.webpage_url = conversion
 
             downloader = youtube_dlc.YoutubeDL(
@@ -99,7 +99,7 @@ class AudioController(object):
 
         self.playlist.playque.popleft()
 
-        for song in list(self.playlist.playque)[:5]:
+        for song in list(self.playlist.playque)[:config.MAX_SONG_PRELOAD]:
             asyncio.ensure_future(self.preload(song))
 
     async def process_song(self, track):
@@ -126,11 +126,11 @@ class AudioController(object):
             if linkutils.get_url(track) is not None:
                 return None
 
-            track = await self.search_youtube(track)
+            track = self.search_youtube(track)
 
         if host == linkutils.Sites.Spotify:
             title = await linkutils.convert_spotify(track)
-            track = await self.search_youtube(title)
+            track = self.search_youtube(title)
 
         if host == linkutils.Sites.YouTube:
             track = track.split("&list=")[0]
@@ -222,6 +222,10 @@ class AudioController(object):
             return
 
         def down(song):
+
+            if song.host == linkutils.Sites.Spotify:
+                song.info.webpage_url = self.search_youtube(song.info.title)
+
             downloader = youtube_dlc.YoutubeDL(
                 {'format': 'bestaudio', 'title': True, "cookiefile": config.COOKIE_PATH})
             r = downloader.extract_info(
@@ -234,14 +238,13 @@ class AudioController(object):
             song.info.thumbnail = r.get('thumbnails')[0]['url']
 
         if song.host == linkutils.Sites.Spotify:
-            conversion = await self.search_youtube(await linkutils.convert_spotify(song.info.webpage_url))
-            song.info.webpage_url = conversion
+            song.info.title = await linkutils.convert_spotify(song.info.webpage_url)
 
         loop = asyncio.get_event_loop()
-        executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
+        executor = concurrent.futures.ThreadPoolExecutor(max_workers=config.MAX_SONG_PRELOAD)
         await asyncio.wait(fs={loop.run_in_executor(executor, down, song)}, return_when=asyncio.ALL_COMPLETED)
 
-    async def search_youtube(self, title):
+    def search_youtube(self, title):
         """Searches youtube for the video title and returns the first results video link"""
 
         # if title is already a link

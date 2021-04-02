@@ -94,7 +94,7 @@ class Music(commands.Cog):
         audiocontroller.playlist.shuffle()
         await ctx.send("Shuffled queue :twisted_rightwards_arrows:")
 
-        for song in list(audiocontroller.playlist.playque)[:5]:
+        for song in list(audiocontroller.playlist.playque)[:config.MAX_SONG_PRELOAD]:
             asyncio.ensure_future(audiocontroller.preload(song))
 
     @commands.command(name='pause', description=config.HELP_PAUSE_LONG, help=config.HELP_PAUSE_SHORT)
@@ -128,11 +128,15 @@ class Music(commands.Cog):
 
         playlist = utils.guild_to_audiocontroller[current_guild].playlist
 
+        #Embeds are limited to 25 fields
+        if config.MAX_SONG_PRELOAD > 25:
+            config.MAX_SONG_PRELOAD = 25
+
         embed = discord.Embed(title=":scroll: Queue [{}]".format(
             len(playlist.playque)), color=config.EMBED_COLOR, inline=False)
 
         counter = 1
-        for song in list(playlist.playque)[:5]:
+        for song in list(playlist.playque)[:config.MAX_SONG_PRELOAD]:
             if song.info.title is None:
                 embed.add_field(name="{}.".format(str(counter)), value="[{}]({})".format(
                     song.info.webpage_url, song.info.webpage_url), inline=False)

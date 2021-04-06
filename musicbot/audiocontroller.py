@@ -110,11 +110,9 @@ class AudioController(object):
 
         if is_playlist != linkutils.Playlist_Types.Unknown:
 
-            queue_scan = len(self.playlist.playque)
-
             await self.process_playlist(is_playlist, track)
 
-            if queue_scan == 0:
+            if self.current_song == None:
                 await self.play_song(self.playlist.playque[0])
                 print("Playing {}".format(track))
 
@@ -156,7 +154,7 @@ class AudioController(object):
             'title'), duration=r.get('duration'), webpage_url=r.get('webpage_url'), thumbnail=thumbnail)
 
         self.playlist.add(song)
-        if len(self.playlist.playque) == 1:
+        if self.current_song == None:
             print("Playing {}".format(track))
             await self.play_song(song)
 
@@ -215,6 +213,9 @@ class AudioController(object):
                                 linkutils.Sites.Bandcamp, webpage_url=link)
 
                     self.playlist.add(song)
+
+        for song in list(self.playlist.playque)[:config.MAX_SONG_PRELOAD]:
+            asyncio.ensure_future(self.preload(song))
 
     async def preload(self, song):
 

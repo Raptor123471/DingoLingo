@@ -18,6 +18,9 @@ except:
 url_regex = re.compile(
     "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")
 
+session = aiohttp.ClientSession(
+    headers={'User-Agent': 'python-requests/2.20.0'})
+
 
 def clean_sclink(track):
     if track.startswith("https://m."):
@@ -33,17 +36,16 @@ async def convert_spotify(url):
         result = url_regex.search(url)
         url = result.group(0)
 
-    async with aiohttp.ClientSession(headers={'User-Agent': 'python-requests/2.20.0'}) as session:
-        async with session.get(url) as response:
-            page = await response.text()
+    async with session.get(url) as response:
 
-            soup = BeautifulSoup(page, 'html.parser')
+        page = await response.text()
+        soup = BeautifulSoup(page, 'html.parser')
 
-            title = soup.find('title')
-            title = title.string
-            title = title.replace('Spotify – ', '')
+        title = soup.find('title')
+        title = title.string
+        title = title.replace('Spotify – ', '')
 
-            return title
+        return title
 
 
 async def get_spotify_playlist(url):
@@ -96,10 +98,8 @@ async def get_spotify_playlist(url):
                 if config.SPOTIFY_ID != "" or config.SPOTIFY_SECRET != "":
                     print("ERROR: Check spotify CLIENT_ID and SECRET")
 
-
-    async with aiohttp.ClientSession(headers={'User-Agent': 'python-requests/2.20.0'}) as session:
-        async with session.get(url) as response:
-            page = await response.text()
+    async with session.get(url) as response:
+         page = await response.text()
 
     soup = BeautifulSoup(page, 'html.parser')
 

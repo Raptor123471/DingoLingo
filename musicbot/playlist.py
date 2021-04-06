@@ -33,7 +33,7 @@ class Playlist:
         if len(self.playque) == 0:
             return None
 
-        song_played = self.playque.popleft()
+        song_played = self.playque[0]
 
         if self.loop == True:
             if song_played != "Dummy":

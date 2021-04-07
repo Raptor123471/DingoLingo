@@ -48,7 +48,7 @@ class Music(commands.Cog):
 
         if song.origin == linkutils.Origins.Default:
 
-            if len(audiocontroller.playlist.playque) == 1:
+            if audiocontroller.current_song != None and len(audiocontroller.playlist.playque) == 0:
                 await ctx.send(embed=song.info.format_output(config.SONGINFO_NOW_PLAYING))
             else:
                 await ctx.send(embed=song.info.format_output(config.SONGINFO_QUEUE_ADDED))

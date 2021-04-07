@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from config import config
+import datetime
 
 
 class Song():
@@ -22,8 +23,7 @@ class Song():
 
         def format_output(self, playtype):
 
-            embed = discord.Embed(title=":musical_note:  __**{}**__  :musical_note:".format(
-                self.title), description="***{}***".format(playtype), url=self.webpage_url, color=config.EMBED_COLOR)
+            embed = discord.Embed(title=playtype, description="[{}]({})".format(self.title, self.webpage_url), color=config.EMBED_COLOR)
 
             if self.thumbnail is not None:
                 embed.set_thumbnail(url=self.thumbnail)
@@ -35,7 +35,7 @@ class Song():
 
             if self.duration is not None:
                 embed.add_field(name=config.SONGINFO_DURATION,
-                                value="{}{}".format(self.duration, config.SONGINFO_SECONDS), inline=False)
+                                value="{}".format(str(datetime.timedelta(seconds=self.duration))), inline=False)
             else:
                 embed.add_field(name=config.SONGINFO_DURATION,
                                 value=config.SONGINFO_UNKNOWN_DURATION , inline=False)

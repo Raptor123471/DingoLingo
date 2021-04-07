@@ -31,7 +31,7 @@ class Song():
             embed.add_field(name=config.SONGINFO_UPLOADER,
                             value=self.uploader, inline=False)
 
-            if self.duration is not None:
+            if self.duration is not None and type(self.duration) is not float:
                 embed.add_field(name=config.SONGINFO_DURATION,
                                 value="{}".format(str(datetime.timedelta(seconds=self.duration))), inline=False)
             else:

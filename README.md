@@ -2,6 +2,7 @@
 A Discord music bot written in Python with support for Youtube, SoundCloud, Spotify, Bandcamp, Twitter, and custom files.
 
 ### Keep in mind:
+* The Wiki may have the answer you are looking for https://github.com/Raptor123471/DingoLingo/wiki
 * Known problems are listed in Issues. If you are interested in this project feel free to submit an Issue or ask a question in the demo server.
 
 ### DEMO SERVER:

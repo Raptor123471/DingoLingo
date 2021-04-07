@@ -1,6 +1,6 @@
 import discord
 from config import config
-from timedelta import datetime
+from datetime import timedelta
 
 class Song():
     def __init__(self, origin, host, base_url=None, uploader=None, title=None, duration=None, webpage_url=None, thumbnail=None):

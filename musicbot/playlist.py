@@ -1,8 +1,7 @@
 from collections import deque
-import random
+from random import shuffle
 
 from config import config
-
 
 class Playlist:
     """Stores the youtube links of songs to be played and already played and offers basic operation on the queues"""
@@ -52,9 +51,7 @@ class Playlist:
 
     def prev(self):
         if len(self.playhistory) == 0:
-            dummy = "DummySong"
-            self.playque.appendleft(dummy)
-            return dummy
+            return self.playque.appendleft("DummySong")
         self.playque.appendleft(self.playhistory.pop())
         return self.playque[0]
 

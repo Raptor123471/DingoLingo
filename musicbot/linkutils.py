@@ -1,4 +1,4 @@
-import requests
+import aiohttp
 import re
 from bs4 import BeautifulSoup
 from enum import Enum
@@ -15,6 +15,12 @@ try:
 except:
     api = False
 
+url_regex = re.compile(
+    "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")
+
+session = aiohttp.ClientSession(
+    headers={'User-Agent': 'python-requests/2.20.0'})
+
 
 def clean_sclink(track):
     if track.startswith("https://m."):
@@ -24,25 +30,25 @@ def clean_sclink(track):
     return track
 
 
-def convert_spotify(url):
-    regex = re.compile(
-        "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")
+async def convert_spotify(url):
 
-    if re.search(regex, url):
-        result = regex.search(url)
+    if re.search(url_regex, url):
+        result = url_regex.search(url)
         url = result.group(0)
 
-    page = requests.get(url)
-    soup = BeautifulSoup(page.content, 'html.parser')
+    async with session.get(url) as response:
 
-    title = soup.find('title')
-    title = title.string
-    title = title.replace(', a song by', '').replace(' on Spotify', '')
+        page = await response.text()
+        soup = BeautifulSoup(page, 'html.parser')
 
-    return title
+        title = soup.find('title')
+        title = title.string
+        title = title.replace('Spotify – ', '')
+
+        return title
 
 
-def get_spotify_playlist(url):
+async def get_spotify_playlist(url):
     """Return Spotify_Playlist class"""
 
     code = url.split('/')[4].split('?')[0]
@@ -92,11 +98,10 @@ def get_spotify_playlist(url):
                 if config.SPOTIFY_ID != "" or config.SPOTIFY_SECRET != "":
                     print("ERROR: Check spotify CLIENT_ID and SECRET")
 
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36"}
+    async with session.get(url) as response:
+         page = await response.text()
 
-    page = requests.get(url, headers=headers)
-    soup = BeautifulSoup(page.content, 'html.parser')
+    soup = BeautifulSoup(page, 'html.parser')
 
     results = soup.find_all(property="music:song", attrs={"content": True})
 
@@ -157,7 +162,7 @@ def identify_url(url):
     if "https://open.spotify.com/track" in url:
         return Sites.Spotify
 
-    if "https://open.spotify.com/playlist"in url or "https://open.spotify.com/album" in url:
+    if "https://open.spotify.com/playlist" in url or "https://open.spotify.com/album" in url:
         return Sites.Spotify_Playlist
 
     if "bandcamp.com/track/" in url:
@@ -183,7 +188,7 @@ def identify_playlist(url):
     if "playlist?list=" in url:
         return Playlist_Types.YouTube_Playlist
 
-    if "https://open.spotify.com/playlist"in url or "https://open.spotify.com/album" in url:
+    if "https://open.spotify.com/playlist" in url or "https://open.spotify.com/album" in url:
         return Playlist_Types.Spotify_Playlist
 
     if "bandcamp.com/album/" in url:

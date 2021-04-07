@@ -13,7 +13,7 @@ from musicbot.commands.general import General
 
 initial_extensions = ['musicbot.commands.music',
                       'musicbot.commands.general', 'musicbot.plugins.button']
-bot = commands.Bot(command_prefix=config.BOT_PREFIX, pm_help=True)
+bot = commands.Bot(command_prefix=config.BOT_PREFIX, pm_help=True, case_insensitive=True)
 
 
 if __name__ == '__main__':

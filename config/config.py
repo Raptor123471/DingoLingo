@@ -8,6 +8,8 @@ EMBED_COLOR = 0x4dd4d0  #replace after'0x' with desired hex code ex. '#ff0188' >
 
 SUPPORTED_EXTENSIONS = ('.webm', '.mp4', '.mp3', '.avi', '.wav', '.m4v', '.ogg', '.mov')
 
+MAX_SONG_PRELOAD = 5  #maximum of 25
+
 COOKIE_PATH = "/config/cookies/cookies.txt"
 
 STARTUP_MESSAGE = "Starting Bot..."

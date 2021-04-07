@@ -133,7 +133,7 @@ $volume / $vol
 * Pass no arguments for current volume
 
 ```
-$stop
+$stop / $st
 ```
 * Stops the current song and clears the playqueue.
 
@@ -141,7 +141,7 @@ $stop
 ### General
 
 ```
-$settings /$setting/ $set / $st
+$settings /$setting/ $set
 ```
 * No Arguments: Lists server settings
 * Arguments: (setting) (value)

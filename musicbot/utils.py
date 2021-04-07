@@ -49,7 +49,6 @@ async def connect_to_channel(guild, dest_channel_name, ctx, switch=False, defaul
 async def is_connected(ctx):
     try:
         voice_channel = ctx.guild.voice_client.channel
-        print(voice_channel)
         return voice_channel
     except:
         return None

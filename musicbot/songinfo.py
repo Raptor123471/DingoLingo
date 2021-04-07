@@ -1,8 +1,6 @@
 import discord
-from discord.ext import commands
 from config import config
-import datetime
-
+from timedelta import datetime
 
 class Song():
     def __init__(self, origin, host, base_url=None, uploader=None, title=None, duration=None, webpage_url=None, thumbnail=None):
@@ -33,7 +31,7 @@ class Song():
 
             if self.duration is not None and type(self.duration) is not float:
                 embed.add_field(name=config.SONGINFO_DURATION,
-                                value="{}".format(str(datetime.timedelta(seconds=self.duration))), inline=False)
+                                value="{}".format(str(timedelta(seconds=self.duration))), inline=False)
             else:
                 embed.add_field(name=config.SONGINFO_DURATION,
                                 value=config.SONGINFO_UNKNOWN_DURATION , inline=False)

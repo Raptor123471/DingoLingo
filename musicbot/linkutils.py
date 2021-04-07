@@ -1,10 +1,11 @@
+import re
+
 from aiohttp import ClientSession
 from bs4 import BeautifulSoup
 
 from spotipy import Spotify
 from spotipy.oauth2 import SpotifyClientCredentials
 
-from re import compile, search
 from enum import Enum
 from config import config
 
@@ -16,7 +17,7 @@ try:
 except:
     api = False
 
-url_regex = compile(
+url_regex = re.compile(
     "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")
 
 session = ClientSession(
@@ -33,7 +34,7 @@ def clean_sclink(track):
 
 async def convert_spotify(url):
 
-    if search(url_regex, url):
+    if re.search(url_regex, url):
         result = url_regex.search(url)
         url = result.group(0)
 
@@ -119,10 +120,10 @@ async def get_spotify_playlist(url):
 
 def get_url(content):
 
-    regex = compile(
+    regex = re.compile(
         "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")
 
-    if search(regex, content):
+    if re.search(regex, content):
         result = regex.search(content)
         url = result.group(0)
         return url

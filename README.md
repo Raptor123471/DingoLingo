@@ -1,13 +1,8 @@
-
-<img src="https://i.imgur.com/Urnk21Y.gif">
-
-
 # DingoLingo
 A Discord music bot written in Python with support for Youtube, SoundCloud, Spotify, Bandcamp, Twitter, and custom files.
 
 ### Keep in mind:
-* This is a personal project for a small server and may lack features you would expect from larger projects.
-* This bot is in a pre-relase state and I would consider incomplete. Known problems are listed in Issues. If you are interested in this project feel free to submit an Issue or ask a question in the demo server.
+* Known problems are listed in Issues. If you are interested in this project feel free to submit an Issue or ask a question in the demo server.
 
 ### DEMO SERVER:
 #### https://discord.gg/4angwPm

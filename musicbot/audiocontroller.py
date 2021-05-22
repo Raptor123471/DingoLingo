@@ -58,8 +58,9 @@ class AudioController(object):
     def next_song(self, error):
         """Invoked after a song is finished. Plays the next song if there is one."""
 
+        next_song = self.playlist.next(self.current_song)
+
         self.current_song = None
-        next_song = self.playlist.next()
 
         if next_song is None:
             return
@@ -89,6 +90,8 @@ class AudioController(object):
 
         self.playlist.add_name(song.info.title)
         self.current_song = song
+
+        self.playlist.playhistory.append(self.current_song)
 
         self.voice_client.play(discord.FFmpegPCMAudio(
             song.base_url, before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'), after=lambda e: self.next_song(e))
@@ -242,7 +245,8 @@ class AudioController(object):
             song.info.title = await linkutils.convert_spotify(song.info.webpage_url)
 
         loop = asyncio.get_event_loop()
-        executor = concurrent.futures.ThreadPoolExecutor(max_workers=config.MAX_SONG_PRELOAD)
+        executor = concurrent.futures.ThreadPoolExecutor(
+            max_workers=config.MAX_SONG_PRELOAD)
         await asyncio.wait(fs={loop.run_in_executor(executor, down, song)}, return_when=asyncio.ALL_COMPLETED)
 
     def search_youtube(self, title):
@@ -277,19 +281,19 @@ class AudioController(object):
 
     async def prev_song(self):
         """Loads the last song from the history into the queue and starts it"""
+
         if len(self.playlist.playhistory) == 0:
-            return None
-        if self.guild.voice_client is None or (
-                not self.guild.voice_client.is_paused() and not self.guild.voice_client.is_playing()):
-            prev_song = self.playlist.prev()
-            # The Dummy is used if there is no song in the history
+            return
+
+        prev_song = self.playlist.prev(self.current_song)
+
+        if not self.guild.voice_client.is_playing() and not self.guild.voice_client.is_paused():
+
             if prev_song == "Dummy":
                 self.playlist.next()
                 return None
-            await self.play_youtube(prev_song)
+            await self.play_song(prev_song)
         else:
-            self.playlist.prev()
-            self.playlist.prev()
             self.guild.voice_client.stop()
 
     def clear_queue(self):

@@ -28,35 +28,33 @@ class Playlist:
     def add(self, track):
         self.playque.append(track)
 
-    def next(self):
+    def next(self, song_played):
+
+        if self.loop == True:
+            self.playque.appendleft(self.playhistory[-1])
 
         if len(self.playque) == 0:
             return None
-
-        song_played = self.playque[0]
-
-        if self.loop == True:
-            if song_played != "Dummy":
-                self.playque.clear()
-                self.add(song_played)
 
         if len(self.playque) == 0:
             return None
 
         if song_played != "Dummy":
-            self.playhistory.append(song_played)
             if len(self.playhistory) > config.MAX_HISTORY_LENGTH:
                 self.playhistory.popleft()
 
         return self.playque[0]
 
-    def prev(self):
-        if len(self.playhistory) == 0:
-            dummy = "DummySong"
-            self.playque.appendleft(dummy)
-            return dummy
-        self.playque.appendleft(self.playhistory.pop())
-        return self.playque[0]
+    def prev(self, current_song):
+
+        if current_song is None:
+            self.playque.appendleft(self.playhistory[-1])
+            return self.playque[0]
+
+        ind = self.playhistory.index(current_song)
+        self.playque.appendleft(self.playhistory[ind - 1])
+        if current_song != None:
+            self.playque.insert(1, current_song)
 
     def shuffle(self):
         random.shuffle(self.playque)

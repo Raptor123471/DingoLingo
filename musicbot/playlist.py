@@ -30,13 +30,11 @@ class Playlist:
 
     def next(self, song_played):
 
+        if self.loop == True:
+            self.playque.appendleft(self.playhistory[-1])
+
         if len(self.playque) == 0:
             return None
-
-        if self.loop == True:
-            if song_played != "Dummy":
-                self.playque.clear()
-                self.add(song_played)
 
         if len(self.playque) == 0:
             return None

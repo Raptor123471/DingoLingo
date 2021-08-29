@@ -1,3 +1,4 @@
+import discord
 from discord.ext import commands
 from discord.ext.commands import has_permissions
 
@@ -134,6 +135,13 @@ class General(commands.Cog):
             await ctx.send("`Error: Setting not found`")
         elif response is True:
             await ctx.send("Setting updated!")
+
+    @commands.command(name='addbot', description=config.HELP_ADDBOT_LONG, help=config.HELP_ADDBOT_SHORT)
+    async def _addbot(self, ctx):
+        embed = discord.Embed(title="Invite", description=config.ADD_MESSAGE +
+                              "(https://discordapp.com/oauth2/authorize?client_id={}&scope=bot>)".format(self.bot.user.id))
+
+        await ctx.send(embed=embed)
 
 
 def setup(bot):

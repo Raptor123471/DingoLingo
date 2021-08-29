@@ -5,7 +5,7 @@ A Discord music bot written in Python with support for Youtube, SoundCloud, Spot
 * The Wiki may have the answer you are looking for https://github.com/Raptor123471/DingoLingo/wiki
 * Known problems are listed in Issues. If you are interested in this project feel free to submit an Issue or ask a question in the demo server.
 
-### BOT DISCORD SERVER LINK:
+### DISCORD SERVER LINK:
 #### https://discord.gg/9npGyc2D4h
 
 

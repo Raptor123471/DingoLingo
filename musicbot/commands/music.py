@@ -26,7 +26,9 @@ class Music(commands.Cog):
     async def _play_song(self, ctx, *, track: str):
 
         if(await utils.is_connected(ctx) == None):
-            await General.uconnect(self, ctx)
+           if await General.uconnect(self, ctx) == False:
+               return
+
         if track.isspace() or not track:
             return
 

@@ -25,6 +25,10 @@ class General(commands.Cog):
 
     async def uconnect(self, ctx):
 
+        if not ctx.author.voice:
+            await ctx.send(config.NO_GUILD_MESSAGE)
+            return False
+
         vchannel = await utils.is_connected(ctx)
 
         if vchannel is not None:

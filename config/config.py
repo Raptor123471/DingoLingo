@@ -14,6 +14,9 @@ COOKIE_PATH = "/config/cookies/cookies.txt"
 
 GLOBAL_DISABLE_AUTOJOIN_VC = False
 
+VC_TIMEOUT = 600 #seconds
+FORCE_VC_TIMEOUT = True
+
 STARTUP_MESSAGE = "Starting Bot..."
 STARTUP_COMPLETE_MESSAGE = "Startup Complete"
 

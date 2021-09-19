@@ -13,7 +13,8 @@ from musicbot.commands.general import General
 
 initial_extensions = ['musicbot.commands.music',
                       'musicbot.commands.general', 'musicbot.plugins.button']
-bot = commands.Bot(command_prefix=config.BOT_PREFIX, pm_help=True, case_insensitive=True)
+bot = commands.Bot(command_prefix=config.BOT_PREFIX,
+                   pm_help=True, case_insensitive=True)
 
 
 if __name__ == '__main__':
@@ -65,8 +66,6 @@ async def register(guild):
     if start_vc != None:
         for vc in vc_channels:
             if vc.id == start_vc:
-                await guild_to_audiocontroller[guild].register_voice_channel(vc_channels[vc_channels.index(vc)])
-                await General.udisconnect(self=None, ctx=None, guild=guild)
                 try:
                     await guild_to_audiocontroller[guild].register_voice_channel(vc_channels[vc_channels.index(vc)])
                 except Exception as e:

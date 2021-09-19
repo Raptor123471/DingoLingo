@@ -1,3 +1,4 @@
+import asyncio
 from config import config
 
 # A dictionary that remembers which guild belongs to which audiocontroller
@@ -75,3 +76,16 @@ async def play_check(ctx):
         elif ctx.message.author.voice.channel != bot_vc:
             await ctx.send(config.USER_NOT_IN_VC_MESSAGE)
             return False
+
+
+class Timer:
+    def __init__(self, callback):
+        self._callback = callback
+        self._task = asyncio.create_task(self._job())
+
+    async def _job(self):
+        await asyncio.sleep(config.VC_TIMEOUT)
+        await self._callback()
+
+    def cancel(self):
+        self._task.cancel()

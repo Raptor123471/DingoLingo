@@ -34,6 +34,8 @@ class AudioController(object):
         sett = utils.guild_to_settings[guild]
         self._volume = sett.get('default_volume')
 
+        self.timer = utils.Timer(self.timeout_handler)
+
     @property
     def volume(self):
         return self._volume
@@ -70,6 +72,9 @@ class AudioController(object):
 
     async def play_song(self, song):
         """Plays a song object"""
+
+        self.timer.cancel()
+        self.timer = utils.Timer(self.timeout_handler)
 
         if song.info.title == None:
             if song.host == linkutils.Sites.Spotify:
@@ -282,6 +287,9 @@ class AudioController(object):
     async def prev_song(self):
         """Loads the last song from the history into the queue and starts it"""
 
+        self.timer.cancel()
+        self.timer = utils.Timer(self.timeout_handler)
+
         if len(self.playlist.playhistory) == 0:
             return
 
@@ -295,6 +303,31 @@ class AudioController(object):
             await self.play_song(prev_song)
         else:
             self.guild.voice_client.stop()
+
+    async def timeout_handler(self):
+
+        if self.guild.voice_client.is_playing():
+            self.timer = utils.Timer(self.timeout_handler)  # restart timer
+            return
+
+        await self.udisconnect(None, self.guild)
+
+    async def uconnect(self, ctx):
+
+        if not ctx.author.voice:
+            await ctx.send(config.NO_GUILD_MESSAGE)
+            return False
+
+        vchannel = await utils.is_connected(ctx)
+
+        if vchannel is not None:
+            await ctx.send(config.ALREADY_CONNECTED_MESSAGE)
+            return
+
+        await self.register_voice_channel(ctx.author.voice.channel)
+
+    async def udisconnect(self, ctx, guild):
+        await self.guild.voice_client.disconnect(force=True)
 
     def clear_queue(self):
         self.playlist.playque.clear()

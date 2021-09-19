@@ -22,7 +22,8 @@ class Settings():
             "start_voice_channel": None,
             "user_must_be_in_vc": True,
             "button_emote": "",
-            "default_volume": 100
+            "default_volume": 100,
+            "vc_timeout": True
         }
 
         self.reload()
@@ -134,6 +135,7 @@ class Settings():
             'user_must_be_in_vc': lambda: self.user_must_be_in_vc(setting, value, ctx),
             'button_emote': lambda: self.button_emote(setting, value, ctx),
             'default_volume': lambda: self.default_volume(setting, value, ctx),
+            'vc_timeout': lambda: self.vc_timeout(setting, value, ctx),
         }
         func = switcher.get(setting)
 
@@ -225,3 +227,16 @@ class Settings():
             return False
 
         self.config[setting] = value
+
+    async def vc_timeout(self, setting, value, ctx):
+
+        if config.FORCE_VC_TIMEOUT == True:
+            await ctx.send("`Error: This value cannot be modified".format(config.BOT_PREFIX, setting))
+
+        if value.lower() == "true":
+            self.config[setting] = True
+        elif value.lower() == "false":
+            self.config[setting] = False
+        else:
+            await ctx.send("`Error: Value must be True/False`\nUsage: {}set {} True/False".format(config.BOT_PREFIX, setting))
+            return False

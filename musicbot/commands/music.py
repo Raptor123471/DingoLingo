@@ -175,7 +175,7 @@ class Music(commands.Cog):
         audiocontroller.playlist.loop = False
 
         audiocontroller.timer.cancel()
-        audiocontroller.timer = utils.Timer(self.timeout_handler)
+        audiocontroller.timer = utils.Timer(audiocontroller.timeout_handler)
 
         if current_guild is None:
             await ctx.send(config.NO_GUILD_MESSAGE)
@@ -210,7 +210,7 @@ class Music(commands.Cog):
         audiocontroller.playlist.loop = False
 
         audiocontroller.timer.cancel()
-        audiocontroller.timer = utils.Timer(self.timeout_handler)
+        audiocontroller.timer = utils.Timer(audiocontroller.timeout_handler)
 
         if current_guild is None:
             await ctx.send(config.NO_GUILD_MESSAGE)

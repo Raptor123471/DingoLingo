@@ -306,6 +306,12 @@ class AudioController(object):
 
     async def timeout_handler(self):
 
+        sett = utils.guild_to_settings[self.guild]
+
+        if sett.get('vc_timeout') == False:
+            self.timer = utils.Timer(self.timeout_handler)  # restart timer
+            return
+
         if self.guild.voice_client.is_playing():
             self.timer = utils.Timer(self.timeout_handler)  # restart timer
             return

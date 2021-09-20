@@ -16,7 +16,7 @@ GLOBAL_DISABLE_AUTOJOIN_VC = False
 
 VC_TIMEOUT = 600 #seconds
 VC_TIMOUT_DEFAULT = True  #default template setting for VC timeout true= yes, timeout false= no timeout
-ALLOW_VC_TIMEOUT_EDIT = False  #allow or disallow editing the vc_timeout guild setting
+ALLOW_VC_TIMEOUT_EDIT = True  #allow or disallow editing the vc_timeout guild setting
 
 
 STARTUP_MESSAGE = "Starting Bot..."

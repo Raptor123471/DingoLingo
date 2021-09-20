@@ -73,8 +73,9 @@ class AudioController(object):
     async def play_song(self, song):
         """Plays a song object"""
 
-        self.timer.cancel()
-        self.timer = utils.Timer(self.timeout_handler)
+        if self.playlist.loop != True: #let timer run thouh if looping
+            self.timer.cancel()
+            self.timer = utils.Timer(self.timeout_handler)
 
         if song.info.title == None:
             if song.host == linkutils.Sites.Spotify:

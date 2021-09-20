@@ -306,6 +306,10 @@ class AudioController(object):
 
     async def timeout_handler(self):
 
+        if len(self.guild.voice_client.channel.voice_states) == 1:
+            await self.udisconnect()
+            return
+
         sett = utils.guild_to_settings[self.guild]
 
         if sett.get('vc_timeout') == False:
@@ -316,7 +320,8 @@ class AudioController(object):
             self.timer = utils.Timer(self.timeout_handler)  # restart timer
             return
 
-        await self.udisconnect(None, self.guild)
+        self.timer = utils.Timer(self.timeout_handler)
+        await self.udisconnect()
 
     async def uconnect(self, ctx):
 
@@ -332,7 +337,8 @@ class AudioController(object):
 
         await self.register_voice_channel(ctx.author.voice.channel)
 
-    async def udisconnect(self, ctx, guild):
+    async def udisconnect(self):
+        await self.stop_player()
         await self.guild.voice_client.disconnect(force=True)
 
     def clear_queue(self):

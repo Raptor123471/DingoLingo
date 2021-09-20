@@ -29,7 +29,7 @@ class General(commands.Cog):
     async def _disconnect(self, ctx, guild=False):
         current_guild = utils.get_guild(self.bot, ctx.message)
         audiocontroller = utils.guild_to_audiocontroller[current_guild]
-        await audiocontroller.udisconnect(ctx, guild)
+        await audiocontroller.udisconnect()
 
     @commands.command(name='reset', description=config.HELP_DISCONNECT_LONG, help=config.HELP_DISCONNECT_SHORT, aliases=['rs', 'restart'])
     async def _reset(self, ctx):

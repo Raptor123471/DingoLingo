@@ -7,8 +7,6 @@ from musicbot import utils
 from musicbot import linkutils
 from config import config
 
-from musicbot.commands.general import General
-
 import datetime
 
 
@@ -25,16 +23,22 @@ class Music(commands.Cog):
     @commands.command(name='play', description=config.HELP_YT_LONG, help=config.HELP_YT_SHORT, aliases=['p', 'yt', 'pl'])
     async def _play_song(self, ctx, *, track: str):
 
+        current_guild = utils.get_guild(self.bot, ctx.message)
+        audiocontroller = utils.guild_to_audiocontroller[current_guild]
+
         if(await utils.is_connected(ctx) == None):
-            await General.uconnect(self, ctx)
+            if await audiocontroller.uconnect(ctx) == False:
+                return
+
         if track.isspace() or not track:
             return
 
         if await utils.play_check(ctx) == False:
             return
 
-        current_guild = utils.get_guild(self.bot, ctx.message)
-        audiocontroller = utils.guild_to_audiocontroller[current_guild]
+        # reset timer
+        audiocontroller.timer.cancel()
+        audiocontroller.timer = utils.Timer(audiocontroller.timeout_handler)
 
         if audiocontroller.playlist.loop == True:
             await ctx.send("Loop is enabled! Use {}loop to disable".format(config.BOT_PREFIX))
@@ -128,7 +132,7 @@ class Music(commands.Cog):
 
         playlist = utils.guild_to_audiocontroller[current_guild].playlist
 
-        #Embeds are limited to 25 fields
+        # Embeds are limited to 25 fields
         if config.MAX_SONG_PRELOAD > 25:
             config.MAX_SONG_PRELOAD = 25
 
@@ -169,6 +173,10 @@ class Music(commands.Cog):
 
         audiocontroller = utils.guild_to_audiocontroller[current_guild]
         audiocontroller.playlist.loop = False
+
+        audiocontroller.timer.cancel()
+        audiocontroller.timer = utils.Timer(audiocontroller.timeout_handler)
+
         if current_guild is None:
             await ctx.send(config.NO_GUILD_MESSAGE)
             return
@@ -200,6 +208,10 @@ class Music(commands.Cog):
 
         audiocontroller = utils.guild_to_audiocontroller[current_guild]
         audiocontroller.playlist.loop = False
+
+        audiocontroller.timer.cancel()
+        audiocontroller.timer = utils.Timer(audiocontroller.timeout_handler)
+
         if current_guild is None:
             await ctx.send(config.NO_GUILD_MESSAGE)
             return

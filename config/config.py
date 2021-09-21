@@ -12,6 +12,13 @@ MAX_SONG_PRELOAD = 5  #maximum of 25
 
 COOKIE_PATH = "/config/cookies/cookies.txt"
 
+GLOBAL_DISABLE_AUTOJOIN_VC = False
+
+VC_TIMEOUT = 600 #seconds
+VC_TIMOUT_DEFAULT = True  #default template setting for VC timeout true= yes, timeout false= no timeout
+ALLOW_VC_TIMEOUT_EDIT = True  #allow or disallow editing the vc_timeout guild setting
+
+
 STARTUP_MESSAGE = "Starting Bot..."
 STARTUP_COMPLETE_MESSAGE = "Startup Complete"
 
@@ -20,7 +27,7 @@ USER_NOT_IN_VC_MESSAGE = "Error: Please join the active voice channel to use com
 WRONG_CHANNEL_MESSAGE = "Error: Please use configured command channel"
 NOT_CONNECTED_MESSAGE = "Error: Bot not connected to any voice channel"
 ALREADY_CONNECTED_MESSAGE = "Error: Already connected to a voice channel"
-CHANNEL_NOT_FOUND_MESSAGE = "Error: Could not find channel "
+CHANNEL_NOT_FOUND_MESSAGE = "Error: Could not find channel"
 DEFAULT_CHANNEL_JOIN_FAILED = "Error: Could not join the default voice channel"
 INVALID_INVITE_MESSAGE = "Error: Invalid invitation link"
 

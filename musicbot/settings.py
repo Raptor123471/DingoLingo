@@ -188,6 +188,7 @@ class Settings():
         for vc in self.guild.voice_channels:
             if vc.name.lower() == value.lower():
                 self.config[setting] = vc.id
+                self.config['vc_timeout'] = False
                 found = True
         if found == False:
             await ctx.send("`Error: Voice channel name not found`\nUsage: {}set {} vchannelname\nOther options: unset".format(config.BOT_PREFIX, setting))
@@ -235,6 +236,7 @@ class Settings():
 
         if value.lower() == "true":
             self.config[setting] = True
+            self.config['start_voice_channel'] = None
         elif value.lower() == "false":
             self.config[setting] = False
         else:

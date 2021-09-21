@@ -281,8 +281,10 @@ class AudioController(object):
         if self.guild.voice_client is None or (
                 not self.guild.voice_client.is_paused() and not self.guild.voice_client.is_playing()):
             return
+
+        self.playlist.loop = False
         self.playlist.next(self.current_song)
-        self.playlist.playque.clear()
+        self.clear_queue()
         self.guild.voice_client.stop()
 
     async def prev_song(self):

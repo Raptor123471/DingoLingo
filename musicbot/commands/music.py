@@ -274,7 +274,7 @@ class Music(commands.Cog):
         try:
             volume = args[0]
             volume = int(volume)
-            if volume > 100:
+            if volume > 100 or volume < 0:
                 raise Exception('')
             current_guild = utils.get_guild(self.bot, ctx.message)
 

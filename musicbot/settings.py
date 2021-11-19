@@ -1,7 +1,7 @@
-import os
 import json
+import os
+
 import discord
-import asyncio
 from config import config
 
 dir_path = os.path.dirname(os.path.realpath(__file__))

@@ -1,13 +1,9 @@
-import discord
-from discord.ext import commands
-
 import asyncio
 
-from musicbot import utils
-from musicbot import linkutils
+import discord
 from config import config
-
-import datetime
+from discord.ext import commands
+from musicbot import linkutils, utils
 
 
 class Music(commands.Cog):

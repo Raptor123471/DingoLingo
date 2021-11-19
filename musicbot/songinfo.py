@@ -1,7 +1,7 @@
-import discord
-from discord.ext import commands
-from config import config
 import datetime
+
+import discord
+from config import config
 
 
 class Song():

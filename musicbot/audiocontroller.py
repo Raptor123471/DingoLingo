@@ -1,17 +1,13 @@
-import discord
-import youtube_dl
-
 import asyncio
 import concurrent.futures
 
-from musicbot import linkutils
-from musicbot import utils
-
+import discord
+import youtube_dl
 from config import config
+
+from musicbot import linkutils, utils
 from musicbot.playlist import Playlist
 from musicbot.songinfo import Song
-
-from musicbot.utils import guild_to_settings
 
 
 class AudioController(object):

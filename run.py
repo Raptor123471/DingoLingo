@@ -58,7 +58,10 @@ async def register(guild):
 
     sett = guild_to_settings[guild]
 
-    await guild.me.edit(nick=sett.get('default_nickname'))
+    try:
+        await guild.me.edit(nick=sett.get('default_nickname'))
+    except:
+        pass
 
     if config.GLOBAL_DISABLE_AUTOJOIN_VC == True:
         return

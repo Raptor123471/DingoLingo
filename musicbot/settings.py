@@ -161,7 +161,11 @@ class Settings():
             return False
         else:
             self.config[setting] = value
-            await self.guild.me.edit(nick=value)
+            try:
+                await self.guild.me.edit(nick=value)
+            except:
+                await ctx.send("`Error: Cannot set nickname. Please check bot permissions.")
+
 
     async def command_channel(self, setting, value, ctx):
 

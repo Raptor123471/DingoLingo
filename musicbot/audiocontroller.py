@@ -104,7 +104,7 @@ class AudioController(object):
         self.voice_client.play(discord.FFmpegPCMAudio(
             song.base_url, before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'), after=lambda e: self.next_song(e))
 
-        if config.AUTO_ANOUNCE_TRACK_ON_PLAY:
+        if config.AUTO_ANNOUNCE_TRACK_ON_PLAY:
             await self.ctx.invoke(self.bot.get_command('songinfo'))
 
         self.voice_client.source = discord.PCMVolumeTransformer(

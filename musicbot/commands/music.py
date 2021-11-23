@@ -52,10 +52,10 @@ class Music(commands.Cog):
 
         if song.origin == linkutils.Origins.Default:
 
-            if audiocontroller.current_song != None and len(audiocontroller.playlist.playque) == 0:
-                await ctx.send(embed=song.info.format_output(config.SONGINFO_NOW_PLAYING))
-            else:
+            if audiocontroller.current_song == None or len(audiocontroller.playlist.playque) != 0:
                 await ctx.send(embed=song.info.format_output(config.SONGINFO_QUEUE_ADDED))
+            elif not config.AUTO_ANOUNCE_TRACK_ON_PLAY:
+                await ctx.send(embed=song.info.format_output(config.SONGINFO_NOW_PLAYING))
 
         elif song.origin == linkutils.Origins.Playlist:
             await ctx.send(config.SONGINFO_PLAYLIST_QUEUED)

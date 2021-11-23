@@ -52,10 +52,10 @@ class Music(commands.Cog):
 
         if song.origin == linkutils.Origins.Default:
 
-            if audiocontroller.current_song != None and len(audiocontroller.playlist.playque) == 0:
-                await ctx.send(embed=song.info.format_output(config.SONGINFO_NOW_PLAYING))
-            else:
+            if audiocontroller.current_song == None or len(audiocontroller.playlist.playque) != 0:
                 await ctx.send(embed=song.info.format_output(config.SONGINFO_QUEUE_ADDED))
+            elif not config.AUTO_ANNOUNCE_TRACK_ON_PLAY:
+                await ctx.send(embed=song.info.format_output(config.SONGINFO_NOW_PLAYING))
 
         elif song.origin == linkutils.Origins.Playlist:
             await ctx.send(config.SONGINFO_PLAYLIST_QUEUED)
@@ -132,20 +132,29 @@ class Music(commands.Cog):
 
         playlist = utils.guild_to_audiocontroller[current_guild].playlist
 
-        # Embeds are limited to 25 fields
+        # Embeds are limited to 4096 characters, this is well under that
         if config.MAX_SONG_PRELOAD > 25:
             config.MAX_SONG_PRELOAD = 25
 
-        embed = discord.Embed(title=":scroll: Queue [{}]".format(
-            len(playlist.playque)), color=config.EMBED_COLOR, inline=False)
+        total_runtime = utils.format_time(
+            sum([int(song.info.duration if song.info.duration else 0) for song in list(playlist.playque)]))
 
+        embed = discord.Embed(title=":scroll: {} songs in queue | {} total length".format(
+            len(playlist.playque), total_runtime), color=config.EMBED_COLOR, inline=False)
+
+        in_queue_formats = []
         for counter, song in enumerate(list(playlist.playque)[:config.MAX_SONG_PRELOAD], start=1):
             if song.info.title is None:
-                embed.add_field(name="{}.".format(str(counter)), value="[{}]({})".format(
-                    song.info.webpage_url, song.info.webpage_url), inline=False)
+                in_queue_formats.append("`{}.` [{}]({}) `{}`".format(
+                    str(counter), song.info.webpage_url, song.info.webpage_url,
+                    utils.format_time(song.info.duration)))
             else:
-                embed.add_field(name="{}.".format(str(counter)), value="[{}]({})".format(
-                    song.info.title, song.info.webpage_url), inline=False)
+                in_queue_formats.append("`{}.` [{}]({}) `{}`".format(
+                    str(counter), song.info.title, song.info.webpage_url,
+                    utils.format_time(song.info.duration)))
+
+        if len(in_queue_formats):
+            embed.description = '\n'.join(in_queue_formats)
 
         await ctx.send(embed=embed)
 

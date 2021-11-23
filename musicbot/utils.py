@@ -78,6 +78,22 @@ async def play_check(ctx):
             return False
 
 
+def format_time(duration):
+    if not duration:
+        return "00:00"
+
+    hours = duration // 60 // 60
+    minutes = duration // 60 % 60
+    seconds = duration % 60
+
+    # Looks like `h:mm:ss`
+    return "{}{}{:02d}:{:02d}".format(
+        hours if hours else "",
+        ":" if hours else "",
+        minutes,
+        seconds
+    )
+
 class Timer:
     def __init__(self, callback):
         self._callback = callback

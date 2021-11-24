@@ -178,6 +178,7 @@ class Music(commands.Cog):
             return
         if current_guild.voice_client is None or (
                 not current_guild.voice_client.is_paused() and not current_guild.voice_client.is_playing()):
+            await ctx.send("Queue is empty :x:")    
             return
         current_guild.voice_client.stop()
         await ctx.send("Skipped current song :fast_forward:")

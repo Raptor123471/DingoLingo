@@ -141,8 +141,13 @@ class AudioController(object):
         try:
             downloader = youtube_dl.YoutubeDL(
                 {'format': 'bestaudio', 'title': True, "cookiefile": config.COOKIE_PATH})
-            r = downloader.extract_info(
-                track, download=False)
+
+            try:
+                r = downloader.extract_info(
+                    track, download=False)
+            except Exception as e:
+                if "ERROR: Sign in to confirm your age" in str(e):
+                    return None
         except:
             downloader = youtube_dl.YoutubeDL(
                 {'title': True, "cookiefile": config.COOKIE_PATH})

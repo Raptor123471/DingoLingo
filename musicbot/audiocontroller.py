@@ -1,17 +1,13 @@
-import discord
-import youtube_dl
-
 import asyncio
 import concurrent.futures
 
-from musicbot import linkutils
-from musicbot import utils
-
+import discord
+import youtube_dl
 from config import config
+
+from musicbot import linkutils, utils
 from musicbot.playlist import Playlist
 from musicbot.songinfo import Song
-
-from musicbot.utils import guild_to_settings
 
 
 class AudioController(object):
@@ -29,7 +25,6 @@ class AudioController(object):
         self.playlist = Playlist()
         self.current_song = None
         self.guild = guild
-        self.voice_client = None
 
         sett = utils.guild_to_settings[guild]
         self._volume = sett.get('default_volume')
@@ -44,12 +39,12 @@ class AudioController(object):
     def volume(self, value):
         self._volume = value
         try:
-            self.voice_client.source.volume = float(value) / 100.0
+            self.guild.voice_client.source.volume = float(value) / 100.0
         except Exception as e:
             pass
 
     async def register_voice_channel(self, channel):
-        self.voice_client = await channel.connect(reconnect=True, timeout=None)
+        await channel.connect(reconnect=True, timeout=None)
 
     def track_history(self):
         history_string = config.INFO_HISTORY_TITLE
@@ -99,12 +94,12 @@ class AudioController(object):
 
         self.playlist.playhistory.append(self.current_song)
 
-        self.voice_client.play(discord.FFmpegPCMAudio(
+        self.guild.voice_client.play(discord.FFmpegPCMAudio(
             song.base_url, before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'), after=lambda e: self.next_song(e))
 
-        self.voice_client.source = discord.PCMVolumeTransformer(
+        self.guild.voice_client.source = discord.PCMVolumeTransformer(
             self.guild.voice_client.source)
-        self.voice_client.source.volume = float(self.volume) / 100.0
+        self.guild.voice_client.source.volume = float(self.volume) / 100.0
 
         self.playlist.playque.popleft()
 
@@ -145,8 +140,13 @@ class AudioController(object):
         try:
             downloader = youtube_dl.YoutubeDL(
                 {'format': 'bestaudio', 'title': True, "cookiefile": config.COOKIE_PATH})
-            r = downloader.extract_info(
-                track, download=False)
+
+            try:
+                r = downloader.extract_info(
+                    track, download=False)
+            except Exception as e:
+                if "ERROR: Sign in to confirm your age" in str(e):
+                    return None
         except:
             downloader = youtube_dl.YoutubeDL(
                 {'title': True, "cookiefile": config.COOKIE_PATH})
@@ -332,17 +332,15 @@ class AudioController(object):
             await ctx.send(config.NO_GUILD_MESSAGE)
             return False
 
-        vchannel = await utils.is_connected(ctx)
-
-        if vchannel is not None:
+        if self.guild.voice_client == None:
+            await self.register_voice_channel(ctx.author.voice.channel)
+        else:
             await ctx.send(config.ALREADY_CONNECTED_MESSAGE)
-            return
-
-        await self.register_voice_channel(ctx.author.voice.channel)
 
     async def udisconnect(self):
         await self.stop_player()
         await self.guild.voice_client.disconnect(force=True)
+
 
     def clear_queue(self):
         self.playlist.playque.clear()

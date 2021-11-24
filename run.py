@@ -1,15 +1,12 @@
-import discord
 import os
+
+import discord
 from discord.ext import commands
 
 from config import config
 from musicbot.audiocontroller import AudioController
 from musicbot.settings import Settings
-from musicbot import utils
 from musicbot.utils import guild_to_audiocontroller, guild_to_settings
-
-from musicbot.commands.general import General
-
 
 initial_extensions = ['musicbot.commands.music',
                       'musicbot.commands.general', 'musicbot.plugins.button']

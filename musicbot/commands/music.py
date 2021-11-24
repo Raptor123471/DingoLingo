@@ -1,13 +1,9 @@
-import discord
-from discord.ext import commands
-
 import asyncio
 
-from musicbot import utils
-from musicbot import linkutils
+import discord
 from config import config
-
-import datetime
+from discord.ext import commands
+from musicbot import linkutils, utils
 
 
 class Music(commands.Cog):
@@ -47,7 +43,7 @@ class Music(commands.Cog):
         song = await audiocontroller.process_song(track)
 
         if song is None:
-            await ctx.send(config.SONGINFO_UNKNOWN_SITE)
+            await ctx.send(config.SONGINFO_ERROR)
             return
 
         if song.origin == linkutils.Origins.Default:
@@ -182,6 +178,7 @@ class Music(commands.Cog):
             return
         if current_guild.voice_client is None or (
                 not current_guild.voice_client.is_paused() and not current_guild.voice_client.is_playing()):
+            await ctx.send("Queue is empty :x:")    
             return
         current_guild.voice_client.stop()
         await ctx.send("Skipped current song :fast_forward:")

@@ -42,8 +42,9 @@ async def convert_spotify(url):
 
         title = soup.find('title')
         title = title.string
-        title = title.replace('Spotify – ', '')
-
+        title = title.replace('- song by', '')
+        title = title.replace('| Spotify', '')
+        
         return title
 
 

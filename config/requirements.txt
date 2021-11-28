@@ -1,4 +1,5 @@
-discord.py[voice]
+py-cord
+py-cord[voice]
 youtube-dl
 aiohttp
 asyncio

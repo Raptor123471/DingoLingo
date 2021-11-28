@@ -45,6 +45,7 @@ SONGINFO_NOW_PLAYING = "Now Playing"
 SONGINFO_QUEUE_ADDED = "Added to queue"
 SONGINFO_SONGINFO = "Now playing"
 SONGINFO_UNKNOWN_SITE = "Unknown site :question:"
+SONGINFO_ERROR = "Error: Unsupported site or age restricted content. To enable age restricted content check the documentation/wiki."
 SONGINFO_PLAYLIST_QUEUED = "Queued playlist :page_with_curl:"
 SONGINFO_UNKNOWN_DURATION = "Unknown"
 

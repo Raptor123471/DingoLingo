@@ -1,12 +1,11 @@
-import aiohttp
 import re
-from bs4 import BeautifulSoup
 from enum import Enum
-from config import config
 
+import aiohttp
 import spotipy
+from bs4 import BeautifulSoup
+from config import config
 from spotipy.oauth2 import SpotifyClientCredentials
-
 
 try:
     sp_api = spotipy.Spotify(auth_manager=SpotifyClientCredentials(
@@ -43,8 +42,9 @@ async def convert_spotify(url):
 
         title = soup.find('title')
         title = title.string
-        title = title.replace('Spotify – ', '')
-
+        title = title.replace('- song by', '')
+        title = title.replace('| Spotify', '')
+        
         return title
 
 

@@ -1,10 +1,6 @@
 import discord
 from discord.ext import commands
-
-from musicbot import utils
-from musicbot import linkutils
-
-from musicbot.commands.general import General
+from musicbot import linkutils, utils
 
 
 class Button(commands.Cog):

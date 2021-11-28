@@ -1,7 +1,7 @@
-import os
 import json
+import os
+
 import discord
-import asyncio
 from config import config
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -23,7 +23,8 @@ class Settings():
             "user_must_be_in_vc": True,
             "button_emote": "",
             "default_volume": 100,
-            "vc_timeout": config.VC_TIMOUT_DEFAULT
+            "vc_timeout": config.VC_TIMOUT_DEFAULT,
+            "announce_tracks": False
         }
 
         self.reload()
@@ -136,6 +137,7 @@ class Settings():
             'button_emote': lambda: self.button_emote(setting, value, ctx),
             'default_volume': lambda: self.default_volume(setting, value, ctx),
             'vc_timeout': lambda: self.vc_timeout(setting, value, ctx),
+            'announce_tracks': lambda: self.announce_tracks(setting, value, ctx),
         }
         func = switcher.get(setting)
 
@@ -161,7 +163,11 @@ class Settings():
             return False
         else:
             self.config[setting] = value
-            await self.guild.me.edit(nick=value)
+            try:
+                await self.guild.me.edit(nick=value)
+            except:
+                await ctx.send("`Error: Cannot set nickname. Please check bot permissions.")
+
 
     async def command_channel(self, setting, value, ctx):
 
@@ -242,3 +248,11 @@ class Settings():
         else:
             await ctx.send("`Error: Value must be True/False`\nUsage: {}set {} True/False".format(config.BOT_PREFIX, setting))
             return False
+
+    async def announce_tracks(self, setting, value, ctx):
+        if value.lower() == "true":
+            self.config[setting] = True
+        elif value.lower() == "false":
+            self.config[setting] = False
+        else:
+            await ctx.send("`Error: Value must be True/False`\nUsage: {}set {} True/False".format(config.BOT_PREFIX, setting))

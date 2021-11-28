@@ -17,7 +17,6 @@ GLOBAL_DISABLE_AUTOJOIN_VC = False
 VC_TIMEOUT = 600 #seconds
 VC_TIMOUT_DEFAULT = True  #default template setting for VC timeout true= yes, timeout false= no timeout
 ALLOW_VC_TIMEOUT_EDIT = True  #allow or disallow editing the vc_timeout guild setting
-AUTO_ANNOUNCE_TRACK_ON_PLAY = True #announce currently playing track when a new track starts playing
 
 STARTUP_MESSAGE = "Starting Bot..."
 STARTUP_COMPLETE_MESSAGE = "Startup Complete"

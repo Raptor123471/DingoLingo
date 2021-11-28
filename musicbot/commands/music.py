@@ -52,9 +52,11 @@ class Music(commands.Cog):
 
         if song.origin == linkutils.Origins.Default:
 
+            sett = utils.guild_to_settings[self.guild]
+
             if audiocontroller.current_song == None or len(audiocontroller.playlist.playque) != 0:
                 await ctx.send(embed=song.info.format_output(config.SONGINFO_QUEUE_ADDED))
-            elif not config.AUTO_ANNOUNCE_TRACK_ON_PLAY:
+            elif not sett.get("announce_tracks"):
                 await ctx.send(embed=song.info.format_output(config.SONGINFO_NOW_PLAYING))
 
         elif song.origin == linkutils.Origins.Playlist:

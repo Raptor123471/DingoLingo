@@ -62,6 +62,8 @@ class Settings():
                 self.config[key] = self.settings_template.get(key)
                 refresh = True
         if refresh:
+            with open(self.path, 'w') as source:
+                json.dump(self.json_data, source)
             self.reload()
 
     def create(self):

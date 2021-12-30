@@ -236,6 +236,9 @@ class AudioController(object):
             if song.host == linkutils.Sites.Spotify:
                 song.info.webpage_url = self.search_youtube(song.info.title)
 
+            if song.info.webpage_url == None:
+                return None
+
             downloader = yt_dlp.YoutubeDL(
                 {'format': 'bestaudio', 'title': True, "cookiefile": config.COOKIE_PATH})
             r = downloader.extract_info(
@@ -271,6 +274,9 @@ class AudioController(object):
 
         with yt_dlp.YoutubeDL(options) as ydl:
             r = ydl.extract_info(title, download=False)
+
+        if r == None:
+            return None
 
         videocode = r['entries'][0]['id']
 

@@ -59,6 +59,11 @@ class Playlist:
     def shuffle(self):
         random.shuffle(self.playque)
 
+    def move(self, oldindex: int, newindex: int):
+        temp = self.playque[oldindex]
+        del self.playque[oldindex]
+        self.playque.insert(newindex, temp)
+
     def empty(self):
         self.playque.clear()
         self.playhistory.clear()

@@ -5,3 +5,4 @@ aiohttp
 asyncio
 beautifulsoup4
 spotipy
+yandex-music

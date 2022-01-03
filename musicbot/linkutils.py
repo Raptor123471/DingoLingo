@@ -4,6 +4,8 @@ from enum import Enum
 import aiohttp
 import spotipy
 from bs4 import BeautifulSoup
+from yandex_music import Client
+
 from config import config
 from spotipy.oauth2 import SpotifyClientCredentials
 
@@ -18,7 +20,9 @@ url_regex = re.compile(
     "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")
 
 session = aiohttp.ClientSession(
-    headers={'User-Agent': 'python-requests/2.20.0'})
+    headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'})
+
+yandex_client = Client()
 
 
 def clean_sclink(track):
@@ -32,7 +36,7 @@ def clean_sclink(track):
 async def convert_spotify(url):
     if re.search(url_regex, url):
         result = url_regex.search(url)
-        url = result.group(0)
+        url = result.group(0) + "&nd=1"
 
     async with session.get(url) as response:
         page = await response.text()
@@ -51,16 +55,10 @@ async def convert_yandex(url):
         result = url_regex.search(url)
         url = result.group(0)
 
-    async with session.get(url) as response:
-        page = await response.text()
-        soup = BeautifulSoup(page, 'html.parser')
-
-        title = soup.find('title')
-        title = title.string
-        title = title.replace('слушать онлайн на Яндекс.Музыке', '')
-        title = title.replace('listen online on Yandex Music', '')
-
-        return title
+    temp = url.split('/')
+    track = yandex_client.tracks(f'{temp[-1]}:{temp[-3]}')[0]
+    title = track.title
+    return title
 
 
 async def get_spotify_playlist(url):

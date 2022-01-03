@@ -20,7 +20,8 @@ url_regex = re.compile(
     "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")
 
 session = aiohttp.ClientSession(
-    headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'})
+    headers={
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'})
 
 yandex_client = Client()
 
@@ -57,7 +58,7 @@ async def convert_yandex(url):
 
     temp = url.split('/')
     track = yandex_client.tracks(f'{temp[-1]}:{temp[-3]}')[0]
-    title = track.title
+    title = f"""{track.title} {' '.join(map(lambda x: x.name, track.artists))}"""
     return title
 
 

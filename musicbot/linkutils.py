@@ -18,7 +18,7 @@ url_regex = re.compile(
     "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")
 
 session = aiohttp.ClientSession(
-    headers={'User-Agent': 'python-requests/2.20.0'})
+    headers={'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'})
 
 
 def clean_sclink(track):
@@ -33,7 +33,7 @@ async def convert_spotify(url):
 
     if re.search(url_regex, url):
         result = url_regex.search(url)
-        url = result.group(0)
+        url = result.group(0) + "&nd=1"
 
     async with session.get(url) as response:
 

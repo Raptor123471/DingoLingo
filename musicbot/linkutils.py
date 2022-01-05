@@ -1,3 +1,4 @@
+import asyncio
 import re
 from enum import Enum
 
@@ -20,10 +21,9 @@ url_regex = re.compile(
     "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")
 
 session = aiohttp.ClientSession(
-headers={
+    headers={
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'})
 yandex_client = Client()
-
 
 
 def clean_sclink(track):
@@ -58,7 +58,9 @@ async def convert_yandex(url):
         url = result.group(0)
 
     temp = url.split('/')
-    track = yandex_client.tracks(f'{temp[-1]}:{temp[-3]}')[0]
+    loop = asyncio.get_running_loop()
+    track = await loop.run_in_executor(None, yandex_client.tracks, f'{temp[-1]}:{temp[-3]}')
+    track = track[0]
     title = f"""{track.title} {' '.join(map(lambda x: x.name, track.artists))}"""
     return title
 
@@ -114,7 +116,7 @@ async def get_spotify_playlist(url):
                     print("ERROR: Check spotify CLIENT_ID and SECRET")
 
     async with session.get(url + "&nd=1") as response:
-         page = await response.text()
+        page = await response.text()
 
     soup = BeautifulSoup(page, 'html.parser')
 

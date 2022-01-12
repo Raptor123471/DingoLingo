@@ -73,6 +73,8 @@ $p [link/video title/key words/playlist-link/soundcloud link/spotify link/bandca
     - A link to a YouTube playlist
 * If a song is playing, it will be added to queue
 
+#### Playlist Commands
+
 ```
 $skip / $s
 ```
@@ -96,6 +98,14 @@ $l / $loop
 ```
 
 * Loop the current playing song, toggle on/off
+
+```
+$mv / $move
+```
+
+* Move song position in queue
+
+#### Audio Commands
 
 ```
 $pause

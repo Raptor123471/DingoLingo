@@ -77,10 +77,18 @@ class AudioController(object):
                 conversion = self.search_youtube(await linkutils.convert_spotify(song.info.webpage_url))
                 song.info.webpage_url = conversion
 
-            downloader = yt_dlp.YoutubeDL(
-                {'format': 'bestaudio', 'title': True, "cookiefile": config.COOKIE_PATH})
-            r = downloader.extract_info(
-                song.info.webpage_url, download=False)
+            try:
+                downloader = yt_dlp.YoutubeDL(
+                    {'format': 'bestaudio', 'title': True, "cookiefile": config.COOKIE_PATH})
+                r = downloader.extract_info(
+                    song.info.webpage_url, download=False)
+            except:
+                asyncio.wait(1)
+                downloader = yt_dlp.YoutubeDL(
+                    {'title': True, "cookiefile": config.COOKIE_PATH})
+                r = downloader.extract_info(
+                    track, download=False)
+
 
             song.base_url = r.get('url')
             song.info.uploader = r.get('uploader')

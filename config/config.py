@@ -18,6 +18,28 @@ VC_TIMEOUT = 600 #seconds
 VC_TIMOUT_DEFAULT = True  #default template setting for VC timeout true= yes, timeout false= no timeout
 ALLOW_VC_TIMEOUT_EDIT = True  #allow or disallow editing the vc_timeout guild setting
 
+# ffmpeg filters (https://ffmpeg.org/ffmpeg-filters.html#equalizer)
+FILTERS = {
+    "clear": "dynaudnorm=f=200",
+    "bassboost": "bass=g=10",
+    "8d": "apulsator=hz=0.08",
+    "vaporwave": "aresample=48000,asetrate=48000*0.8",
+    "nightcore": "aresample=48000,asetrate=48000*1.25",
+    "phaser": "aphaser=in_gain=0.4",
+    "purebass": "bass=g=20,asubboost",
+    "tremolo": "tremolo",
+    "vibrato": "vibrato=f=6.5",
+    "reverse": "areverse",
+    "treble": "treble=g=5",
+    "surrounding": "surround",
+    "pulsator": "apulsator=hz=1",
+    "subboost": "asubboost",
+    "karaoke": "stereotools=mlev=0.03",
+    "flanger": "flanger",
+    "gate": "agate",
+    "haas": "haas",
+    "mcompand": "mcompand"
+}
 
 STARTUP_MESSAGE = "Starting Bot..."
 STARTUP_COMPLETE_MESSAGE = "Startup Complete"
@@ -89,5 +111,7 @@ HELP_SHUFFLE_SHORT = "Shuffle the queue"
 HELP_SHUFFLE_LONG = "Randomly sort the songs in the current queue"
 HELP_CHANGECHANNEL_SHORT = "Change the bot channel"
 HELP_CHANGECHANNEL_LONG = "Change the bot channel to the VC you are in"
+HELP_FILTER_SHORT = "Apply filter to the queue"
+HELP_FILTER_LONG = "Apply one of the following filters to the queue: \n {}".format(", ".join(FILTERS.keys()))
 
 ABSOLUTE_PATH = '' #do not modify

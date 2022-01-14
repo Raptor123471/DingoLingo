@@ -28,6 +28,7 @@ class AudioController(object):
 
         sett = utils.guild_to_settings[guild]
         self._volume = sett.get('default_volume')
+        self.filters = []
 
         self.timer = utils.Timer(self.timeout_handler)
 
@@ -42,6 +43,25 @@ class AudioController(object):
             self.guild.voice_client.source.volume = float(value) / 100.0
         except Exception as e:
             pass
+
+    # Return ffmpeg filter string
+    def filter_string(self):
+        if self.filters:
+            return '-af "dynaudnorm=f=200,' + ','.join([config.FILTERS[af] for af in self.filters]) + '"'
+        else:
+            return '-af "dynaudnorm=f=200"'
+
+    async def restart_player(self):
+        current_song = self.current_song  # Save current song cause voice_client.stop() will clear it
+        self.guild.voice_client.stop()
+        self.current_song = current_song
+        self.guild.voice_client.play(
+            discord.FFmpegPCMAudio(
+                self.current_song.base_url, 
+                before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+                options=self.filter_string()),
+            after=lambda e: self.next_song(e)
+            )
 
     async def register_voice_channel(self, channel):
         await channel.connect(reconnect=True, timeout=None)
@@ -102,8 +122,13 @@ class AudioController(object):
 
         self.playlist.playhistory.append(self.current_song)
 
-        self.guild.voice_client.play(discord.FFmpegPCMAudio(
-            song.base_url, before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'), after=lambda e: self.next_song(e))
+        self.guild.voice_client.play(
+            discord.FFmpegPCMAudio(
+                song.base_url, 
+                before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+                options=self.filter_string()),
+            after=lambda e: self.next_song(e)
+            )
 
         self.guild.voice_client.source = discord.PCMVolumeTransformer(
             self.guild.voice_client.source)

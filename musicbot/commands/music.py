@@ -164,7 +164,17 @@ class Music(commands.Cog):
         await ctx.send("Stopped all sessions :octagonal_sign:")
 
     @commands.command(name='move', description=config.HELP_MOVE_LONG, help=config.HELP_MOVE_SHORT, aliases=['mv'])
-    async def _move(self, ctx, oldindex: int, newindex: int):
+    async def _move(self, ctx, *args):
+        if len(args) != 2:
+            ctx.send("Wrong number of arguments")
+            return
+
+        try:
+            oldindex, newindex = map(int, args)
+        except ValueError:
+            ctx.send("Wrong argument")
+            return
+
         current_guild = utils.get_guild(self.bot, ctx.message)
         audiocontroller = utils.guild_to_audiocontroller[current_guild]
         if current_guild.voice_client is None or (

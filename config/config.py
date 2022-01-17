@@ -3,11 +3,11 @@ import os
 
 load_dotenv()
 
-BOT_TOKEN = os.getenv('BOT_TOKEN')
+BOT_TOKEN = os.getenv('BOT_TOKEN') #Discord
+APP_ID = os.getenv('APP_ID') #Discord
+PUB_KEY = os.getenv('PUB_KEY') #Discord
 SPOTIFY_ID = os.getenv('SPOTIFY_ID')
 SPOTIFY_SECRET = os.getenv('SPOTIFY_SECRET')
-APP_ID = os.getenv('APP_ID')
-PUB_KEY = os.getenv('PUB_KEY')
 
 BOT_PREFIX = "$"
 

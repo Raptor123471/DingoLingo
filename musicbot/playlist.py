@@ -28,6 +28,11 @@ class Playlist:
     def add(self, track):
         self.playque.append(track)
 
+    def remove(self, queue_number):
+        if queue_number > len(self.playque):
+            return
+        del self.playque[queue_number-1]
+
     def next(self, song_played):
 
         if self.loop == True:
@@ -62,3 +67,8 @@ class Playlist:
     def empty(self):
         self.playque.clear()
         self.playhistory.clear()
+
+    def get_title(self, queue_number):
+        if queue_number > len(self.playque):
+            return None
+        return self.playque[queue_number-1].info.title

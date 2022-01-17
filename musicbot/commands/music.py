@@ -183,6 +183,18 @@ class Music(commands.Cog):
         current_guild.voice_client.stop()
         await ctx.send("Skipped current song :fast_forward:")
 
+    @commands.command(name='remove', description=config.HELP_REMOVE_LONG, help=config.HELP_REMOVE_SHORT, aliases=['rm'])
+    async def _remove(self, ctx, *, queue_number: int):
+        current_guild = utils.get_guild(self.bot, ctx.message)
+
+        if queue_number is None:
+            ctx.send("You must enter a queue position to remove a song.")
+
+        audiocontroller = utils.guild_to_audiocontroller[current_guild]
+
+        response = audiocontroller.remove_song(queue_number)
+        await ctx.send(response)
+
     @commands.command(name='clear', description=config.HELP_CLEAR_LONG, help=config.HELP_CLEAR_SHORT, aliases=['cl'])
     async def _clear(self, ctx):
         current_guild = utils.get_guild(self.bot, ctx.message)

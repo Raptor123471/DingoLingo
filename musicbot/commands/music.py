@@ -16,13 +16,14 @@ class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name='play', description=config.HELP_YT_LONG, help=config.HELP_YT_SHORT, aliases=['p', 'yt', 'pl'])
+    @commands.command(name='play', description=config.HELP_YT_LONG, help=config.HELP_YT_SHORT,
+                      aliases=['p', 'yt', 'pl'])
     async def _play_song(self, ctx, *, track: str):
 
         current_guild = utils.get_guild(self.bot, ctx.message)
         audiocontroller = utils.guild_to_audiocontroller[current_guild]
 
-        if(await utils.is_connected(ctx) == None):
+        if (await utils.is_connected(ctx) == None):
             if await audiocontroller.uconnect(ctx) == False:
                 return
 
@@ -76,7 +77,8 @@ class Music(commands.Cog):
             audiocontroller.playlist.loop = False
             await ctx.send("Loop disabled :x:")
 
-    @commands.command(name='shuffle', description=config.HELP_SHUFFLE_LONG, help=config.HELP_SHUFFLE_SHORT, aliases=["sh"])
+    @commands.command(name='shuffle', description=config.HELP_SHUFFLE_LONG, help=config.HELP_SHUFFLE_SHORT,
+                      aliases=["sh"])
     async def _shuffle(self, ctx):
         current_guild = utils.get_guild(self.bot, ctx.message)
         audiocontroller = utils.guild_to_audiocontroller[current_guild]
@@ -112,7 +114,8 @@ class Music(commands.Cog):
         current_guild.voice_client.pause()
         await ctx.send("Playback Paused :pause_button:")
 
-    @commands.command(name='queue', description=config.HELP_QUEUE_LONG, help=config.HELP_QUEUE_SHORT, aliases=['playlist', 'q'])
+    @commands.command(name='queue', description=config.HELP_QUEUE_LONG, help=config.HELP_QUEUE_SHORT,
+                      aliases=['playlist', 'q'])
     async def _queue(self, ctx):
         current_guild = utils.get_guild(self.bot, ctx.message)
 
@@ -145,7 +148,7 @@ class Music(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(name='stop', description=config.HELP_STOP_LONG, help=config. HELP_STOP_SHORT, aliases=['st'])
+    @commands.command(name='stop', description=config.HELP_STOP_LONG, help=config.HELP_STOP_SHORT, aliases=['st'])
     async def _stop(self, ctx):
         current_guild = utils.get_guild(self.bot, ctx.message)
 
@@ -159,6 +162,31 @@ class Music(commands.Cog):
             return
         await utils.guild_to_audiocontroller[current_guild].stop_player()
         await ctx.send("Stopped all sessions :octagonal_sign:")
+
+    @commands.command(name='move', description=config.HELP_MOVE_LONG, help=config.HELP_MOVE_SHORT, aliases=['mv'])
+    async def _move(self, ctx, *args):
+        if len(args) != 2:
+            ctx.send("Wrong number of arguments")
+            return
+
+        try:
+            oldindex, newindex = map(int, args)
+        except ValueError:
+            ctx.send("Wrong argument")
+            return
+
+        current_guild = utils.get_guild(self.bot, ctx.message)
+        audiocontroller = utils.guild_to_audiocontroller[current_guild]
+        if current_guild.voice_client is None or (
+                not current_guild.voice_client.is_paused() and not current_guild.voice_client.is_playing()):
+            await ctx.send("Queue is empty :x:")
+            return
+        try:
+            audiocontroller.playlist.move(oldindex - 1, newindex - 1)
+        except IndexError:
+            await ctx.send("Wrong position")
+            return
+        await ctx.send("Moved")
 
     @commands.command(name='skip', description=config.HELP_SKIP_LONG, help=config.HELP_SKIP_SHORT, aliases=['s'])
     async def _skip(self, ctx):
@@ -178,7 +206,7 @@ class Music(commands.Cog):
             return
         if current_guild.voice_client is None or (
                 not current_guild.voice_client.is_paused() and not current_guild.voice_client.is_playing()):
-            await ctx.send("Queue is empty :x:")    
+            await ctx.send("Queue is empty :x:")
             return
         current_guild.voice_client.stop()
         await ctx.send("Skipped current song :fast_forward:")
@@ -228,7 +256,8 @@ class Music(commands.Cog):
         current_guild.voice_client.resume()
         await ctx.send("Resumed playback :arrow_forward:")
 
-    @commands.command(name='songinfo', description=config.HELP_SONGINFO_LONG, help=config.HELP_SONGINFO_SHORT, aliases=["np"])
+    @commands.command(name='songinfo', description=config.HELP_SONGINFO_LONG, help=config.HELP_SONGINFO_SHORT,
+                      aliases=["np"])
     async def _songinfo(self, ctx):
         current_guild = utils.get_guild(self.bot, ctx.message)
 

@@ -37,9 +37,9 @@ class Music(commands.Cog):
         audiocontroller.timer.cancel()
         audiocontroller.timer = utils.Timer(audiocontroller.timeout_handler)
 
-        if audiocontroller.playlist.loop == True:
-            await ctx.send("Loop is enabled! Use {}loop to disable".format(config.BOT_PREFIX))
-            return
+        # if audiocontroller.playlist.loop == True:
+        #     await ctx.send("Loop is enabled! Use {}loop to disable".format(config.BOT_PREFIX))
+        #     return
 
         song = await audiocontroller.process_song(track)
 
@@ -58,7 +58,7 @@ class Music(commands.Cog):
             await ctx.send(config.SONGINFO_PLAYLIST_QUEUED)
 
     @commands.command(name='loop', description=config.HELP_LOOP_LONG, help=config.HELP_LOOP_SHORT, aliases=['l'])
-    async def _loop(self, ctx):
+    async def _loop(self, ctx, mode = None):
 
         current_guild = utils.get_guild(self.bot, ctx.message)
         audiocontroller = utils.guild_to_audiocontroller[current_guild]
@@ -70,11 +70,21 @@ class Music(commands.Cog):
             await ctx.send("No songs in queue!")
             return
 
-        if audiocontroller.playlist.loop == False:
-            audiocontroller.playlist.loop = True
+        if mode is None:
+            if audiocontroller.playlist.loop == "off":
+                mode = "all"
+            else:
+                mode = "off"
+
+        if mode not in ("all", "single", "off"):
+            await ctx.send("Invalid loop mode!")
+            return
+
+        audiocontroller.playlist.loop = mode
+
+        if mode in ("all", "single"):
             await ctx.send("Loop enabled :arrows_counterclockwise:")
         else:
-            audiocontroller.playlist.loop = False
             await ctx.send("Loop disabled :x:")
 
     @commands.command(name='shuffle', description=config.HELP_SHUFFLE_LONG, help=config.HELP_SHUFFLE_SHORT,
@@ -156,7 +166,7 @@ class Music(commands.Cog):
             return
 
         audiocontroller = utils.guild_to_audiocontroller[current_guild]
-        audiocontroller.playlist.loop = False
+        audiocontroller.playlist.loop = "off"
         if current_guild is None:
             await ctx.send(config.NO_GUILD_MESSAGE)
             return
@@ -196,7 +206,7 @@ class Music(commands.Cog):
             return
 
         audiocontroller = utils.guild_to_audiocontroller[current_guild]
-        audiocontroller.playlist.loop = False
+        # audiocontroller.playlist.loop = False
 
         audiocontroller.timer.cancel()
         audiocontroller.timer = utils.Timer(audiocontroller.timeout_handler)
@@ -221,7 +231,7 @@ class Music(commands.Cog):
         audiocontroller = utils.guild_to_audiocontroller[current_guild]
         audiocontroller.clear_queue()
         current_guild.voice_client.stop()
-        audiocontroller.playlist.loop = False
+        audiocontroller.playlist.loop = "off"
         await ctx.send("Cleared queue :no_entry_sign:")
 
     @commands.command(name='prev', description=config.HELP_PREV_LONG, help=config.HELP_PREV_SHORT, aliases=['back'])
@@ -232,7 +242,7 @@ class Music(commands.Cog):
             return
 
         audiocontroller = utils.guild_to_audiocontroller[current_guild]
-        audiocontroller.playlist.loop = False
+        # audiocontroller.playlist.loop = False
 
         audiocontroller.timer.cancel()
         audiocontroller.timer = utils.Timer(audiocontroller.timeout_handler)

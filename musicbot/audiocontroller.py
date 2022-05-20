@@ -68,7 +68,7 @@ class AudioController(object):
     async def play_song(self, song):
         """Plays a song object"""
 
-        if self.playlist.loop != True: #let timer run thouh if looping
+        if self.playlist.loop == "off": #let timer run thouh if looping
             self.timer.cancel()
             self.timer = utils.Timer(self.timeout_handler)
 
@@ -296,7 +296,7 @@ class AudioController(object):
                 not self.guild.voice_client.is_paused() and not self.guild.voice_client.is_playing()):
             return
 
-        self.playlist.loop = False
+        self.playlist.loop = "off"
         self.playlist.next(self.current_song)
         self.clear_queue()
         self.guild.voice_client.stop()

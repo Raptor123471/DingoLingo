@@ -5,7 +5,7 @@ BOT_TOKEN: str = os.getenv("BOT_TOKEN")
 SPOTIFY_ID: str = ""
 SPOTIFY_SECRET: str = ""
 
-BOT_PREFIX = "$"
+BOT_PREFIX = "d!"
 
 EMBED_COLOR = 0x4dd4d0  #replace after'0x' with desired hex code ex. '#ff0188' >> '0xff0188'
 

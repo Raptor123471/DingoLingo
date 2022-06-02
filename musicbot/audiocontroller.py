@@ -322,6 +322,8 @@ class AudioController(object):
             self.guild.voice_client.stop()
 
     async def timeout_handler(self):
+        if not self.guild.voice_client:
+            return
 
         if len(self.guild.voice_client.channel.voice_states) == 1:
             await self.udisconnect()

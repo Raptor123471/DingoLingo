@@ -11,43 +11,36 @@ try:
     sp_api = spotipy.Spotify(auth_manager=SpotifyClientCredentials(
         client_id=config.SPOTIFY_ID, client_secret=config.SPOTIFY_SECRET))
     api = True
-except:
+except Exception:
     api = False
 
 url_regex = re.compile(
-    "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")
+    r"http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")
 
-session = aiohttp.ClientSession(
-    headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'})
-
+headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'}
 
 def clean_sclink(track):
-    if track.startswith("https://m."):
-        track = track.replace("https://m.", "https://")
-    if track.startswith("http://m."):
-        track = track.replace("http://m.", "https://")
-    return track
+    return re.sub(r"^https?://m\.", "https://", track)
 
 
 async def convert_spotify(url):
 
-    if re.search(url_regex, url):
-        result = url_regex.search(url)
+    result = url_regex.search(url)
+    if result and "?si=" in url:
+        url = result.group(0) + "&nd=1"
 
-        if "?si=" in url:
-            url = result.group(0) + "&nd=1"
+    async with aiohttp.ClientSession(headers=headers) as session:
+        async with session.get(url) as response:
 
-    async with session.get(url) as response:
+            page = await response.text()
+            soup = BeautifulSoup(page, 'html.parser')
 
-        page = await response.text()
-        soup = BeautifulSoup(page, 'html.parser')
-
-        title = soup.find('title')
-        title = title.string
-        title = title.replace('- song by', '')
-        title = title.replace('| Spotify', '')
-        
-        return title
+            title = soup.find('title')
+            title = title.string
+            title = title.replace('- song by', '')
+            title = title.replace('| Spotify', '')
+            
+            return title
 
 
 async def get_spotify_playlist(url):
@@ -55,53 +48,34 @@ async def get_spotify_playlist(url):
 
     code = url.split('/')[4].split('?')[0]
 
-    if api == True:
-
-        if "open.spotify.com/album" in url:
-            try:
+    if api:
+        results = None
+        try:
+            if "open.spotify.com/album" in url:
                 results = sp_api.album_tracks(code)
-                tracks = results['items']
 
-                while results['next']:
-                    results = sp_api.next(results)
-                    tracks.extend(results['items'])
-
-                links = []
-
-                for track in tracks:
-                    try:
-                        links.append(track['external_urls']['spotify'])
-                    except:
-                        pass
-                return links
-            except:
-                if config.SPOTIFY_ID != "" or config.SPOTIFY_SECRET != "":
-                    print("ERROR: Check spotify CLIENT_ID and SECRET")
-
-        if "open.spotify.com/playlist" in url:
-            try:
+            if "open.spotify.com/playlist" in url:
                 results = sp_api.playlist_items(code)
+
+            if results:
                 tracks = results['items']
                 while results['next']:
                     results = sp_api.next(results)
                     tracks.extend(results['items'])
-
                 links = []
-
                 for track in tracks:
                     try:
-                        links.append(
-                            track['track']['external_urls']['spotify'])
-                    except:
+                        links.append(track.get('track', track)['external_urls']['spotify'])
+                    except KeyError:
                         pass
                 return links
+        except Exception:
+            if config.SPOTIFY_ID != "" or config.SPOTIFY_SECRET != "":
+                print("ERROR: Check spotify CLIENT_ID and SECRET")
 
-            except:
-                if config.SPOTIFY_ID != "" or config.SPOTIFY_SECRET != "":
-                    print("ERROR: Check spotify CLIENT_ID and SECRET")
-
-    async with session.get(url + "&nd=1") as response:
-         page = await response.text()
+    async with aiohttp.ClientSession(headers=headers) as session:
+        async with session.get(url + "&nd=1") as response:
+            page = await response.text()
 
     soup = BeautifulSoup(page, 'html.parser')
 
@@ -119,16 +93,10 @@ async def get_spotify_playlist(url):
 
 
 def get_url(content):
-
-    regex = re.compile(
-        "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")
-
-    if re.search(regex, content):
-        result = regex.search(content)
-        url = result.group(0)
-        return url
-    else:
-        return None
+    result = url_regex.search(content)
+    if result:
+        return result.group(0)
+    return None
 
 
 class Sites(Enum):

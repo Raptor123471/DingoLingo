@@ -60,7 +60,8 @@ class AudioController(object):
                 downloader = d
                 break
         else:
-            downloader = yt_dlp.YoutubeDL(options)
+            # we need to copy options because downloader modifies the given dict
+            downloader = yt_dlp.YoutubeDL(options.copy())
             _cached_downloaders.append((options, downloader))
         # if options in _cached_downloaders:
         #     downloader = _cached_downloaders[options]

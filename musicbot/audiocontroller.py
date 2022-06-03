@@ -82,12 +82,7 @@ class AudioController(object):
                 song,
                 {'title': True, "cookiefile": config.COOKIE_PATH}
             )
-        song.base_url = info.get('url')
-        song.info.uploader = info.get('uploader')
-        song.info.title = info.get('title')
-        song.info.duration = info.get('duration')
-        song.info.webpage_url = info.get('webpage_url')
-        song.info.thumbnail = info.get('thumbnails')[0]['url']
+        song.update(info)
 
     def track_history(self):
         history_string = config.INFO_HISTORY_TITLE
@@ -118,9 +113,10 @@ class AudioController(object):
         if song.info.title is None:
             if song.host == linkutils.Sites.Spotify:
                 conversion = await self.search_youtube(await linkutils.convert_spotify(song.info.webpage_url))
-                song.info.webpage_url = conversion
-
-            await self.fetch_song_info(song)
+                if conversion:
+                    song.update(conversion)
+            else:
+                await self.fetch_song_info(song)
 
         self.playlist.add_name(song.info.title)
         self.current_song = song
@@ -157,21 +153,26 @@ class AudioController(object):
                         linkutils.Sites.Unknown)
             return song
 
+        data = None
+
         if host == linkutils.Sites.Unknown:
             if linkutils.get_url(track) is not None:
                 return None
 
-            track = await self.search_youtube(track)
+            data = await self.search_youtube(track)
 
-        if host == linkutils.Sites.Spotify:
+        elif host == linkutils.Sites.Spotify:
             title = await linkutils.convert_spotify(track)
-            track = await self.search_youtube(title)
+            data = await self.search_youtube(title)
 
-        if host == linkutils.Sites.YouTube:
+        elif host == linkutils.Sites.YouTube:
             track = track.split("&list=")[0]
 
         song = Song(linkutils.Origins.Default, host, webpage_url=track)
-        await self.fetch_song_info(song)
+        if data:
+            song.update(data)
+        else:
+            await self.fetch_song_info(song)
 
         self.playlist.add(song)
         if self.current_song is None:
@@ -235,21 +236,24 @@ class AudioController(object):
         for song in list(self.playlist.playque)[:config.MAX_SONG_PRELOAD]:
             asyncio.ensure_future(self.preload(song))
 
-    async def preload(self, song):
+    async def preload(self, song: Song):
 
         if song.info.title is not None:
             return
 
         if song.host == linkutils.Sites.Spotify:
-            song.info.title = await linkutils.convert_spotify(song.info.webpage_url)
-            song.info.webpage_url = await self.search_youtube(song.info.title)
+            title = await linkutils.convert_spotify(song.info.webpage_url)
+            data = await self.search_youtube(title)
+            if data:
+                song.update(data)
+            return
 
         if song.info.webpage_url is None:
             return None
 
         await self.fetch_song_info(song)
 
-    async def search_youtube(self, title: str) -> Optional[str]:
+    async def search_youtube(self, title: str) -> Optional[dict]:
         """Searches youtube for the video title and returns the first results video link"""
 
         # if title is already a link
@@ -268,9 +272,7 @@ class AudioController(object):
         if not r:
             return None
 
-        videocode = r['entries'][0]['id']
-
-        return "https://www.youtube.com/watch?v={}".format(videocode)
+        return r['entries'][0]
 
     async def stop_player(self):
         """Stops the player and removes all songs from the queue"""

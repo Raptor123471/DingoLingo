@@ -1,11 +1,23 @@
 import datetime
+from typing import Optional
 
 import discord
 from config import config
+from musicbot.linkutils import Origins, Sites
 
 
-class Song():
-    def __init__(self, origin, host, base_url=None, uploader=None, title=None, duration=None, webpage_url=None, thumbnail=None):
+class Song:
+    def __init__(
+        self,
+        origin: Origins,
+        host: Sites,
+        base_url: Optional[str] = None,
+        uploader: Optional[str] = None,
+        title: Optional[str] = None,
+        duration: Optional[int] = None,
+        webpage_url: Optional[str] = None,
+        thumbnail: Optional[str] = None,
+    ):
         self.host = host
         self.origin = origin
         self.base_url = base_url
@@ -13,7 +25,14 @@ class Song():
                                webpage_url, thumbnail)
 
     class Sinfo:
-        def __init__(self, uploader, title, duration, webpage_url, thumbnail):
+        def __init__(
+            self,
+            uploader: Optional[str],
+            title: Optional[str],
+            duration: Optional[int],
+            webpage_url: Optional[str],
+            thumbnail: Optional[str]
+        ):
             self.uploader = uploader
             self.title = title
             self.duration = duration
@@ -39,3 +58,11 @@ class Song():
                                 value=config.SONGINFO_UNKNOWN_DURATION , inline=False)
 
             return embed
+
+    def update(self, data: dict):
+        self.base_url = data.get('url')
+        self.info.uploader = data.get('uploader')
+        self.info.title = data.get('title')
+        self.info.duration = data.get('duration')
+        self.info.webpage_url = data.get('webpage_url')
+        self.info.thumbnail = data.get('thumbnails')[0]['url']

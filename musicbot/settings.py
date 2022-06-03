@@ -9,14 +9,14 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 class Settings():
 
-    def __init__(self, guild):
+    def __init__(self, guild: discord.Guild):
         self.guild = guild
-        self.json_data = None
-        self.config = None
+        self.json_data: dict = None
+        self.config: dict = None
         self.path = '{}/generated/settings.json'.format(dir_path)
 
         self.settings_template = {
-            "id": 0,
+            # "id": 0,
             "default_nickname": "",
             "command_channel": None,
             "start_voice_channel": None,
@@ -38,18 +38,16 @@ class Settings():
         return response
 
     def reload(self):
-        source = open(self.path, 'r')
-        self.json_data = json.load(source)
+        with open(self.path, 'r') as source:
+            self.json_data = json.load(source)
 
         target = None
 
-        for server in self.json_data:
-            server = self.json_data[server]
+        for guild_id in self.json_data:
+            if guild_id == str(self.guild.id):
+                target = self.json_data[guild_id]
 
-            if server['id'] == self.guild.id:
-                target = server
-
-        if target == None:
+        if target is None:
             self.create()
             return
 
@@ -68,8 +66,7 @@ class Settings():
 
     def create(self):
 
-        self.json_data[self.guild.id] = self.settings_template
-        self.json_data[self.guild.id]['id'] = self.guild.id
+        self.json_data[str(self.guild.id)] = self.settings_template
 
         with open(self.path, 'w') as source:
             json.dump(self.json_data, source)
@@ -86,43 +83,30 @@ class Settings():
         embed.set_footer(
             text="Usage: {}set setting_name value".format(config.BOT_PREFIX))
 
-        exclusion_keys = ['id']
+        # exclusion_keys = ['id']
 
         for key in self.config.keys():
-            if key in exclusion_keys:
-                continue
+            # if key in exclusion_keys:
+            #     continue
 
-            if self.config.get(key) == "" or self.config.get(key) == None:
+            if not self.config.get(key):
 
                 embed.add_field(name=key, value="Not Set", inline=False)
                 continue
 
             elif key == "start_voice_channel":
-                if self.config.get(key) != None:
-                    found = False
-                    for vc in self.guild.voice_channels:
-                        if vc.id == self.config.get(key):
-                            embed.add_field(
-                                name=key, value=vc.name, inline=False)
-                            found = True
-                    if found == False:
-                        embed.add_field(
-                            name=key, value="Invalid VChannel", inline=False)
+                vc = self.guild.get_channel(self.config.get(key))
+                embed.add_field(
+                    name=key, value=vc.name if vc else "Invalid VChannel", inline=False)
 
-                    continue
+                continue
 
             elif key == "command_channel":
-                if self.config.get(key) != None:
-                    found = False
-                    for chan in self.guild.text_channels:
-                        if chan.id == self.config.get(key):
-                            embed.add_field(
-                                name=key, value=chan.name, inline=False)
-                            found = True
-                    if found == False:
-                        embed.add_field(
-                            name=key, value="Invalid Channel", inline=False)
-                    continue
+                chan = self.guild.get_channel(self.config.get(key))
+                embed.add_field(
+                    name=key, value=chan.name if chan else "Invalid Channel", inline=False)
+
+                continue
 
             embed.add_field(name=key, value=self.config.get(key), inline=False)
 
@@ -130,25 +114,22 @@ class Settings():
 
     async def process_setting(self, setting, value, ctx):
 
-        switcher = {
-            'default_nickname': lambda: self.default_nickname(setting, value, ctx),
-            'command_channel': lambda: self.command_channel(setting, value, ctx),
-            'start_voice_channel': lambda: self.start_voice_channel(setting, value, ctx),
-            'user_must_be_in_vc': lambda: self.user_must_be_in_vc(setting, value, ctx),
-            'button_emote': lambda: self.button_emote(setting, value, ctx),
-            'default_volume': lambda: self.default_volume(setting, value, ctx),
-            'vc_timeout': lambda: self.vc_timeout(setting, value, ctx),
+        options = {
+            'default_nickname',
+            'command_channel',
+            'start_voice_channel',
+            'user_must_be_in_vc',
+            'button_emote',
+            'default_volume',
+            'vc_timeout',
         }
-        func = switcher.get(setting)
-
-        if func is None:
+        if setting not in options:
             return None
-        else:
-            answer = await func()
-            if answer == None:
-                return True
-            else:
-                return answer
+
+        answer = await getattr(self, setting)(setting, value, ctx)
+        if answer is None:
+            return True
+        return answer
 
     # -----setting methods-----
 
@@ -165,7 +146,7 @@ class Settings():
             self.config[setting] = value
             try:
                 await self.guild.me.edit(nick=value)
-            except:
+            except discord.Forbidden:
                 await ctx.send("`Error: Cannot set nickname. Please check bot permissions.")
 
 
@@ -180,7 +161,7 @@ class Settings():
             if chan.name.lower() == value.lower():
                 self.config[setting] = chan.id
                 found = True
-        if found == False:
+        if not found:
             await ctx.send("`Error: Channel name not found`\nUsage: {}set {} channelname\nOther options: unset".format(config.BOT_PREFIX, setting))
             return False
 
@@ -196,7 +177,7 @@ class Settings():
                 self.config[setting] = vc.id
                 self.config['vc_timeout'] = False
                 found = True
-        if found == False:
+        if not found:
             await ctx.send("`Error: Voice channel name not found`\nUsage: {}set {} vchannelname\nOther options: unset".format(config.BOT_PREFIX, setting))
             return False
 
@@ -225,7 +206,7 @@ class Settings():
     async def default_volume(self, setting, value, ctx):
         try:
             value = int(value)
-        except:
+        except ValueError:
             await ctx.send("`Error: Value must be a number`\nUsage: {}set {} 0-100".format(config.BOT_PREFIX, setting))
             return False
 
@@ -237,7 +218,7 @@ class Settings():
 
     async def vc_timeout(self, setting, value, ctx):
 
-        if config.ALLOW_VC_TIMEOUT_EDIT == False:
+        if not config.ALLOW_VC_TIMEOUT_EDIT:
             await ctx.send("`Error: This value cannot be modified".format(config.BOT_PREFIX, setting))
 
         if value.lower() == "true":

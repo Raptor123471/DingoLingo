@@ -11,7 +11,46 @@ from musicbot.utils import guild_to_audiocontroller, guild_to_settings
 initial_extensions = ['musicbot.commands.music',
                       'musicbot.commands.general', 'musicbot.plugins.button']
 bot = commands.Bot(command_prefix=config.BOT_PREFIX,
-                   pm_help=True, case_insensitive=True)
+                   pm_help=True, case_insensitive=True,
+                   status=discord.Status.online,
+                   activity=discord.Game(name="Music, type {}help".format(config.BOT_PREFIX)))
+
+
+@bot.event
+async def on_ready():
+    print(config.STARTUP_MESSAGE)
+
+    for guild in bot.guilds:
+        await register(guild)
+        print("Joined {}".format(guild.name))
+
+    print(config.STARTUP_COMPLETE_MESSAGE)
+
+
+@bot.event
+async def on_guild_join(guild):
+    print(guild.name)
+    await register(guild)
+
+
+async def register(guild: discord.Guild):
+    if guild in guild_to_settings:
+        return
+
+    sett = guild_to_settings[guild] = Settings(guild)
+    controller = guild_to_audiocontroller[guild] = AudioController(bot, guild)
+
+    if config.GLOBAL_DISABLE_AUTOJOIN_VC:
+        return
+
+    if not sett.get('vc_timeout'):
+        try:
+            await controller.register_voice_channel(
+                guild.get_channel(sett.get('start_voice_channel'))
+                or guild.voice_channels[0]
+            )
+        except Exception as e:
+            print(e)
 
 
 if __name__ == '__main__':
@@ -29,51 +68,4 @@ if __name__ == '__main__':
         except Exception as e:
             print(e)
 
-
-@bot.event
-async def on_ready():
-    print(config.STARTUP_MESSAGE)
-    await bot.change_presence(status=discord.Status.online, activity=discord.Game(name="Music, type {}help".format(config.BOT_PREFIX)))
-
-    for guild in bot.guilds:
-        await register(guild)
-        print("Joined {}".format(guild.name))
-
-    print(config.STARTUP_COMPLETE_MESSAGE)
-
-
-@bot.event
-async def on_guild_join(guild):
-    print(guild.name)
-    await register(guild)
-
-
-async def register(guild):
-
-    guild_to_settings[guild] = Settings(guild)
-    guild_to_audiocontroller[guild] = AudioController(bot, guild)
-
-    sett = guild_to_settings[guild]
-
-    if config.GLOBAL_DISABLE_AUTOJOIN_VC == True:
-        return
-
-    vc_channels = guild.voice_channels
-
-    if sett.get('vc_timeout') == False:
-        if sett.get('start_voice_channel') == None:
-            try:
-                await guild_to_audiocontroller[guild].register_voice_channel(guild.voice_channels[0])
-            except Exception as e:
-                print(e)
-
-        else:
-            for vc in vc_channels:
-                if vc.id == sett.get('start_voice_channel'):
-                    try:
-                        await guild_to_audiocontroller[guild].register_voice_channel(vc_channels[vc_channels.index(vc)])
-                    except Exception as e:
-                        print(e)
-
-
-bot.run(config.BOT_TOKEN, bot=True, reconnect=True)
+    bot.run(config.BOT_TOKEN, bot=True, reconnect=True)

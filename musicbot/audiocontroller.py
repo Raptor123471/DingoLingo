@@ -1,13 +1,17 @@
 import asyncio
-import concurrent.futures
+from typing import Optional
 
 import discord
+from discord.ext.commands import Bot
 import yt_dlp
 from config import config
 
 from musicbot import linkutils, utils
 from musicbot.playlist import Playlist
 from musicbot.songinfo import Song
+
+
+_cached_downloaders: list[tuple[dict, yt_dlp.YoutubeDL]] = []
 
 
 class AudioController(object):
@@ -20,31 +24,66 @@ class AudioController(object):
                 guild: The guild in which the Audiocontroller operates.
         """
 
-    def __init__(self, bot, guild):
+    def __init__(self, bot: Bot, guild: discord.Guild):
         self.bot = bot
         self.playlist = Playlist()
         self.current_song = None
         self.guild = guild
 
         sett = utils.guild_to_settings[guild]
-        self._volume = sett.get('default_volume')
+        self._volume: int = sett.get('default_volume')
 
         self.timer = utils.Timer(self.timeout_handler)
 
     @property
-    def volume(self):
+    def volume(self) -> int:
         return self._volume
 
     @volume.setter
-    def volume(self, value):
+    def volume(self, value: int):
         self._volume = value
         try:
             self.guild.voice_client.source.volume = float(value) / 100.0
-        except Exception as e:
+        except Exception:
             pass
 
-    async def register_voice_channel(self, channel):
+    async def register_voice_channel(self, channel: discord.VoiceChannel):
         await channel.connect(reconnect=True, timeout=None)
+
+    async def extract_info(self, url: str, options: dict) -> dict:
+        downloader = None
+        for o, d in _cached_downloaders:
+            if o == options:
+                downloader = d
+                break
+        else:
+            downloader = yt_dlp.YoutubeDL(options)
+            _cached_downloaders.append((options, downloader))
+        # if options in _cached_downloaders:
+        #     downloader = _cached_downloaders[options]
+        # else:
+        #     downloader = _cached_downloaders[options] = yt_dlp.YoutubeDL(options)
+        return await self.bot.loop.run_in_executor(None, downloader.extract_info, url, False)
+
+    async def fetch_song_info(self, song: Song):
+        try:
+            info = await self.extract_info(
+                song.info.webpage_url,
+                {'format': 'bestaudio', 'title': True, "cookiefile": config.COOKIE_PATH}
+            )
+        except Exception as e:
+            if "ERROR: Sign in to confirm your age" in str(e):
+                return
+            info = await self.extract_info(
+                song,
+                {'title': True, "cookiefile": config.COOKIE_PATH}
+            )
+        song.base_url = info.get('url')
+        song.info.uploader = info.get('uploader')
+        song.info.title = info.get('title')
+        song.info.duration = info.get('duration')
+        song.info.webpage_url = info.get('webpage_url')
+        song.info.thumbnail = info.get('thumbnails')[0]['url']
 
     def track_history(self):
         history_string = config.INFO_HISTORY_TITLE
@@ -52,7 +91,7 @@ class AudioController(object):
             history_string += "\n" + trackname
         return history_string
 
-    def next_song(self, error):
+    def next_song(self, error=None):
         """Invoked after a song is finished. Plays the next song if there is one."""
 
         next_song = self.playlist.next(self.current_song)
@@ -65,37 +104,19 @@ class AudioController(object):
         coro = self.play_song(next_song)
         self.bot.loop.create_task(coro)
 
-    async def play_song(self, song):
+    async def play_song(self, song: Song):
         """Plays a song object"""
 
         if self.playlist.loop == "off": #let timer run thouh if looping
             self.timer.cancel()
             self.timer = utils.Timer(self.timeout_handler)
 
-        if song.info.title == None:
+        if song.info.title is None:
             if song.host == linkutils.Sites.Spotify:
-                conversion = self.search_youtube(await linkutils.convert_spotify(song.info.webpage_url))
+                conversion = await self.search_youtube(await linkutils.convert_spotify(song.info.webpage_url))
                 song.info.webpage_url = conversion
 
-            try:
-                downloader = yt_dlp.YoutubeDL(
-                    {'format': 'bestaudio', 'title': True, "cookiefile": config.COOKIE_PATH})
-                r = downloader.extract_info(
-                    song.info.webpage_url, download=False)
-            except:
-                asyncio.wait(1)
-                downloader = yt_dlp.YoutubeDL(
-                    {'title': True, "cookiefile": config.COOKIE_PATH})
-                r = downloader.extract_info(
-                    track, download=False)
-
-
-            song.base_url = r.get('url')
-            song.info.uploader = r.get('uploader')
-            song.info.title = r.get('title')
-            song.info.duration = r.get('duration')
-            song.info.webpage_url = r.get('webpage_url')
-            song.info.thumbnail = r.get('thumbnails')[0]['url']
+            await self.fetch_song_info(song)
 
         self.playlist.add_name(song.info.title)
         self.current_song = song
@@ -103,7 +124,7 @@ class AudioController(object):
         self.playlist.playhistory.append(self.current_song)
 
         self.guild.voice_client.play(discord.FFmpegPCMAudio(
-            song.base_url, before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'), after=lambda e: self.next_song(e))
+            song.base_url, before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'), after=self.next_song)
 
         self.guild.voice_client.source = discord.PCMVolumeTransformer(
             self.guild.voice_client.source)
@@ -114,7 +135,7 @@ class AudioController(object):
         for song in list(self.playlist.playque)[:config.MAX_SONG_PRELOAD]:
             asyncio.ensure_future(self.preload(song))
 
-    async def process_song(self, track):
+    async def process_song(self, track: str) -> Optional[Song]:
         """Adds the track to the playlist instance and plays it, if it is the first song"""
 
         host = linkutils.identify_url(track)
@@ -124,7 +145,7 @@ class AudioController(object):
 
             await self.process_playlist(is_playlist, track)
 
-            if self.current_song == None:
+            if self.current_song is None:
                 await self.play_song(self.playlist.playque[0])
                 print("Playing {}".format(track))
 
@@ -136,48 +157,26 @@ class AudioController(object):
             if linkutils.get_url(track) is not None:
                 return None
 
-            track = self.search_youtube(track)
+            track = await self.search_youtube(track)
 
         if host == linkutils.Sites.Spotify:
             title = await linkutils.convert_spotify(track)
-            track = self.search_youtube(title)
+            track = await self.search_youtube(title)
 
         if host == linkutils.Sites.YouTube:
             track = track.split("&list=")[0]
 
-        try:
-            downloader = yt_dlp.YoutubeDL(
-                {'format': 'bestaudio', 'title': True, "cookiefile": config.COOKIE_PATH})
-
-            try:
-                r = downloader.extract_info(
-                    track, download=False)
-            except Exception as e:
-                if "ERROR: Sign in to confirm your age" in str(e):
-                    return None
-        except:
-            downloader = yt_dlp.YoutubeDL(
-                {'title': True, "cookiefile": config.COOKIE_PATH})
-            r = downloader.extract_info(
-                track, download=False)
-
-        if r.get('thumbnails') is not None:
-            thumbnail = r.get('thumbnails')[len(
-                r.get('thumbnails')) - 1]['url']
-        else:
-            thumbnail = None
-
-        song = Song(linkutils.Origins.Default, host, base_url=r.get('url'), uploader=r.get('uploader'), title=r.get(
-            'title'), duration=r.get('duration'), webpage_url=r.get('webpage_url'), thumbnail=thumbnail)
+        song = Song(linkutils.Origins.Default, host, webpage_url=track)
+        await self.fetch_song_info(song)
 
         self.playlist.add(song)
-        if self.current_song == None:
+        if self.current_song is None:
             print("Playing {}".format(track))
             await self.play_song(song)
 
         return song
 
-    async def process_playlist(self, playlist_type, url):
+    async def process_playlist(self, playlist_type: linkutils.Playlist_Types, url: str):
 
         if playlist_type == linkutils.Playlist_Types.YouTube_Playlist:
 
@@ -194,18 +193,17 @@ class AudioController(object):
                 "cookiefile": config.COOKIE_PATH
             }
 
-            with yt_dlp.YoutubeDL(options) as ydl:
-                r = ydl.extract_info(url, download=False)
+            r = await self.extract_info(url, options)
 
-                for entry in r['entries']:
+            for entry in r['entries']:
 
-                    link = "https://www.youtube.com/watch?v={}".format(
-                        entry['id'])
+                link = "https://www.youtube.com/watch?v={}".format(
+                    entry['id'])
 
-                    song = Song(linkutils.Origins.Playlist,
-                                linkutils.Sites.YouTube, webpage_url=link)
+                song = Song(linkutils.Origins.Playlist,
+                            linkutils.Sites.YouTube, webpage_url=link)
 
-                    self.playlist.add(song)
+                self.playlist.add(song)
 
         if playlist_type == linkutils.Playlist_Types.Spotify_Playlist:
             links = await linkutils.get_spotify_playlist(url)
@@ -219,54 +217,35 @@ class AudioController(object):
                 'format': 'bestaudio/best',
                 'extract_flat': True
             }
-            with yt_dlp.YoutubeDL(options) as ydl:
-                r = ydl.extract_info(url, download=False)
+            r = await self.extract_info(url, options)
 
-                for entry in r['entries']:
+            for entry in r['entries']:
 
-                    link = entry.get('url')
+                link = entry.get('url')
 
-                    song = Song(linkutils.Origins.Playlist,
-                                linkutils.Sites.Bandcamp, webpage_url=link)
+                song = Song(linkutils.Origins.Playlist,
+                            linkutils.Sites.Bandcamp, webpage_url=link)
 
-                    self.playlist.add(song)
+                self.playlist.add(song)
 
         for song in list(self.playlist.playque)[:config.MAX_SONG_PRELOAD]:
             asyncio.ensure_future(self.preload(song))
 
     async def preload(self, song):
 
-        if song.info.title != None:
+        if song.info.title is not None:
             return
-
-        def down(song):
-
-            if song.host == linkutils.Sites.Spotify:
-                song.info.webpage_url = self.search_youtube(song.info.title)
-
-            if song.info.webpage_url == None:
-                return None
-
-            downloader = yt_dlp.YoutubeDL(
-                {'format': 'bestaudio', 'title': True, "cookiefile": config.COOKIE_PATH})
-            r = downloader.extract_info(
-                song.info.webpage_url, download=False)
-            song.base_url = r.get('url')
-            song.info.uploader = r.get('uploader')
-            song.info.title = r.get('title')
-            song.info.duration = r.get('duration')
-            song.info.webpage_url = r.get('webpage_url')
-            song.info.thumbnail = r.get('thumbnails')[0]['url']
 
         if song.host == linkutils.Sites.Spotify:
             song.info.title = await linkutils.convert_spotify(song.info.webpage_url)
+            song.info.webpage_url = await self.search_youtube(song.info.title)
 
-        loop = asyncio.get_event_loop()
-        executor = concurrent.futures.ThreadPoolExecutor(
-            max_workers=config.MAX_SONG_PRELOAD)
-        await asyncio.wait(fs={loop.run_in_executor(executor, down, song)}, return_when=asyncio.ALL_COMPLETED)
+        if song.info.webpage_url is None:
+            return None
 
-    def search_youtube(self, title):
+        await self.fetch_song_info(song)
+
+    async def search_youtube(self, title: str) -> Optional[str]:
         """Searches youtube for the video title and returns the first results video link"""
 
         # if title is already a link
@@ -280,10 +259,9 @@ class AudioController(object):
             "cookiefile": config.COOKIE_PATH
         }
 
-        with yt_dlp.YoutubeDL(options) as ydl:
-            r = ydl.extract_info(title, download=False)
+        r = await self.extract_info(title, options)
 
-        if r == None:
+        if not r:
             return None
 
         videocode = r['entries'][0]['id']
@@ -329,17 +307,13 @@ class AudioController(object):
             await self.udisconnect()
             return
 
+        self.timer = utils.Timer(self.timeout_handler)  # restart timer
+
         sett = utils.guild_to_settings[self.guild]
 
-        if sett.get('vc_timeout') == False:
-            self.timer = utils.Timer(self.timeout_handler)  # restart timer
+        if not sett.get('vc_timeout') or self.guild.voice_client.is_playing():
             return
 
-        if self.guild.voice_client.is_playing():
-            self.timer = utils.Timer(self.timeout_handler)  # restart timer
-            return
-
-        self.timer = utils.Timer(self.timeout_handler)
         await self.udisconnect()
 
     async def uconnect(self, ctx):
@@ -348,10 +322,11 @@ class AudioController(object):
             await ctx.send(config.NO_GUILD_MESSAGE)
             return False
 
-        if self.guild.voice_client == None:
+        if self.guild.voice_client is None:
             await self.register_voice_channel(ctx.author.voice.channel)
         else:
             await ctx.send(config.ALREADY_CONNECTED_MESSAGE)
+        return True
 
     async def udisconnect(self):
         await self.stop_player()

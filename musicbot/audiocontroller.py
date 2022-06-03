@@ -267,7 +267,7 @@ class AudioController(object):
             "cookiefile": config.COOKIE_PATH
         }
 
-        r = await self.extract_info(title, options)
+        r = await self.extract_info("ytsearch:" + title, options)
 
         if not r:
             return None

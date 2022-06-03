@@ -1,14 +1,17 @@
 import asyncio
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 import discord
-from discord.ext.commands import Bot
 import yt_dlp
 from config import config
 
 from musicbot import linkutils, utils
 from musicbot.playlist import Playlist
 from musicbot.songinfo import Song
+
+# avoiding circular import
+if TYPE_CHECKING:
+    from musicbot.bot import MusicBot
 
 
 _cached_downloaders: list[tuple[dict, yt_dlp.YoutubeDL]] = []
@@ -24,13 +27,13 @@ class AudioController(object):
                 guild: The guild in which the Audiocontroller operates.
         """
 
-    def __init__(self, bot: Bot, guild: discord.Guild):
+    def __init__(self, bot: "MusicBot", guild: discord.Guild):
         self.bot = bot
         self.playlist = Playlist()
         self.current_song = None
         self.guild = guild
 
-        sett = utils.guild_to_settings[guild]
+        sett = bot.settings[guild]
         self._volume: int = sett.get('default_volume')
 
         self.timer = utils.Timer(self.timeout_handler)
@@ -309,7 +312,7 @@ class AudioController(object):
 
         self.timer = utils.Timer(self.timeout_handler)  # restart timer
 
-        sett = utils.guild_to_settings[self.guild]
+        sett = self.bot.settings[self.guild]
 
         if not sett.get('vc_timeout') or self.guild.voice_client.is_playing():
             return

@@ -1,52 +1,12 @@
 import os
 
 import discord
-from discord.ext import commands
 
 from config import config
-from musicbot.audiocontroller import AudioController
-from musicbot.settings import Settings
-from musicbot.utils import guild_to_audiocontroller, guild_to_settings
+from musicbot.bot import MusicBot
 
 initial_extensions = ['musicbot.commands.music',
                       'musicbot.commands.general', 'musicbot.plugins.button']
-
-
-class MusicBot(commands.Bot):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    async def on_ready(self):
-        print(config.STARTUP_MESSAGE)
-
-        for guild in self.guilds:
-            await self.register(guild)
-            print("Joined {}".format(guild.name))
-
-        print(config.STARTUP_COMPLETE_MESSAGE)
-
-    async def on_guild_join(self, guild):
-        print(guild.name)
-        await self.register(guild)
-
-    async def register(self, guild: discord.Guild):
-        if guild in guild_to_settings:
-            return
-
-        sett = guild_to_settings[guild] = Settings(guild)
-        controller = guild_to_audiocontroller[guild] = AudioController(bot, guild)
-
-        if config.GLOBAL_DISABLE_AUTOJOIN_VC:
-            return
-
-        if not sett.get('vc_timeout'):
-            try:
-                await controller.register_voice_channel(
-                    guild.get_channel(sett.get('start_voice_channel'))
-                    or guild.voice_channels[0]
-                )
-            except Exception as e:
-                print(e)
 
 
 bot = MusicBot(command_prefix=config.BOT_PREFIX,

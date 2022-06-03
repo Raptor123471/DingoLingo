@@ -1,14 +1,16 @@
 import asyncio
+from typing import TYPE_CHECKING, Awaitable, Optional
+
+from discord import Guild, Message
+
 from config import config
 
-# A dictionary that remembers which guild belongs to which audiocontroller
-guild_to_audiocontroller = {}
-
-# A dictionary that remembers which settings belongs to which guild
-guild_to_settings = {}
+# avoiding circular import
+if TYPE_CHECKING:
+    from musicbot.bot import MusicBot, Context
 
 
-def get_guild(bot, command):
+def get_guild(bot: "MusicBot", command: Message) -> Optional[Guild]:
     """Gets the guild a command belongs to. Useful, if the command was sent via pm."""
     if command.guild is not None:
         return command.guild
@@ -19,7 +21,7 @@ def get_guild(bot, command):
     return None
 
 
-async def connect_to_channel(guild, dest_channel_name, ctx, switch=False, default=True):
+async def connect_to_channel(guild: Guild, dest_channel_name, ctx, switch: bool = False, default: bool = True):
     """Connects the bot to the specified voice channel.
 
         Args:
@@ -47,39 +49,39 @@ async def connect_to_channel(guild, dest_channel_name, ctx, switch=False, defaul
         await ctx.send(config.CHANNEL_NOT_FOUND_MESSAGE + str(dest_channel_name))
 
 
-async def is_connected(ctx):
+async def is_connected(ctx: "Context"):
     try:
-        voice_channel = ctx.guild.voice_client.channel
-        return voice_channel
-    except:
+        return ctx.guild.voice_client.channel
+    except AttributeError:
         return None
 
 
-async def play_check(ctx):
+async def play_check(ctx: "Context"):
 
-    sett = guild_to_settings[ctx.guild]
+    sett = ctx.bot.settings[ctx.guild]
 
     cm_channel = sett.get('command_channel')
     vc_rule = sett.get('user_must_be_in_vc')
 
-    if cm_channel != None:
+    if cm_channel is not None:
         if cm_channel != ctx.message.channel.id:
             await ctx.send(config.WRONG_CHANNEL_MESSAGE)
             return False
 
-    if vc_rule == True:
+    if vc_rule:
         author_voice = ctx.message.author.voice
-        bot_vc = ctx.guild.voice_client.channel
-        if author_voice == None:
+        bot_vc = ctx.guild.voice_client
+        if not bot_vc:
+            await ctx.send(config.NOT_CONNECTED_MESSAGE)
+            return False
+        elif not author_voice or author_voice.channel != bot_vc.channel:
             await ctx.send(config.USER_NOT_IN_VC_MESSAGE)
             return False
-        elif ctx.message.author.voice.channel != bot_vc:
-            await ctx.send(config.USER_NOT_IN_VC_MESSAGE)
-            return False
+    return True
 
 
 class Timer:
-    def __init__(self, callback):
+    def __init__(self, callback: Awaitable):
         self._callback = callback
         self._task = asyncio.create_task(self._job())
 

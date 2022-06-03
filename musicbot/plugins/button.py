@@ -1,17 +1,18 @@
 import discord
 from discord.ext import commands
 from musicbot import linkutils, utils
+from musicbot.bot import MusicBot
 
 
 class Button(commands.Cog):
 
-    def __init__(self, bot):
+    def __init__(self, bot: MusicBot):
         self.bot = bot
 
     @commands.Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message):
 
-        sett = utils.guild_to_settings[message.guild]
+        sett = self.bot.settings[message.guild]
         button_name = sett.get('button_emote')
 
         if button_name == "":
@@ -38,11 +39,11 @@ class Button(commands.Cog):
                 await message.add_reaction(emoji)
 
     @commands.Cog.listener()
-    async def on_raw_reaction_add(self, reaction):
+    async def on_raw_reaction_add(self, reaction: discord.RawReactionActionEvent):
 
         serv = self.bot.get_guild(reaction.guild_id)
 
-        sett = utils.guild_to_settings[serv]
+        sett = self.bot.settings[serv]
         button_name = sett.get('button_emote')
 
         if button_name == "":
@@ -67,7 +68,7 @@ class Button(commands.Cog):
                     await message.remove_reaction(reaction.emoji, reaction.member)
 
             current_guild = utils.get_guild(self.bot, message)
-            audiocontroller = utils.guild_to_audiocontroller[current_guild]
+            audiocontroller = self.bot.audio_controllers[current_guild]
 
             url = linkutils.get_url(message.content)
 
@@ -83,5 +84,5 @@ class Button(commands.Cog):
                 await audiocontroller.process_song(url)
 
 
-def setup(bot):
+def setup(bot: MusicBot):
     bot.add_cog(Button(bot))

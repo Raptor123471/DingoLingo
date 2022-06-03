@@ -1,5 +1,6 @@
 import re
 from enum import Enum
+from typing import Optional, Union
 
 import aiohttp
 import spotipy
@@ -19,11 +20,11 @@ url_regex = re.compile(
 
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'}
 
-def clean_sclink(track):
+def clean_sclink(track: str) -> str:
     return re.sub(r"^https?://m\.", "https://", track)
 
 
-async def convert_spotify(url):
+async def convert_spotify(url: str) -> str:
 
     result = url_regex.search(url)
     if result and "?si=" in url:
@@ -31,19 +32,19 @@ async def convert_spotify(url):
 
     async with aiohttp.ClientSession(headers=headers) as session:
         async with session.get(url) as response:
-
             page = await response.text()
-            soup = BeautifulSoup(page, 'html.parser')
 
-            title = soup.find('title')
-            title = title.string
-            title = title.replace('- song by', '')
-            title = title.replace('| Spotify', '')
-            
-            return title
+    soup = BeautifulSoup(page, 'html.parser')
+
+    title = soup.find('title')
+    title = title.string
+    title = title.replace('- song by', '')
+    title = title.replace('| Spotify', '')
+    
+    return title
 
 
-async def get_spotify_playlist(url):
+async def get_spotify_playlist(url: str) -> list:
     """Return Spotify_Playlist class"""
 
     code = url.split('/')[4].split('?')[0]
@@ -92,7 +93,7 @@ async def get_spotify_playlist(url):
     return links
 
 
-def get_url(content):
+def get_url(content: str) -> Optional[str]:
     result = url_regex.search(content)
     if result:
         return result.group(0)
@@ -122,7 +123,7 @@ class Origins(Enum):
     Playlist = "Playlist"
 
 
-def identify_url(url):
+def identify_url(url: Optional[str]) -> Sites:
     if url is None:
         return Sites.Unknown
 
@@ -151,7 +152,7 @@ def identify_url(url):
     return Sites.Unknown
 
 
-def identify_playlist(url):
+def identify_playlist(url: Optional[str]) -> Union[Sites, Playlist_Types]:
     if url is None:
         return Sites.Unknown
 

@@ -20,50 +20,38 @@ class General(commands.Cog):
     # logic is split to uconnect() for wide usage
     @commands.command(name='connect', description=config.HELP_CONNECT_LONG, help=config.HELP_CONNECT_SHORT, aliases=['c'])
     async def _connect(self, ctx: Context):  # dest_channel_name: str
-        current_guild = utils.get_guild(self.bot, ctx.message)
-        audiocontroller = ctx.bot.audio_controllers[current_guild]
+        audiocontroller = ctx.bot.audio_controllers[ctx.guild]
         await audiocontroller.uconnect(ctx)
 
     @commands.command(name='disconnect', description=config.HELP_DISCONNECT_LONG, help=config.HELP_DISCONNECT_SHORT, aliases=['dc'])
-    async def _disconnect(self, ctx: Context, guild=False):
-        current_guild = utils.get_guild(self.bot, ctx.message)
-        audiocontroller = ctx.bot.audio_controllers[current_guild]
+    async def _disconnect(self, ctx: Context):
+        audiocontroller = ctx.bot.audio_controllers[ctx.guild]
         await audiocontroller.udisconnect()
 
     @commands.command(name='reset', description=config.HELP_DISCONNECT_LONG, help=config.HELP_DISCONNECT_SHORT, aliases=['rs', 'restart'])
     async def _reset(self, ctx: Context):
-        current_guild = utils.get_guild(self.bot, ctx.message)
+        await ctx.bot.audio_controllers[ctx.guild].stop_player()
+        await ctx.guild.voice_client.disconnect(force=True)
 
-        if current_guild is None:
-            await ctx.send(config.NO_GUILD_MESSAGE)
-            return
-        await ctx.bot.audio_controllers[current_guild].stop_player()
-        await current_guild.voice_client.disconnect(force=True)
-
-        ctx.bot.audio_controllers[current_guild] = AudioController(
-            self.bot, current_guild)
-        await ctx.bot.audio_controllers[current_guild].register_voice_channel(ctx.author.voice.channel)
+        ctx.bot.audio_controllers[ctx.guild] = AudioController(
+            self.bot, ctx.guild)
+        await ctx.bot.audio_controllers[ctx.guild].register_voice_channel(ctx.author.voice.channel)
 
         await ctx.send("{} Connected to {}".format(":white_check_mark:", ctx.author.voice.channel.name))
 
     @commands.command(name='changechannel', description=config.HELP_CHANGECHANNEL_LONG, help=config.HELP_CHANGECHANNEL_SHORT, aliases=['cc'])
     async def _change_channel(self, ctx: Context):
-        current_guild = utils.get_guild(self.bot, ctx.message)
-
         vchannel = await utils.is_connected(ctx)
         if vchannel == ctx.author.voice.channel:
             await ctx.send("{} Already connected to {}".format(":white_check_mark:", vchannel.name))
             return
 
-        if current_guild is None:
-            await ctx.send(config.NO_GUILD_MESSAGE)
-            return
-        await ctx.bot.audio_controllers[current_guild].stop_player()
-        await current_guild.voice_client.disconnect(force=True)
+        await ctx.bot.audio_controllers[ctx.guild].stop_player()
+        await ctx.guild.voice_client.disconnect(force=True)
 
-        ctx.bot.audio_controllers[current_guild] = AudioController(
-            self.bot, current_guild)
-        await ctx.bot.audio_controllers[current_guild].register_voice_channel(ctx.author.voice.channel)
+        ctx.bot.audio_controllers[ctx.guild] = AudioController(
+            self.bot, ctx.guild)
+        await ctx.bot.audio_controllers[ctx.guild].register_voice_channel(ctx.author.voice.channel)
 
         await ctx.send("{} Switched to {}".format(":white_check_mark:", ctx.author.voice.channel.name))
 
@@ -94,7 +82,7 @@ class General(commands.Cog):
     @commands.command(name='addbot', description=config.HELP_ADDBOT_LONG, help=config.HELP_ADDBOT_SHORT)
     async def _addbot(self, ctx):
         embed = discord.Embed(title="Invite", description=config.ADD_MESSAGE +
-                              "(https://discordapp.com/oauth2/authorize?client_id={}&scope=bot>)".format(self.bot.user.id))
+                              "({})".format(discord.utils.oauth_url(self.bot.user.id)))
 
         await ctx.send(embed=embed)
 

@@ -11,7 +11,8 @@ if TYPE_CHECKING:
 
 
 def get_guild(bot: "MusicBot", command: Message) -> Optional[Guild]:
-    """Gets the guild a command belongs to. Useful, if the command was sent via pm."""
+    """Gets the guild a command belongs to. Useful, if the command was sent via pm.
+    DOES NOT WORK WITHOUT MEMBERS INTENT"""
     if command.guild is not None:
         return command.guild
     for guild in bot.guilds:

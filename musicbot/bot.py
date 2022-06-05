@@ -29,6 +29,18 @@ class MusicBot(commands.Bot):
         print(guild.name)
         await self.register(guild)
 
+    async def process_commands(self, message: discord.Message):
+        if message.author.bot:
+            return
+
+        ctx = await self.get_context(message, cls=Context)
+
+        if ctx.valid and not message.guild:
+            await message.channel.send(config.NO_GUILD_MESSAGE)
+            return
+
+        await self.invoke(ctx)
+
     async def register(self, guild: discord.Guild):
         if guild in self.settings:
             return
@@ -51,3 +63,4 @@ class MusicBot(commands.Bot):
 
 class Context(commands.Context):
     bot: MusicBot
+    guild: discord.Guild

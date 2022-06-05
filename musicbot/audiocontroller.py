@@ -285,14 +285,14 @@ class AudioController(object):
         self.clear_queue()
         self.guild.voice_client.stop()
 
-    async def prev_song(self):
+    async def prev_song(self) -> bool:
         """Loads the last song from the history into the queue and starts it"""
 
         self.timer.cancel()
         self.timer = utils.Timer(self.timeout_handler)
 
         if len(self.playlist.playhistory) == 0:
-            return
+            return False
 
         prev_song = self.playlist.prev(self.current_song)
 
@@ -300,10 +300,11 @@ class AudioController(object):
 
             if prev_song == "Dummy":
                 self.playlist.next(self.current_song)
-                return None
+                return False
             await self.play_song(prev_song)
         else:
             self.guild.voice_client.stop()
+        return True
 
     async def timeout_handler(self):
         if not self.guild.voice_client:

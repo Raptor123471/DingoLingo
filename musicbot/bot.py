@@ -51,10 +51,10 @@ class MusicBot(commands.Bot):
         if config.GLOBAL_DISABLE_AUTOJOIN_VC:
             return
 
-        if not sett.get('vc_timeout'):
+        if not sett.get("vc_timeout"):
             try:
                 await controller.register_voice_channel(
-                    guild.get_channel(sett.get('start_voice_channel'))
+                    guild.get_channel(sett.get("start_voice_channel"))
                     or guild.voice_channels[0]
                 )
             except Exception as e:

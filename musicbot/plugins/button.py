@@ -5,7 +5,6 @@ from musicbot.bot import MusicBot
 
 
 class Button(commands.Cog):
-
     def __init__(self, bot: MusicBot):
         self.bot = bot
 
@@ -15,7 +14,7 @@ class Button(commands.Cog):
             return
 
         sett = self.bot.settings[message.guild]
-        button_name = sett.get('button_emote')
+        button_name = sett.get("button_emote")
 
         if button_name == "":
             return
@@ -46,7 +45,7 @@ class Button(commands.Cog):
             return
 
         sett = self.bot.settings[serv]
-        button_name = sett.get('button_emote')
+        button_name = sett.get("button_emote")
 
         if button_name == "":
             return
@@ -64,7 +63,11 @@ class Button(commands.Cog):
 
             host = linkutils.identify_url(url)
 
-            if host in (linkutils.Sites.Spotify, linkutils.Sites.Spotify_Playlist, linkutils.Sites.YouTube):
+            if host in (
+                linkutils.Sites.Spotify,
+                linkutils.Sites.Spotify_Playlist,
+                linkutils.Sites.YouTube,
+            ):
                 await audiocontroller.process_song(url)
 
 

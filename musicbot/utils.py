@@ -22,20 +22,22 @@ def get_guild(bot: "MusicBot", command: Message) -> Optional[Guild]:
     return None
 
 
-async def connect_to_channel(guild: Guild, dest_channel_name, ctx, switch: bool = False, default: bool = True):
+async def connect_to_channel(
+    guild: Guild, dest_channel_name, ctx, switch: bool = False, default: bool = True
+):
     """Connects the bot to the specified voice channel.
 
-        Args:
-            guild: The guild for witch the operation should be performed.
-            switch: Determines if the bot should disconnect from his current channel to switch channels.
-            default: Determines if the bot should default to the first channel, if the name was not found.
+    Args:
+        guild: The guild for witch the operation should be performed.
+        switch: Determines if the bot should disconnect from his current channel to switch channels.
+        default: Determines if the bot should default to the first channel, if the name was not found.
     """
     for channel in guild.voice_channels:
         if str(channel.name).strip() == str(dest_channel_name).strip():
             if switch:
                 try:
                     await guild.voice_client.disconnect()
-                except:
+                except Exception:
                     await ctx.send(config.NOT_CONNECTED_MESSAGE)
 
             await channel.connect()
@@ -44,7 +46,7 @@ async def connect_to_channel(guild: Guild, dest_channel_name, ctx, switch: bool 
     if default:
         try:
             await guild.voice_channels[0].connect()
-        except:
+        except Exception:
             await ctx.send(config.DEFAULT_CHANNEL_JOIN_FAILED)
     else:
         await ctx.send(config.CHANNEL_NOT_FOUND_MESSAGE + str(dest_channel_name))
@@ -61,8 +63,8 @@ async def play_check(ctx: "Context"):
 
     sett = ctx.bot.settings[ctx.guild]
 
-    cm_channel = sett.get('command_channel')
-    vc_rule = sett.get('user_must_be_in_vc')
+    cm_channel = sett.get("command_channel")
+    vc_rule = sett.get("user_must_be_in_vc")
 
     if cm_channel is not None:
         if cm_channel != ctx.message.channel.id:

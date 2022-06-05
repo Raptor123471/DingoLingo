@@ -5,17 +5,23 @@ import discord
 from config import config
 from musicbot.bot import MusicBot
 
-initial_extensions = ['musicbot.commands.music',
-                      'musicbot.commands.general', 'musicbot.plugins.button']
+initial_extensions = [
+    "musicbot.commands.music",
+    "musicbot.commands.general",
+    "musicbot.plugins.button",
+]
 
 
-bot = MusicBot(command_prefix=config.BOT_PREFIX,
-                   pm_help=True, case_insensitive=True,
-                   status=discord.Status.online,
-                   activity=discord.Game(name="Music, type {}help".format(config.BOT_PREFIX)))
+bot = MusicBot(
+    command_prefix=config.BOT_PREFIX,
+    pm_help=True,
+    case_insensitive=True,
+    status=discord.Status.online,
+    activity=discord.Game(name="Music, type {}help".format(config.BOT_PREFIX)),
+)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     config.ABSOLUTE_PATH = os.path.dirname(os.path.abspath(__file__))
     config.COOKIE_PATH = config.ABSOLUTE_PATH + config.COOKIE_PATH

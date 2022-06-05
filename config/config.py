@@ -1,3 +1,5 @@
+# fmt: off
+
 import os
 
 
@@ -7,25 +9,25 @@ SPOTIFY_SECRET: str = ""
 
 BOT_PREFIX = "d!"
 
-EMBED_COLOR = 0x4dd4d0  #replace after'0x' with desired hex code ex. '#ff0188' >> '0xff0188'
+EMBED_COLOR = 0x4dd4d0  # replace after'0x' with desired hex code ex. '#ff0188' >> '0xff0188'
 
-SUPPORTED_EXTENSIONS = ('.webm', '.mp4', '.mp3', '.avi', '.wav', '.m4v', '.ogg', '.mov')
+SUPPORTED_EXTENSIONS = (".webm", ".mp4", ".mp3", ".avi", ".wav", ".m4v", ".ogg", ".mov")
 
-MAX_SONG_PRELOAD = 5  #maximum of 25
+MAX_SONG_PRELOAD = 5  # maximum of 25
 
 COOKIE_PATH = "/config/cookies/cookies.txt"
 
 GLOBAL_DISABLE_AUTOJOIN_VC = False
 
-VC_TIMEOUT = 600 #seconds
-VC_TIMOUT_DEFAULT = True  #default template setting for VC timeout true= yes, timeout false= no timeout
-ALLOW_VC_TIMEOUT_EDIT = True  #allow or disallow editing the vc_timeout guild setting
+VC_TIMEOUT = 600  # seconds
+VC_TIMOUT_DEFAULT = True  # default template setting for VC timeout true= yes, timeout false= no timeout
+ALLOW_VC_TIMEOUT_EDIT = True  # allow or disallow editing the vc_timeout guild setting
 
 
 STARTUP_MESSAGE = "Starting Bot..."
 STARTUP_COMPLETE_MESSAGE = "Startup Complete"
 
-NO_GUILD_MESSAGE = 'Error: Please join a voice channel or enter the command in guild chat'
+NO_GUILD_MESSAGE = "Error: Please join a voice channel or enter the command in guild chat"
 USER_NOT_IN_VC_MESSAGE = "Error: Please join the active voice channel to use commands"
 WRONG_CHANNEL_MESSAGE = "Error: Please use configured command channel"
 NOT_CONNECTED_MESSAGE = "Error: Bot not connected to any voice channel"
@@ -34,7 +36,7 @@ CHANNEL_NOT_FOUND_MESSAGE = "Error: Could not find channel"
 DEFAULT_CHANNEL_JOIN_FAILED = "Error: Could not join the default voice channel"
 INVALID_INVITE_MESSAGE = "Error: Invalid invitation link"
 
-ADD_MESSAGE= "To add this bot to your own Server, click [here]" #brackets will be the link text
+ADD_MESSAGE = "To add this bot to your own Server, click [here]"  # brackets will be the link text
 
 INFO_HISTORY_TITLE = "Songs Played:"
 MAX_HISTORY_LENGTH = 10
@@ -79,9 +81,9 @@ HELP_SONGINFO_LONG = "Shows details about the song currently being played and po
 HELP_STOP_SHORT = "Stop Music"
 HELP_STOP_LONG = "Stops the AudioPlayer and clears the songqueue"
 HELP_MOVE_LONG = f"{BOT_PREFIX}move [position] [new position]"
-HELP_MOVE_SHORT = 'Moves a track in the queue'
+HELP_MOVE_SHORT = "Moves a track in the queue"
 HELP_YT_SHORT = "Play a supported link or search on youtube"
-HELP_YT_LONG = ("$p [link/video title/key words/playlist-link/soundcloud link/spotify link/bandcamp link/twitter link]")
+HELP_YT_LONG = "$p [link/video title/key words/playlist-link/soundcloud link/spotify link/bandcamp link/twitter link]"
 HELP_PING_SHORT = "Pong"
 HELP_PING_LONG = "Test bot response status"
 HELP_CLEAR_SHORT = "Clear the queue."
@@ -95,4 +97,4 @@ HELP_SHUFFLE_LONG = "Randomly sort the songs in the current queue"
 HELP_CHANGECHANNEL_SHORT = "Change the bot channel"
 HELP_CHANGECHANNEL_LONG = "Change the bot channel to the VC you are in"
 
-ABSOLUTE_PATH = '' #do not modify
+ABSOLUTE_PATH = ""  # do not modify

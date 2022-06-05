@@ -1,7 +1,7 @@
 import asyncio
 from typing import TYPE_CHECKING, Awaitable, Optional
 
-from discord import Guild, Message
+from discord import Guild, Message, VoiceChannel
 
 from config import config
 
@@ -50,7 +50,7 @@ async def connect_to_channel(guild: Guild, dest_channel_name, ctx, switch: bool 
         await ctx.send(config.CHANNEL_NOT_FOUND_MESSAGE + str(dest_channel_name))
 
 
-async def is_connected(ctx: "Context"):
+async def is_connected(ctx: "Context") -> Optional[VoiceChannel]:
     try:
         return ctx.guild.voice_client.channel
     except AttributeError:

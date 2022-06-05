@@ -1,8 +1,13 @@
 import json
 import os
+from typing import TYPE_CHECKING, Optional
 
 import discord
 from config import config
+
+# avoiding circular import
+if TYPE_CHECKING:
+    from musicbot.bot import Context
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
@@ -29,7 +34,7 @@ class Settings():
         self.reload()
         self.upgrade()
 
-    async def write(self, setting, value, ctx):
+    async def write(self, setting: str, value: str, ctx: "Context") -> Optional[bool]:
         response = await self.process_setting(setting, value, ctx)
 
         with open(self.path, 'w') as source:
@@ -112,7 +117,7 @@ class Settings():
 
         return embed
 
-    async def process_setting(self, setting, value, ctx):
+    async def process_setting(self, setting: str, value: str, ctx: "Context") -> Optional[bool]:
 
         options = {
             'default_nickname',

@@ -1,5 +1,5 @@
 import asyncio
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Coroutine, Optional
 
 import discord
 import yt_dlp
@@ -37,6 +37,10 @@ class AudioController(object):
         self._volume: int = sett.get("default_volume")
 
         self.timer = utils.Timer(self.timeout_handler)
+
+        # according to Python documentation, we need
+        # to keep strong references to all tasks
+        self._tasks = set()
 
     @property
     def volume(self) -> int:
@@ -110,7 +114,7 @@ class AudioController(object):
             return
 
         coro = self.play_song(next_song)
-        self.bot.loop.create_task(coro)
+        self.add_task(coro)
 
     async def play_song(self, song: Song):
         """Plays a song object"""
@@ -150,7 +154,7 @@ class AudioController(object):
         self.playlist.playque.popleft()
 
         for song in list(self.playlist.playque)[: config.MAX_SONG_PRELOAD]:
-            asyncio.ensure_future(self.preload(song))
+            self.add_task(self.preload(song))
 
     async def process_song(self, track: str) -> Optional[Song]:
         """Adds the track to the playlist instance and plays it, if it is the first song"""
@@ -256,7 +260,12 @@ class AudioController(object):
                 self.playlist.add(song)
 
         for song in list(self.playlist.playque)[: config.MAX_SONG_PRELOAD]:
-            asyncio.ensure_future(self.preload(song))
+            self.add_task(self.preload(song))
+
+    def add_task(self, coro: Coroutine):
+        task = self.bot.loop.create_task(coro)
+        self._tasks.add(task)
+        task.add_done_callback(lambda t: self._tasks.remove(t))
 
     async def preload(self, song: Song):
 

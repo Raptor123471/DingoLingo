@@ -80,10 +80,7 @@ class Music(commands.Cog):
         if not await utils.play_check(ctx):
             return
 
-        if (
-            len(audiocontroller.playlist.playque) < 1
-            and not ctx.guild.voice_client.is_playing()
-        ):
+        if not audiocontroller.is_active():
             await ctx.send("No songs in queue!")
             return
 
@@ -148,11 +145,12 @@ class Music(commands.Cog):
         if not await utils.play_check(ctx):
             return
 
-        if ctx.guild.voice_client is None or not ctx.guild.voice_client.is_playing():
+        audiocontroller = ctx.bot.audio_controllers[ctx.guild]
+        if not audiocontroller.is_active():
             await ctx.send("Queue is empty :x:")
             return
 
-        playlist = ctx.bot.audio_controllers[ctx.guild].playlist
+        playlist = audiocontroller.playlist
 
         # Embeds are limited to 25 fields
         if config.MAX_SONG_PRELOAD > 25:
@@ -210,10 +208,7 @@ class Music(commands.Cog):
             return
 
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
-        if ctx.guild.voice_client is None or (
-            not ctx.guild.voice_client.is_paused()
-            and not ctx.guild.voice_client.is_playing()
-        ):
+        if not audiocontroller.is_active():
             await ctx.send("Queue is empty :x:")
             return
         try:
@@ -239,10 +234,7 @@ class Music(commands.Cog):
         audiocontroller.timer.cancel()
         audiocontroller.timer = utils.Timer(audiocontroller.timeout_handler)
 
-        if ctx.guild.voice_client is None or (
-            not ctx.guild.voice_client.is_paused()
-            and not ctx.guild.voice_client.is_playing()
-        ):
+        if not audiocontroller.is_active():
             await ctx.send("Queue is empty :x:")
             return
         ctx.guild.voice_client.stop()
@@ -294,7 +286,7 @@ class Music(commands.Cog):
         if not await utils.play_check(ctx):
             return
 
-        if ctx.guild.voice_client.is_paused():
+        if ctx.guild.voice_client and ctx.guild.voice_client.is_paused():
             ctx.guild.voice_client.resume()
             await ctx.send("Resumed playback :arrow_forward:")
         else:

@@ -89,6 +89,10 @@ class AudioController(object):
             )
         song.update(info)
 
+    def is_active(self) -> bool:
+        client = self.guild.voice_client
+        return client is not None and (client.is_playing() or client.is_paused())
+
     def track_history(self):
         history_string = config.INFO_HISTORY_TITLE
         for trackname in self.playlist.trackname_history:
@@ -294,10 +298,7 @@ class AudioController(object):
 
     async def stop_player(self):
         """Stops the player and removes all songs from the queue"""
-        if self.guild.voice_client is None or (
-            not self.guild.voice_client.is_paused()
-            and not self.guild.voice_client.is_playing()
-        ):
+        if not self.is_active():
             return
 
         self.playlist.loop = "off"
@@ -316,10 +317,7 @@ class AudioController(object):
 
         prev_song = self.playlist.prev(self.current_song)
 
-        if (
-            not self.guild.voice_client.is_playing()
-            and not self.guild.voice_client.is_paused()
-        ):
+        if not self.is_active():
 
             if prev_song == "Dummy":
                 self.playlist.next(self.current_song)

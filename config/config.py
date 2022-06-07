@@ -1,9 +1,6 @@
 # fmt: off
 
-import os
-
-
-BOT_TOKEN: str = os.getenv("BOT_TOKEN")
+BOT_TOKEN: str = ""
 SPOTIFY_ID: str = ""
 SPOTIFY_SECRET: str = ""
 

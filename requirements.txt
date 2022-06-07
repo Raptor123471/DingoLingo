@@ -3,3 +3,4 @@ yt-dlp
 aiohttp
 beautifulsoup4
 spotipy
+emoji

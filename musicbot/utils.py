@@ -1,7 +1,9 @@
+import re
 import asyncio
-from typing import TYPE_CHECKING, Awaitable, Optional
+from typing import TYPE_CHECKING, Awaitable, Optional, Union
 
-from discord import Guild, Message, VoiceChannel
+from discord import utils, Guild, Message, VoiceChannel, Emoji
+from emoji import is_emoji
 
 from config import config
 
@@ -81,6 +83,17 @@ async def play_check(ctx: "Context"):
             await ctx.send(config.USER_NOT_IN_VC_MESSAGE)
             return False
     return True
+
+
+def get_emoji(guild: Guild, string: str) -> Optional[Union[str, Emoji]]:
+    if is_emoji(string):
+        return string
+    ids = re.findall(r"\d{15,20}", string)
+    if ids:
+        emoji = utils.get(guild.emojis, id=int(ids[-1]))
+        if emoji:
+            return emoji
+    return utils.get(guild.emojis, name=string)
 
 
 class Timer:

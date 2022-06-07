@@ -3,6 +3,8 @@ import os
 from typing import TYPE_CHECKING, Optional
 
 import discord
+
+from musicbot import utils
 from config import config
 
 # avoiding circular import
@@ -118,6 +120,12 @@ class Settings:
 
                 continue
 
+            elif key == "button_emote":
+                emote = utils.get_emoji(self.guild, self.config.get(key))
+                embed.add_field(name=key, value=emote, inline=False)
+
+                continue
+
             embed.add_field(name=key, value=self.config.get(key), inline=False)
 
         return embed
@@ -225,16 +233,17 @@ class Settings:
             self.config[setting] = ""
             return
 
-        emoji = discord.utils.get(self.guild.emojis, name=value)
+        emoji = utils.get_emoji(self.guild, value)
         if emoji is None:
             await ctx.send(
-                "`Error: Emote name not found on server`\nUsage: {}set {} emotename\nOther options: unset".format(
+                "`Error: Invalid emote`\nUsage: {}set {} emote\nOther options: unset".format(
                     config.BOT_PREFIX, setting
                 )
             )
             return False
-        else:
-            self.config[setting] = value
+        elif isinstance(emoji, discord.Emoji):
+            emoji = str(emoji.id)
+        self.config[setting] = emoji
 
     async def default_volume(self, setting, value, ctx):
         try:

@@ -1,7 +1,13 @@
 import discord
 from discord.ext import commands
-from musicbot import linkutils
+from musicbot import linkutils, utils
 from musicbot.bot import MusicBot
+
+SUPPORTED_SITES = (
+    linkutils.Sites.Spotify,
+    linkutils.Sites.Spotify_Playlist,
+    linkutils.Sites.YouTube,
+)
 
 
 class Button(commands.Cog):
@@ -14,27 +20,19 @@ class Button(commands.Cog):
             return
 
         sett = self.bot.settings[message.guild]
-        button_name = sett.get("button_emote")
+        button = sett.get("button_emote")
 
-        if button_name == "":
+        if not button:
+            return
+
+        emoji = utils.get_emoji(message.guild, button)
+        if not emoji:
             return
 
         host = linkutils.identify_url(message.content)
 
-        guild = message.guild
-        emoji = discord.utils.get(guild.emojis, name=button_name)
-
-        if host == linkutils.Sites.YouTube:
-            if emoji:
-                await message.add_reaction(emoji)
-
-        if host == linkutils.Sites.Spotify:
-            if emoji:
-                await message.add_reaction(emoji)
-
-        if host == linkutils.Sites.Spotify_Playlist:
-            if emoji:
-                await message.add_reaction(emoji)
+        if host in SUPPORTED_SITES:
+            await message.add_reaction(emoji)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, reaction: discord.RawReactionActionEvent):
@@ -47,23 +45,19 @@ class Button(commands.Cog):
             return
 
         sett = self.bot.settings[serv]
-        button_name = sett.get("button_emote")
+        button = sett.get("button_emote")
 
-        if button_name == "":
+        if not button:
             return
 
-        if reaction.emoji.name == button_name:
+        if reaction.emoji.name == button or str(reaction.emoji.id or "") == button:
             chan = serv.get_channel(reaction.channel_id)
             message = await chan.fetch_message(reaction.message_id)
             url = linkutils.get_url(message.content)
 
             host = linkutils.identify_url(url)
 
-            if host not in (
-                linkutils.Sites.Spotify,
-                linkutils.Sites.Spotify_Playlist,
-                linkutils.Sites.YouTube,
-            ):
+            if host not in SUPPORTED_SITES:
                 return
 
             if chan.permissions_for(serv.me).manage_messages:

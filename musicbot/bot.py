@@ -48,6 +48,11 @@ class MusicBot(commands.Bot):
         sett = self.settings[guild] = Settings(guild)
         controller = self.audio_controllers[guild] = AudioController(self, guild)
 
+        try:
+            await guild.me.edit(nick=sett.get('default_nickname'))
+        except discord.Forbidden:
+            pass
+
         if config.GLOBAL_DISABLE_AUTOJOIN_VC:
             return
 

@@ -86,7 +86,8 @@ class Settings:
             title="Settings", description=self.guild.name, color=config.EMBED_COLOR
         )
 
-        embed.set_thumbnail(url=self.guild.icon_url)
+        if self.guild.icon:
+            embed.set_thumbnail(url=self.guild.icon.url)
         embed.set_footer(
             text="Usage: {}set setting_name value".format(config.BOT_PREFIX)
         )

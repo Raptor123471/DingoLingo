@@ -103,7 +103,8 @@ class GuildSettings(Base):
             title="Settings", description=ctx.guild.name, color=config.EMBED_COLOR
         )
 
-        embed.set_thumbnail(url=ctx.guild.icon_url)
+        if ctx.guild.icon:
+            embed.set_thumbnail(url=ctx.guild.icon.url)
         embed.set_footer(
             text="Usage: {}set setting_name value".format(config.BOT_PREFIX)
         )

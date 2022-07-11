@@ -235,7 +235,7 @@ class GuildSettings(Base):
             self.button_emote = None
             return True
 
-        emoji = utils.get_emoji(self.guild, value)
+        emoji = utils.get_emoji(ctx.guild, value)
         if emoji is None:
             await ctx.send(
                 "`Error: Invalid emote`\nUsage: {}set {} emote\nOther options: unset".format(

@@ -105,17 +105,17 @@ class General(commands.Cog):
         sett = ctx.bot.settings[ctx.guild]
 
         if len(args) == 0:
-            await ctx.send(embed=await sett.format())
+            await ctx.send(embed=sett.format(ctx))
             return
 
-        args_list = list(args)
-        args_list.remove(args[0])
-
-        response = await sett.write(args[0], " ".join(args_list), ctx)
+        response = await sett.process_setting(args[0], " ".join(args[1:]), ctx)
 
         if response is None:
             await ctx.send("`Error: Setting not found`")
         elif response is True:
+            async with ctx.bot.DbSession() as session:
+                session.add(sett)
+                await session.commit()
             await ctx.send("Setting updated!")
 
     @commands.command(

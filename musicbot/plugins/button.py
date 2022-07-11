@@ -20,7 +20,7 @@ class Button(commands.Cog):
             return
 
         sett = self.bot.settings[message.guild]
-        button = sett.get("button_emote")
+        button = sett.button_emote
 
         if not button:
             return
@@ -45,7 +45,7 @@ class Button(commands.Cog):
             return
 
         sett = self.bot.settings[serv]
-        button = sett.get("button_emote")
+        button = sett.button_emote
 
         if not button:
             return

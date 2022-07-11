@@ -15,6 +15,10 @@ SUPPORTED_EXTENSIONS = (".webm", ".mp4", ".mp3", ".avi", ".wav", ".m4v", ".ogg",
 
 MAX_SONG_PRELOAD = 5  # maximum of 25
 
+# database url in SQL Alchemy-supported format, must be async-compatible
+# CHANGE ONLY IF YOU KNOW WHAT YOU'RE DOING
+DATABASE = "sqlite+aiosqlite:///settings.db"
+
 COOKIE_PATH = "/config/cookies/cookies.txt"
 
 GLOBAL_DISABLE_AUTOJOIN_VC = False

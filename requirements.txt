@@ -4,3 +4,6 @@ aiohttp
 beautifulsoup4
 spotipy
 emoji
+sqlalchemy[asyncio]
+alembic
+./config

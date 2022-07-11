@@ -17,7 +17,7 @@ MAX_SONG_PRELOAD = 5  # maximum of 25
 
 # database url in SQL Alchemy-supported format, must be async-compatible
 # CHANGE ONLY IF YOU KNOW WHAT YOU'RE DOING
-DATABASE = "sqlite+aiosqlite:///settings.db"
+DATABASE = os.getenv("DATABASE_URL").replace("postgres", "postgresql+asyncpg", 1)
 
 COOKIE_PATH = "/config/cookies/cookies.txt"
 

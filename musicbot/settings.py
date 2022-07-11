@@ -170,7 +170,7 @@ class GuildSettings(Base):
         else:
             self.default_nickname = value
             try:
-                await self.guild.me.edit(nick=value)
+                await ctx.guild.me.edit(nick=value)
             except discord.Forbidden:
                 await ctx.send(
                     "`Error: Cannot set nickname. Please check bot permissions."

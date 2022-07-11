@@ -58,15 +58,16 @@ class GuildSettings(Base):
     @classmethod
     async def load(cls, bot: "MusicBot", guild: discord.Guild) -> "GuildSettings":
         "Load object from database or create a new one and commit it"
+        guild_id = str(guild.id)
         async with bot.DbSession() as session:
             sett = (
                 await session.execute(
-                    select(GuildSettings).where(GuildSettings.guild_id == guild.id)
+                    select(GuildSettings).where(GuildSettings.guild_id == guild_id)
                 )
             ).scalar_one_or_none()
             if sett:
                 return sett
-            sett = GuildSettings(guild_id=guild.id, **DEFAULT_CONFIG)
+            sett = GuildSettings(guild_id=guild_id, **DEFAULT_CONFIG)
             session.add(sett)
             await session.commit()
             return sett
@@ -77,7 +78,7 @@ class GuildSettings(Base):
     ) -> dict[discord.Guild, "GuildSettings"]:
         """Load list of objects from database and create new ones when not found.
         Returns dict with guilds as keys and their settings as values"""
-        ids = [g.id for g in guilds]
+        ids = [str(g.id) for g in guilds]
         async with bot.DbSession() as session:
             settings = (
                 (
@@ -88,13 +89,13 @@ class GuildSettings(Base):
                 .scalars()
                 .fetchall()
             )
-            for new_id in set(ids) - {int(sett.guild_id) for sett in settings}:
+            for new_id in set(ids) - {sett.guild_id for sett in settings}:
                 new_settings = GuildSettings(guild_id=new_id, **DEFAULT_CONFIG)
                 session.add(new_settings)
                 settings.append(new_settings)
             await session.commit()
         # ensure the correct order
-        settings.sort(key=lambda x: ids.index(int(x.guild_id)))
+        settings.sort(key=lambda x: ids.index(x.guild_id))
         return {g: sett for g, sett in zip(guilds, settings)}
 
     def format(self, ctx: "Context"):
@@ -193,7 +194,7 @@ class GuildSettings(Base):
                 )
             )
             return False
-        self.command_channel = chan.id
+        self.command_channel = str(chan.id)
         return True
 
     async def set_start_voice_channel(self, setting, value, ctx):
@@ -212,7 +213,7 @@ class GuildSettings(Base):
                 )
             )
             return False
-        self.start_voice_channel = vc.id
+        self.start_voice_channel = str(vc.id)
         return True
 
     async def set_user_must_be_in_vc(self, setting, value, ctx):
@@ -300,6 +301,7 @@ def run_migrations(connection):
         variables = {"op": op, "sa": sqlalchemy}
         exec("def run():\n" + code, variables)
         variables["run"]()
+    connection.commit()
 
 
 async def extract_legacy_settings(bot: "MusicBot"):

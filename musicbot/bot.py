@@ -1,3 +1,5 @@
+from typing import Dict
+
 import discord
 from discord.ext import commands
 
@@ -11,10 +13,10 @@ class MusicBot(commands.Bot):
         super().__init__(*args, **kwargs)
 
         # A dictionary that remembers which guild belongs to which audiocontroller
-        self.audio_controllers: dict[discord.Guild, AudioController] = {}
+        self.audio_controllers: Dict[discord.Guild, AudioController] = {}
 
         # A dictionary that remembers which settings belongs to which guild
-        self.settings: dict[discord.Guild, Settings] = {}
+        self.settings: Dict[discord.Guild, Settings] = {}
 
     async def on_ready(self):
         print(config.STARTUP_MESSAGE)

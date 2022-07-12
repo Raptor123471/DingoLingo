@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Coroutine, Optional
+from typing import TYPE_CHECKING, Coroutine, Optional, List, Tuple
 
 import discord
 import yt_dlp
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from musicbot.bot import MusicBot
 
 
-_cached_downloaders: list[tuple[dict, yt_dlp.YoutubeDL]] = []
+_cached_downloaders: List[Tuple[dict, yt_dlp.YoutubeDL]] = []
 
 
 class AudioController(object):

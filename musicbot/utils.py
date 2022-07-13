@@ -1,6 +1,6 @@
 import re
 import asyncio
-from typing import TYPE_CHECKING, Awaitable, Optional, Union
+from typing import TYPE_CHECKING, Callable, Awaitable, Optional, Union
 
 from discord import utils, Guild, Message, VoiceChannel, Emoji
 from emoji import is_emoji
@@ -97,7 +97,7 @@ def get_emoji(guild: Guild, string: str) -> Optional[Union[str, Emoji]]:
 
 
 class Timer:
-    def __init__(self, callback: Awaitable):
+    def __init__(self, callback: Callable[[], Awaitable]):
         self._callback = callback
         self._task = asyncio.create_task(self._job())
 

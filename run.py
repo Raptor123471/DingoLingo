@@ -12,12 +12,16 @@ initial_extensions = [
 ]
 
 
+intents = discord.Intents.default()
+intents.message_content = True
+
 bot = MusicBot(
     command_prefix=config.BOT_PREFIX,
     pm_help=True,
     case_insensitive=True,
     status=discord.Status.online,
     activity=discord.Game(name="Music, type {}help".format(config.BOT_PREFIX)),
+    intents=intents,
 )
 
 
@@ -36,4 +40,4 @@ if __name__ == "__main__":
         except Exception as e:
             print(e)
 
-    bot.run(config.BOT_TOKEN, bot=True, reconnect=True)
+    bot.run(config.BOT_TOKEN, reconnect=True)

@@ -26,7 +26,7 @@ Obtained keys must be entered into ```config/config.py```
 
 #### Requirements
 
-* Installation of Python 3.7+
+* Installation of Python 3.8+
 
 Install dependancies:
 ```
@@ -94,10 +94,10 @@ $shuffle /$sh
 * Shuffle the queue
 
 ```
-$l / $loop
+$l / $loop [all/single/off]
 ```
 
-* Loop the current playing song, toggle on/off
+* Loops the entire queue by default. `$loop single` loops current track.
 
 ```
 $mv / $move

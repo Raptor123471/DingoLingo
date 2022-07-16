@@ -1,11 +1,11 @@
-![](https://repository-images.githubusercontent.com/286907609/eb884086-46d8-44bf-95c1-fc2ed8362122) 
+![](https://repository-images.githubusercontent.com/494393877/c7c7a9a7-321a-48a0-b19d-b1e7dcf2a1c0) 
 
 
-# DingoLingo
+# DandelionMusic
 A Discord music bot written in Python with support for Youtube, SoundCloud, Spotify, Bandcamp, Twitter, and custom files.
 
 ### Keep in mind:
-* The Wiki may have the answer you are looking for https://github.com/Raptor123471/DingoLingo/wiki
+* The Wiki may have the answer you are looking for https://github.com/Krutyi-4el/DandelionMusic/wiki
 * Known problems are listed in Issues. If you are interested in this project feel free to submit an Issue.
 
 
@@ -22,7 +22,7 @@ A Discord music bot written in Python with support for Youtube, SoundCloud, Spot
   - Client Secret
   - Note: Limited to 50 playlist items without API
 
-Obtained keys must be entered into ```config/config.py```
+Obtained keys must be entered into ```config/config.py``` (or set as environment variables)
 
 #### Requirements
 
@@ -32,7 +32,6 @@ Install dependancies:
 ```
 pip install -r requirements.txt
 ```
-* Located in ```/config```
 
 For Linux:
 * ffmpeg
@@ -48,7 +47,7 @@ For Linux:
 
 Button play plugin:
 * Set emoji with the setting command to enable this feature
-* Emote must be in same server as bot
+* Emote must be available for bot
 * Needs Manage Message permissions
 
 Custom Cookies:

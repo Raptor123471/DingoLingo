@@ -330,4 +330,4 @@ async def extract_legacy_settings(bot: "MusicBot"):
             new_settings.update({k: v for k, v in data.items() if k in new_settings})
             session.add(GuildSettings(guild_id=guild_id, **new_settings))
         await session.commit()
-    os.remove(LEGACY_SETTINGS)
+    os.rename(LEGACY_SETTINGS, LEGACY_SETTINGS + ".back")

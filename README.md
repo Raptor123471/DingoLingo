@@ -60,11 +60,11 @@ Custom Cookies:
 
 ### Music
 
-After the bot has joined your server, use ```$help``` to display help and command information.
+After the bot has joined your server, use ```d!help``` to display help and command information.
 
 
 ```
-$p [link/video title/key words/playlist-link/soundcloud link/spotify link/bandcamp link/twitter link]
+d!p [link/video title/key words/playlist-link/soundcloud link/spotify link/bandcamp link/twitter link]
 ```
 
 * Plays the audio of supported website
@@ -76,31 +76,31 @@ $p [link/video title/key words/playlist-link/soundcloud link/spotify link/bandca
 #### Playlist Commands
 
 ```
-$skip / $s
+d!skip / d!s
 ```
 
 * Skips the current song and plays next in queue.
 
 ```
-$q
+d!q
 ```
 
 * Show the list of songs in queue
 
 ```
-$shuffle /$sh
+d!shuffle / d!sh
 ```
 
 * Shuffle the queue
 
 ```
-$l / $loop
+d!l / d!loop
 ```
 
 * Loop the current playing song, toggle on/off
 
 ```
-$mv / $move
+d!mv / d!move
 ```
 
 * Move song position in queue
@@ -108,38 +108,38 @@ $mv / $move
 #### Audio Commands
 
 ```
-$pause
+d!pause
 ```
 
 * Pauses the current song.
 
 ```
-$resume
+d!resume
 ```
 
 * Resumes the paused song.
 
 ```
-$prev
+d!prev
 ```
 
 * Goes back one song and plays the last song again.
 
 ```
-$np
+d!np
 ```
 
 * Shows more details about the current song.
 
 ```
-$volume / $vol
+d!volume / d!vol
 ```
 
 * Adjust the volume 1-100%
 * Pass no arguments for current volume
 
 ```
-$stop / $st
+d!stop / d!st
 ```
 * Stops the current song and clears the playqueue.
 
@@ -147,34 +147,34 @@ $stop / $st
 ### General
 
 ```
-$settings /$setting/ $set
+d!settings / d!setting / d!set
 ```
 * No Arguments: Lists server settings
 * Arguments: (setting) (value)
 * Use "unset" as an argument to reset a setting
-* Example: $setting start_voice_channel ChannelName
+* Example: d!setting start_voice_channel ChannelName
 * Administrators only
 
 ```
-$c
+d!c
 ```
 
 * Connects the bot to the user's voice channel
 
 ```
-$cc
+d!cc
 ```
 
 * Switch the bot to the user's voice channel
 
 ```
-$dc
+d!dc
 ```
 
 * Disconnects the bot from the current voice channel
 
 ```
-$history
+d!history
 ```
 * Shows you the titles of the X last played songs. Configurable in config.config.py
 
@@ -182,19 +182,19 @@ $history
 ### Utility
 
 ```
-$reset / $rs
+d!reset / d!rs
 ```
 
 * Disconnect and reconnect to the voice channel
 
 ```
-$ping
+d!ping
 ```
 
 * Test bot connectivity
 
 ```
-$addbot
+d!addbot
 ```
 
 * Displays information on how to add the bot to another server of yours.

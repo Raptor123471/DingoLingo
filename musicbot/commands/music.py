@@ -128,8 +128,15 @@ class Music(commands.Cog):
         if not await utils.play_check(ctx):
             return
 
-        if ctx.guild.voice_client is None or not ctx.guild.voice_client.is_playing():
+        if ctx.guild.voice_client is None:
             return
+
+        if ctx.guild.voice_client.is_paused():
+            return await self._resume(ctx)
+
+        if not ctx.guild.voice_client.is_playing():
+            return
+
         ctx.guild.voice_client.pause()
         await ctx.send("Playback Paused :pause_button:")
 

@@ -33,7 +33,7 @@ class AudioController(object):
         self.guild = guild
 
         sett = bot.settings[guild]
-        self._volume: int = sett.get("default_volume")
+        self._volume: int = sett.default_volume
 
         self.timer = utils.Timer(self.timeout_handler)
 
@@ -347,7 +347,7 @@ class AudioController(object):
 
         sett = self.bot.settings[self.guild]
 
-        if not sett.get("vc_timeout") or self.guild.voice_client.is_playing():
+        if not sett.vc_timeout or self.guild.voice_client.is_playing():
             return
 
         await self.udisconnect()

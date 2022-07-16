@@ -15,6 +15,10 @@ SUPPORTED_EXTENSIONS = (".webm", ".mp4", ".mp3", ".avi", ".wav", ".m4v", ".ogg",
 
 MAX_SONG_PRELOAD = 5  # maximum of 25
 
+# database url in SQL Alchemy-supported format, must be async-compatible
+# CHANGE ONLY IF YOU KNOW WHAT YOU'RE DOING
+DATABASE = "sqlite+aiosqlite:///settings.db"
+
 COOKIE_PATH = "/config/cookies/cookies.txt"
 
 GLOBAL_DISABLE_AUTOJOIN_VC = False
@@ -67,7 +71,7 @@ HELP_SETTINGS_LONG = "View and set bot settings in the server. Usage: {}settings
 HELP_HISTORY_SHORT = "Show history of songs"
 HELP_HISTORY_LONG = "Shows the " + str(MAX_TRACKNAME_HISTORY_LENGTH) + " last played songs."
 HELP_PAUSE_SHORT = "Pause Music"
-HELP_PAUSE_LONG = "Pauses the AudioPlayer. Playback can be continued with the resume command."
+HELP_PAUSE_LONG = "Pauses the AudioPlayer. Use it again to resume playback."
 HELP_VOL_SHORT = "Change volume %"
 HELP_VOL_LONG = "Changes the volume of the AudioPlayer. Argument specifies the % to which the volume should be set."
 HELP_PREV_SHORT = "Go back one Song"

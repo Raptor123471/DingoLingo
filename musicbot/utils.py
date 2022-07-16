@@ -65,11 +65,11 @@ async def play_check(ctx: "Context"):
 
     sett = ctx.bot.settings[ctx.guild]
 
-    cm_channel = sett.get("command_channel")
-    vc_rule = sett.get("user_must_be_in_vc")
+    cm_channel = sett.command_channel
+    vc_rule = sett.user_must_be_in_vc
 
     if cm_channel is not None:
-        if cm_channel != ctx.message.channel.id:
+        if int(cm_channel) != ctx.message.channel.id:
             await ctx.send(config.WRONG_CHANNEL_MESSAGE)
             return False
 

@@ -28,15 +28,15 @@ Obtained keys must be entered into ```config/config.py``` (or set as environment
 
 * Installation of Python 3.8+
 
-Install dependancies:
+Install dependencies:
 ```
 pip install -r requirements.txt
 ```
 
-For Linux:
-* ffmpeg
-* libffi-dev 
-* libnacl-dev 
+##### Windows
+Download `ffmpeg` and put it into a folder in PATH.
+##### Other platforms
+Install `ffmpeg` and `libopus` packages.
 
 ### Installing - Self hosting
 
@@ -206,6 +206,6 @@ the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
 
-## Acknowledgments
+## Acknowledgements
 
 https://github.com/adriansteffan/DiscordJockey

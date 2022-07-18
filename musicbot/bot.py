@@ -18,7 +18,7 @@ class MusicBot(commands.Bot):
         self.audio_controllers: Dict[discord.Guild, AudioController] = {}
 
         # A dictionary that remembers which settings belongs to which guild
-        self.settings: dict[discord.Guild, GuildSettings] = {}
+        self.settings: Dict[discord.Guild, GuildSettings] = {}
 
         self.db_engine = create_async_engine(config.DATABASE)
         self.DbSession = sessionmaker(

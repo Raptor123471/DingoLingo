@@ -1,6 +1,6 @@
 import json
 import os
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Dict, List, Optional
 
 import discord
 import sqlalchemy
@@ -74,8 +74,8 @@ class GuildSettings(Base):
 
     @classmethod
     async def load_many(
-        cls, bot: "MusicBot", guilds: list[discord.Guild]
-    ) -> dict[discord.Guild, "GuildSettings"]:
+        cls, bot: "MusicBot", guilds: List[discord.Guild]
+    ) -> Dict[discord.Guild, "GuildSettings"]:
         """Load list of objects from database and create new ones when not found.
         Returns dict with guilds as keys and their settings as values"""
         ids = [str(g.id) for g in guilds]

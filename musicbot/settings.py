@@ -28,6 +28,8 @@ DEFAULT_CONFIG = {
     "default_volume": 100,
     "vc_timeout": config.VC_TIMOUT_DEFAULT,
 }
+MAX_NICKNAME_LENGTH = 32
+ID_LENGTH = 25  # more than enough to be sure :)
 Base = declarative_base()
 
 
@@ -46,12 +48,12 @@ class GuildSettings(Base):
         vc_timeout: bool
 
     # use String for ids to be sure we won't hit overflow
-    guild_id = Column(String, primary_key=True)
-    default_nickname = Column(String)
-    command_channel = Column(String)
-    start_voice_channel = Column(String)
+    guild_id = Column(String(ID_LENGTH), primary_key=True)
+    default_nickname = Column(String(MAX_NICKNAME_LENGTH))
+    command_channel = Column(String(ID_LENGTH))
+    start_voice_channel = Column(String(ID_LENGTH))
     user_must_be_in_vc = Column(Boolean, nullable=False)
-    button_emote = Column(String)
+    button_emote = Column(String(ID_LENGTH))
     default_volume = Column(Integer, nullable=False)
     vc_timeout = Column(Boolean, nullable=False)
 
@@ -161,7 +163,7 @@ class GuildSettings(Base):
             self.default_nickname = None
             return True
 
-        if len(value) > 32:
+        if len(value) > MAX_NICKNAME_LENGTH:
             await ctx.send(
                 "`Error: Nickname exceeds character limit`\nUsage: {}set {} nickname\nOther options: unset".format(
                     config.BOT_PREFIX, setting

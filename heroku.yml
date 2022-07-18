@@ -1,0 +1,5 @@
+build:
+  docker:
+    worker: Dockerfile
+  config:
+    HEROKU: 1

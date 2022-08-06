@@ -34,24 +34,14 @@ Base = declarative_base()
 class GuildSettings(Base):
     __tablename__ = "settings"
 
-    if TYPE_CHECKING:
-        # type hints
-        guild_id: str
-        command_channel: Optional[str]
-        start_voice_channel: Optional[str]
-        user_must_be_in_vc: bool
-        button_emote: Optional[str]
-        default_volume: int
-        vc_timeout: bool
-
     # use String for ids to be sure we won't hit overflow
-    guild_id = Column(String(ID_LENGTH), primary_key=True)
-    command_channel = Column(String(ID_LENGTH))
-    start_voice_channel = Column(String(ID_LENGTH))
-    user_must_be_in_vc = Column(Boolean, nullable=False)
-    button_emote = Column(String(ID_LENGTH))
-    default_volume = Column(Integer, nullable=False)
-    vc_timeout = Column(Boolean, nullable=False)
+    guild_id: str = Column(String(ID_LENGTH), primary_key=True)
+    command_channel: Optional[str] = Column(String(ID_LENGTH))
+    start_voice_channel: Optional[str] = Column(String(ID_LENGTH))
+    user_must_be_in_vc: bool = Column(Boolean, nullable=False)
+    button_emote: Optional[str] = Column(String(ID_LENGTH))
+    default_volume: int = Column(Integer, nullable=False)
+    vc_timeout: bool = Column(Boolean, nullable=False)
 
     @classmethod
     async def load(cls, bot: "MusicBot", guild: discord.Guild) -> "GuildSettings":

@@ -20,7 +20,6 @@ if TYPE_CHECKING:
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 LEGACY_SETTINGS = DIR_PATH + "/generated/settings.json"
 DEFAULT_CONFIG = {
-    "default_nickname": None,
     "command_channel": None,
     "start_voice_channel": None,
     "user_must_be_in_vc": True,
@@ -28,7 +27,6 @@ DEFAULT_CONFIG = {
     "default_volume": 100,
     "vc_timeout": config.VC_TIMOUT_DEFAULT,
 }
-MAX_NICKNAME_LENGTH = 32
 ID_LENGTH = 25  # more than enough to be sure :)
 Base = declarative_base()
 
@@ -39,7 +37,6 @@ class GuildSettings(Base):
     if TYPE_CHECKING:
         # type hints
         guild_id: str
-        default_nickname: Optional[str]
         command_channel: Optional[str]
         start_voice_channel: Optional[str]
         user_must_be_in_vc: bool
@@ -49,7 +46,6 @@ class GuildSettings(Base):
 
     # use String for ids to be sure we won't hit overflow
     guild_id = Column(String(ID_LENGTH), primary_key=True)
-    default_nickname = Column(String(MAX_NICKNAME_LENGTH))
     command_channel = Column(String(ID_LENGTH))
     start_voice_channel = Column(String(ID_LENGTH))
     user_must_be_in_vc = Column(Boolean, nullable=False)
@@ -156,30 +152,6 @@ class GuildSettings(Base):
         return await getattr(self, "set_" + setting)(setting, value, ctx)
 
     # -----setting methods-----
-
-    async def set_default_nickname(self, setting, value, ctx):
-
-        if value.lower() == "unset":
-            self.default_nickname = None
-            return True
-
-        if len(value) > MAX_NICKNAME_LENGTH:
-            await ctx.send(
-                "`Error: Nickname exceeds character limit`\nUsage: {}set {} nickname\nOther options: unset".format(
-                    config.BOT_PREFIX, setting
-                )
-            )
-            return False
-        else:
-            self.default_nickname = value
-            try:
-                await ctx.guild.me.edit(nick=value)
-            except discord.Forbidden:
-                await ctx.send(
-                    "`Error: Cannot set nickname. Please check bot permissions."
-                )
-                return False
-            return True
 
     async def set_command_channel(self, setting, value, ctx):
 

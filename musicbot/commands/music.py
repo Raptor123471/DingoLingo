@@ -112,7 +112,7 @@ class Music(commands.Cog):
             return
 
         if len(audiocontroller.playlist.playque) == 0:
-            await ctx.send("Queue is empty :x:")
+            await ctx.send(config.QUEUE_EMPTY)
             return
 
         audiocontroller.playlist.shuffle()
@@ -152,7 +152,7 @@ class Music(commands.Cog):
 
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
         if not audiocontroller.is_active():
-            await ctx.send("Queue is empty :x:")
+            await ctx.send(config.QUEUE_EMPTY)
             return
 
         playlist = audiocontroller.playlist
@@ -214,7 +214,7 @@ class Music(commands.Cog):
 
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
         if not audiocontroller.is_active():
-            await ctx.send("Queue is empty :x:")
+            await ctx.send(config.QUEUE_EMPTY)
             return
         try:
             audiocontroller.playlist.move(oldindex - 1, newindex - 1)
@@ -240,7 +240,7 @@ class Music(commands.Cog):
         audiocontroller.timer = utils.Timer(audiocontroller.timeout_handler)
 
         if not audiocontroller.is_active():
-            await ctx.send("Queue is empty :x:")
+            await ctx.send(config.QUEUE_EMPTY)
             return
         ctx.guild.voice_client.stop()
         await ctx.send("Skipped current song :fast_forward:")

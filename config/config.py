@@ -67,6 +67,7 @@ SONGINFO_SONGINFO = "Song info"
 SONGINFO_ERROR = "Error: Unsupported site or age restricted content. To enable age restricted content check the documentation/wiki."
 SONGINFO_PLAYLIST_QUEUED = "Queued playlist :page_with_curl:"
 SONGINFO_UNKNOWN_DURATION = "Unknown"
+QUEUE_EMPTY = "Queue is empty :x:"
 
 HELP_ADDBOT_SHORT = "Add Bot to another server"
 HELP_ADDBOT_LONG = "Gives you the link for adding this bot to another server of yours."

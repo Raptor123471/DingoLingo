@@ -1,9 +1,9 @@
-py-cord[voice]
-yt-dlp
-aiohttp
-beautifulsoup4
-spotipy
-emoji
-sqlalchemy[asyncio]
-alembic
+py-cord[voice]==2.0.0
+yt-dlp==2022.7.18
+aiohttp==3.8.1
+beautifulsoup4==4.11.1
+spotipy==2.20.0
+emoji==2.0.0
+SQLAlchemy[asyncio]==1.4.39
+alembic==1.8.1
 ./config

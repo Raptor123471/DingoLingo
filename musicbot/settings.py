@@ -3,6 +3,7 @@ import os
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 import discord
+from discord.ext import commands
 import sqlalchemy
 from sqlalchemy import Column, String, Integer, Boolean, select
 from sqlalchemy.orm import declarative_base
@@ -149,12 +150,11 @@ class GuildSettings(Base):
             self.command_channel = None
             return True
 
-        chan = discord.utils.find(
-            lambda c: c.name.lower() == value.lower(), ctx.guild.text_channels
-        )
-        if not chan:
+        try:
+            chan = await commands.TextChannelConverter().convert(ctx, value)
+        except commands.ChannelNotFound:
             await ctx.send(
-                "`Error: Channel name not found`\nUsage: {}set {} channelname\nOther options: unset".format(
+                "`Error: Channel not found`\nUsage: {}set {} channel\nOther options: unset".format(
                     config.BOT_PREFIX, setting
                 )
             )
@@ -168,12 +168,11 @@ class GuildSettings(Base):
             self.start_voice_channel = None
             return True
 
-        vc = discord.utils.find(
-            lambda c: c.name.lower() == value.lower(), ctx.guild.voice_channels
-        )
-        if not vc:
+        try:
+            vc = await commands.VoiceChannelConverter().convert(ctx, value)
+        except commands.ChannelNotFound:
             await ctx.send(
-                "`Error: Voice channel name not found`\nUsage: {}set {} vchannelname\nOther options: unset".format(
+                "`Error: Voice channel not found`\nUsage: {}set {} vchannel\nOther options: unset".format(
                     config.BOT_PREFIX, setting
                 )
             )

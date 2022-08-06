@@ -17,7 +17,6 @@ intents.message_content = True
 
 bot = MusicBot(
     command_prefix=config.BOT_PREFIX,
-    pm_help=True,
     case_insensitive=True,
     status=discord.Status.online,
     activity=discord.Game(name="Music, type {}help".format(config.BOT_PREFIX)),

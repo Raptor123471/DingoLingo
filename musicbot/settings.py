@@ -3,6 +3,7 @@ import os
 from typing import TYPE_CHECKING, Optional
 
 import discord
+from discord.ext import commands
 
 from musicbot import utils
 from config import config
@@ -182,18 +183,16 @@ class Settings:
             self.config[setting] = None
             return
 
-        found = False
-        for chan in self.guild.text_channels:
-            if chan.name.lower() == value.lower():
-                self.config[setting] = chan.id
-                found = True
-        if not found:
+        try:
+            chan = await commands.TextChannelConverter().convert(ctx, value)
+        except commands.ChannelNotFound:
             await ctx.send(
-                "`Error: Channel name not found`\nUsage: {}set {} channelname\nOther options: unset".format(
+                "`Error: Channel not found`\nUsage: {}set {} channel\nOther options: unset".format(
                     config.BOT_PREFIX, setting
                 )
             )
             return False
+        self.config[setting] = chan.id
 
     async def start_voice_channel(self, setting, value, ctx):
 
@@ -201,19 +200,17 @@ class Settings:
             self.config[setting] = None
             return
 
-        found = False
-        for vc in self.guild.voice_channels:
-            if vc.name.lower() == value.lower():
-                self.config[setting] = vc.id
-                self.config["vc_timeout"] = False
-                found = True
-        if not found:
+        try:
+            vc = await commands.VoiceChannelConverter().convert(ctx, value)
+        except commands.ChannelNotFound:
             await ctx.send(
-                "`Error: Voice channel name not found`\nUsage: {}set {} vchannelname\nOther options: unset".format(
+                "`Error: Voice channel not found`\nUsage: {}set {} vchannel\nOther options: unset".format(
                     config.BOT_PREFIX, setting
                 )
             )
             return False
+        self.config[setting] = vc.id
+        self.config["vc_timeout"] = False
 
     async def user_must_be_in_vc(self, setting, value, ctx):
         if value.lower() == "true":

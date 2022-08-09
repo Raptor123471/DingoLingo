@@ -23,18 +23,13 @@ class Music(commands.Cog):
     )
     async def _play_song(self, ctx: Context, *, track: str):
 
-        audiocontroller = ctx.bot.audio_controllers[ctx.guild]
-
-        if not await utils.is_connected(ctx) and not await audiocontroller.uconnect(
-            ctx
-        ):
+        if not await utils.play_check(ctx):
             return
 
         if track.isspace() or not track:
             return
 
-        if not await utils.play_check(ctx):
-            return
+        audiocontroller = ctx.bot.audio_controllers[ctx.guild]
 
         # reset timer
         audiocontroller.timer.cancel()

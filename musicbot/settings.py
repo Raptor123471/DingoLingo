@@ -183,9 +183,18 @@ class Settings:
             self.config[setting] = None
             return
 
-        try:
-            chan = await commands.TextChannelConverter().convert(ctx, value)
-        except commands.ChannelNotFound:
+        chan = None
+        for converter in (
+            commands.TextChannelConverter,
+            commands.VoiceChannelConverter,
+        ):
+            try:
+                chan = await converter().convert(ctx, value)
+                break
+            except commands.ChannelNotFound:
+                pass
+
+        if not chan:
             await ctx.send(
                 "`Error: Channel not found`\nUsage: {}set {} channel\nOther options: unset".format(
                     config.BOT_PREFIX, setting

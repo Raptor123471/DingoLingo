@@ -37,6 +37,8 @@ class AudioController(object):
 
         self.timer = utils.Timer(self.timeout_handler)
 
+        self.command_channel: Optional[discord.abc.Messageable] = None
+
         # according to Python documentation, we need
         # to keep strong references to all tasks
         self._tasks = set()
@@ -149,6 +151,11 @@ class AudioController(object):
             self.guild.voice_client.source
         )
         self.guild.voice_client.source.volume = float(self.volume) / 100.0
+
+        if self.bot.settings[self.guild].announce_songs and self.command_channel:
+            await self.command_channel.send(
+                embed=song.info.format_output(config.SONGINFO_NOW_PLAYING)
+            )
 
         self.playlist.playque.popleft()
 

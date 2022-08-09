@@ -27,6 +27,7 @@ DEFAULT_CONFIG = {
     "button_emote": None,
     "default_volume": 100,
     "vc_timeout": config.VC_TIMOUT_DEFAULT,
+    "announce_songs": sqlalchemy.false(),
 }
 ID_LENGTH = 25  # more than enough to be sure :)
 Base = declarative_base()
@@ -43,6 +44,9 @@ class GuildSettings(Base):
     button_emote: Optional[str] = Column(String(ID_LENGTH))
     default_volume: int = Column(Integer, nullable=False)
     vc_timeout: bool = Column(Boolean, nullable=False)
+    announce_songs: bool = Column(
+        Boolean, nullable=False, server_default=DEFAULT_CONFIG["announce_songs"]
+    )
 
     @classmethod
     async def load(cls, bot: "MusicBot", guild: discord.Guild) -> "GuildSettings":
@@ -253,6 +257,20 @@ class GuildSettings(Base):
             self.start_voice_channel = None
         elif value.lower() == "false":
             self.vc_timeout = False
+        else:
+            await ctx.send(
+                "`Error: Value must be True/False`\nUsage: {}set {} True/False".format(
+                    config.BOT_PREFIX, setting
+                )
+            )
+            return False
+        return True
+
+    async def set_announce_songs(self, setting, value, ctx):
+        if value.lower() == "true":
+            self.announce_songs = True
+        elif value.lower() == "false":
+            self.announce_songs = False
         else:
             await ctx.send(
                 "`Error: Value must be True/False`\nUsage: {}set {} True/False".format(

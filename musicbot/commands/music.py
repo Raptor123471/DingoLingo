@@ -39,6 +39,7 @@ class Music(commands.Cog):
         #     await ctx.send("Loop is enabled! Use {}loop to disable".format(config.BOT_PREFIX))
         #     return
 
+        audiocontroller.command_channel = ctx.channel
         song = await audiocontroller.process_song(track)
 
         if song is None:
@@ -48,16 +49,14 @@ class Music(commands.Cog):
         if song.origin == linkutils.Origins.Playlist:
             await ctx.send(config.SONGINFO_PLAYLIST_QUEUED)
         else:
-            if (
-                audiocontroller.current_song
-                and len(audiocontroller.playlist.playque) == 0
-            ):
-                await ctx.send(
-                    embed=song.info.format_output(config.SONGINFO_NOW_PLAYING)
-                )
-            else:
+            if len(audiocontroller.playlist.playque) != 0:
                 await ctx.send(
                     embed=song.info.format_output(config.SONGINFO_QUEUE_ADDED)
+                )
+            elif not ctx.bot.settings[ctx.guild].announce_songs:
+                # auto-announce is disabled, announce here
+                await ctx.send(
+                    embed=song.info.format_output(config.SONGINFO_NOW_PLAYING)
                 )
 
     @commands.command(

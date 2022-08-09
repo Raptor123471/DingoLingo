@@ -27,7 +27,7 @@ DEFAULT_CONFIG = {
     "button_emote": None,
     "default_volume": 100,
     "vc_timeout": config.VC_TIMOUT_DEFAULT,
-    "announce_songs": sqlalchemy.false(),
+    "announce_songs": sqlalchemy.text("'0'"),  # false
 }
 ID_LENGTH = 25  # more than enough to be sure :)
 Base = declarative_base()

@@ -159,7 +159,6 @@ class Music(commands.Cog):
         embed = discord.Embed(
             title=":scroll: Queue [{}]".format(len(playlist.playque)),
             color=config.EMBED_COLOR,
-            inline=False,
         )
 
         for counter, song in enumerate(

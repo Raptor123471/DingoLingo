@@ -27,7 +27,7 @@ DEFAULT_CONFIG = {
     "button_emote": None,
     "default_volume": 100,
     "vc_timeout": config.VC_TIMOUT_DEFAULT,
-    "announce_songs": sqlalchemy.text("'0'"),  # false
+    "announce_songs": sqlalchemy.false(),
 }
 ID_LENGTH = 25  # more than enough to be sure :)
 Base = declarative_base()
@@ -284,7 +284,9 @@ class GuildSettings(Base):
 def run_migrations(connection):
     "Automatically creates or deletes tables and columns, reflecting code changes"
     ctx = MigrationContext.configure(connection)
-    code = render_python_code(produce_migrations(ctx, Base.metadata).upgrade_ops)
+    code = render_python_code(
+        produce_migrations(ctx, Base.metadata).upgrade_ops, migration_context=ctx
+    )
     if connection.engine.echo:
         # debug mode
         print(code)

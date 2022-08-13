@@ -35,6 +35,8 @@ pip install -r requirements.txt
 
 ##### Windows
 Download `ffmpeg` and put it into a folder in PATH.
+
+If ffmpeg is not found, the script will try to download it automatically.
 ##### Other platforms
 Install `ffmpeg` and `libopus` packages.
 

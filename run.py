@@ -4,6 +4,7 @@ import discord
 
 from config import config
 from musicbot.bot import MusicBot
+from musicbot.utils import check_dependencies
 
 initial_extensions = [
     "musicbot.commands.music",
@@ -28,6 +29,8 @@ if __name__ == "__main__":
 
     config.ABSOLUTE_PATH = os.path.dirname(os.path.abspath(__file__))
     config.COOKIE_PATH = config.ABSOLUTE_PATH + config.COOKIE_PATH
+
+    check_dependencies()
 
     if not config.BOT_TOKEN:
         print("Error: No bot token!")

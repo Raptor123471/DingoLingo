@@ -36,7 +36,7 @@ def download_ffmpeg():
 
     print("Downloading ffmpeg automatically...")
     stream = urlopen(
-        "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip",
+        "https://github.com/Krutyi-4el/FFmpeg/releases/download/v5.1.git/ffmpeg.zip",
         context=SSLContext(),
     )
     total_size = int(stream.getheader("content-length") or 0)

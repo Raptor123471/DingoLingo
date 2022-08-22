@@ -1,5 +1,15 @@
 ![](https://repository-images.githubusercontent.com/286907609/eb884086-46d8-44bf-95c1-fc2ed8362122) 
 
+# !!Activity Update!!
+### This repository has been inactive since 1/18/22
+
+I am returning after a long absence to find more activity in this repository than I expected. This project is a bot I wrote for a 24 person guild and I started with minimal Python experience. Because of this, there are many mistakes and odd choices in this bot's code.
+
+### Rewrite: For simplicity
+I am currently re-writing the bot to be cleaner (attempted), commented, and only support basic useful music needs. I am planning to support discord.py v2.0 and slash commands. There is no timeline on this project. When it is done, I will publish the updates to this repository.
+
+### What now?
+I will ensure that the current code functions and has no major breaking issues.
 
 # DingoLingo
 A Discord music bot written in Python with support for Youtube, SoundCloud, Spotify, Bandcamp, Twitter, and custom files.

@@ -142,6 +142,10 @@ class AudioController(object):
             title = await linkutils.convert_spotify(track)
             track = self.search_youtube(title)
 
+        if host == linkutils.Sites.Yandex:
+            title = await linkutils.convert_yandex(track)
+            track = self.search_youtube(title)
+
         if host == linkutils.Sites.YouTube:
             track = track.split("&list=")[0]
 

@@ -1,9 +1,12 @@
+import asyncio
 import re
 from enum import Enum
 
 import aiohttp
 import spotipy
 from bs4 import BeautifulSoup
+from yandex_music import Client
+
 from config import config
 from spotipy.oauth2 import SpotifyClientCredentials
 
@@ -18,7 +21,9 @@ url_regex = re.compile(
     "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")
 
 session = aiohttp.ClientSession(
-    headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'})
+    headers={
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36'})
+yandex_client = Client()
 
 
 def clean_sclink(track):
@@ -30,15 +35,12 @@ def clean_sclink(track):
 
 
 async def convert_spotify(url):
-
     if re.search(url_regex, url):
         result = url_regex.search(url)
-
         if "?si=" in url:
             url = result.group(0) + "&nd=1"
 
     async with session.get(url) as response:
-
         page = await response.text()
         soup = BeautifulSoup(page, 'html.parser')
 
@@ -46,8 +48,21 @@ async def convert_spotify(url):
         title = title.string
         title = title.replace('- song by', '')
         title = title.replace('| Spotify', '')
-        
+
         return title
+
+
+async def convert_yandex(url):
+    if re.search(url_regex, url):
+        result = url_regex.search(url)
+        url = result.group(0)
+
+    temp = url.split('/')
+    loop = asyncio.get_running_loop()
+    track = await loop.run_in_executor(None, yandex_client.tracks, f'{temp[-1]}:{temp[-3]}')
+    track = track[0]
+    title = f"""{track.title} {' '.join(map(lambda x: x.name, track.artists))}"""
+    return title
 
 
 async def get_spotify_playlist(url):
@@ -101,7 +116,7 @@ async def get_spotify_playlist(url):
                     print("ERROR: Check spotify CLIENT_ID and SECRET")
 
     async with session.get(url + "&nd=1") as response:
-         page = await response.text()
+        page = await response.text()
 
     soup = BeautifulSoup(page, 'html.parser')
 
@@ -119,7 +134,6 @@ async def get_spotify_playlist(url):
 
 
 def get_url(content):
-
     regex = re.compile(
         "http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+")
 
@@ -138,6 +152,7 @@ class Sites(Enum):
     Twitter = "Twitter"
     SoundCloud = "SoundCloud"
     Bandcamp = "Bandcamp"
+    Yandex = "Yandex"
     Custom = "Custom"
     Unknown = "Unknown"
 
@@ -172,6 +187,8 @@ def identify_url(url):
 
     if "https://twitter.com/" in url:
         return Sites.Twitter
+    if "https://music.yandex.ru/" in url:
+        return Sites.Yandex
 
     if url.lower().endswith(config.SUPPORTED_EXTENSIONS):
         return Sites.Custom

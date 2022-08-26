@@ -60,8 +60,13 @@ class GuildSettings(Base):
             ).scalar_one_or_none()
             if sett:
                 return sett
-            sett = GuildSettings(guild_id=guild_id, **DEFAULT_CONFIG)
-            session.add(sett)
+            session.add(GuildSettings(guild_id=guild_id, **DEFAULT_CONFIG))
+            # avoiding incomplete detached object
+            sett = (
+                await session.execute(
+                    select(GuildSettings).where(GuildSettings.guild_id == guild_id)
+                )
+            ).scalar_one()
             await session.commit()
             return sett
 
@@ -82,10 +87,18 @@ class GuildSettings(Base):
                 .scalars()
                 .fetchall()
             )
-            for new_id in set(ids) - {sett.guild_id for sett in settings}:
-                new_settings = GuildSettings(guild_id=new_id, **DEFAULT_CONFIG)
-                session.add(new_settings)
-                settings.append(new_settings)
+            missing = set(ids) - {sett.guild_id for sett in settings}
+            for new_id in missing:
+                session.add(GuildSettings(guild_id=new_id, **DEFAULT_CONFIG))
+            settings.extend(
+                (
+                    await session.execute(
+                        select(GuildSettings).where(GuildSettings.guild_id.in_(missing))
+                    )
+                )
+                .scalars()
+                .fetchall()
+            )
             await session.commit()
         # ensure the correct order
         settings.sort(key=lambda x: ids.index(x.guild_id))

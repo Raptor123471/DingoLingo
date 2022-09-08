@@ -22,6 +22,7 @@ bot = MusicBot(
     status=discord.Status.online,
     activity=discord.Game(name="Music, type {}help".format(config.BOT_PREFIX)),
     intents=intents,
+    allowed_mentions=discord.AllowedMentions.none(),
 )
 
 

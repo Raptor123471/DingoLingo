@@ -26,14 +26,14 @@ class MusicBot(commands.Bot):
         )
 
     async def start(self, *args, **kwargs):
+        print(config.STARTUP_MESSAGE)
+
         async with self.db_engine.connect() as connection:
             await connection.run_sync(run_migrations)
         await extract_legacy_settings(self)
         return await super().start(*args, **kwargs)
 
     async def on_ready(self):
-        print(config.STARTUP_MESSAGE)
-
         self.settings.update(await GuildSettings.load_many(self, self.guilds))
 
         for guild in self.guilds:

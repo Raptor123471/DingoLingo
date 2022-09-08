@@ -58,6 +58,11 @@ class MusicBot(bridge.Bot):
             command.description = command.brief
         return super().add_command(command)
 
+    def add_application_command(self, command):
+        if not config.ENABLE_SLASH_COMMANDS:
+            return
+        return super().add_application_command(command)
+
     async def get_prefix(
         self, message: Union[discord.Message, bridge.BridgeApplicationContext]
     ):

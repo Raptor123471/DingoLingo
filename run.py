@@ -1,6 +1,7 @@
 import os
 
 import discord
+from discord.ext import commands
 
 from config import config
 from musicbot.bot import MusicBot
@@ -14,10 +15,16 @@ initial_extensions = [
 
 
 intents = discord.Intents.default()
-intents.message_content = True
+if config.BOT_PREFIX is not None:
+    intents.message_content = True
+    prefix = config.BOT_PREFIX
+else:
+    prefix = " "  # messages can't start with space
+if config.MENTION_AS_PREFIX:
+    prefix = commands.when_mentioned_or(prefix)
 
 bot = MusicBot(
-    command_prefix=config.BOT_PREFIX,
+    command_prefix=prefix,
     case_insensitive=True,
     status=discord.Status.online,
     activity=discord.Game(name="Music, type {}help".format(config.BOT_PREFIX)),

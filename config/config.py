@@ -1,13 +1,16 @@
 # fmt: off
 
 import os
+from typing import Optional
 
 
 BOT_TOKEN: str = os.getenv("BOT_TOKEN")
 SPOTIFY_ID: str = ""
 SPOTIFY_SECRET: str = ""
 
-BOT_PREFIX = "d!"
+BOT_PREFIX: Optional[str] = "d!"  # set to None to disable
+MENTION_AS_PREFIX = True
+ENABLE_SLASH_COMMANDS = False
 
 EMBED_COLOR = 0x4dd4d0  # replace after'0x' with desired hex code ex. '#ff0188' >> '0xff0188'
 

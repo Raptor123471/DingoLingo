@@ -374,7 +374,10 @@ class AudioController(object):
 
     async def udisconnect(self):
         await self.stop_player()
+        if self.guild.voice_client is None:
+            return False
         await self.guild.voice_client.disconnect(force=True)
+        return True
 
     def clear_queue(self):
         self.playlist.playque.clear()

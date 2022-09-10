@@ -112,7 +112,7 @@ HELP_QUEUE_SHORT = "Shows the songs in queue."
 HELP_QUEUE_LONG = "Shows the number of songs in queue, up to 10."
 HELP_SHUFFLE_SHORT = "Shuffle the queue"
 HELP_SHUFFLE_LONG = "Randomly sort the songs in the current queue"
-HELP_CHANGECHANNEL_SHORT = "Change the bot channel"
-HELP_CHANGECHANNEL_LONG = "Change the bot channel to the VC you are in"
+HELP_RESET_SHORT = "Disconnect and reconnect"
+HELP_RESET_LONG = "Stop player, disconnect and reconnect to the chanel you are in"
 
 ABSOLUTE_PATH = ""  # do not modify

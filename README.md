@@ -163,12 +163,6 @@ d!c
 * Connects the bot to the user's voice channel
 
 ```
-d!cc
-```
-
-* Switch the bot to the user's voice channel
-
-```
 d!dc
 ```
 

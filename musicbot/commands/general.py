@@ -40,9 +40,9 @@ class General(commands.Cog):
 
     @commands.command(
         name="reset",
-        description=config.HELP_DISCONNECT_LONG,
-        help=config.HELP_DISCONNECT_SHORT,
-        aliases=["rs", "restart"],
+        description=config.HELP_RESET_LONG,
+        help=config.HELP_RESET_SHORT,
+        aliases=["rs", "restart", "cc"],  # this command replaces removed changechannel
     )
     async def _reset(self, ctx: Context):
         await ctx.defer()
@@ -59,34 +59,6 @@ class General(commands.Cog):
                     ":white_check_mark:", ctx.author.voice.channel.name
                 )
             )
-
-    @commands.command(
-        name="changechannel",
-        description=config.HELP_CHANGECHANNEL_LONG,
-        help=config.HELP_CHANGECHANNEL_SHORT,
-        aliases=["cc"],
-    )
-    async def _change_channel(self, ctx: Context):
-        vchannel = await utils.is_connected(ctx)
-        if vchannel == ctx.author.voice.channel:
-            await ctx.send(
-                "{} Already connected to {}".format(":white_check_mark:", vchannel.name)
-            )
-            return
-
-        await ctx.bot.audio_controllers[ctx.guild].stop_player()
-        await ctx.guild.voice_client.disconnect(force=True)
-
-        ctx.bot.audio_controllers[ctx.guild] = AudioController(self.bot, ctx.guild)
-        await ctx.bot.audio_controllers[ctx.guild].register_voice_channel(
-            ctx.author.voice.channel
-        )
-
-        await ctx.send(
-            "{} Switched to {}".format(
-                ":white_check_mark:", ctx.author.voice.channel.name
-            )
-        )
 
     @commands.command(
         name="ping", description=config.HELP_PING_LONG, help=config.HELP_PING_SHORT

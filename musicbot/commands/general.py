@@ -95,7 +95,7 @@ class General(commands.Cog):
 
     @commands.command(
         name="setting",
-        description=config.HELP_SHUFFLE_LONG,
+        description=config.HELP_SETTINGS_LONG,
         help=config.HELP_SETTINGS_SHORT,
         aliases=["settings", "set"],
     )

@@ -113,6 +113,6 @@ HELP_QUEUE_LONG = "Shows the number of songs in queue, up to 10."
 HELP_SHUFFLE_SHORT = "Shuffle the queue"
 HELP_SHUFFLE_LONG = "Randomly sort the songs in the current queue"
 HELP_RESET_SHORT = "Disconnect and reconnect"
-HELP_RESET_LONG = "Stop player, disconnect and reconnect to the chanel you are in"
+HELP_RESET_LONG = "Stop player, disconnect and reconnect to the channel you are in"
 
 ABSOLUTE_PATH = ""  # do not modify

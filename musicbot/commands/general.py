@@ -45,19 +45,20 @@ class General(commands.Cog):
         aliases=["rs", "restart"],
     )
     async def _reset(self, ctx: Context):
-        await ctx.bot.audio_controllers[ctx.guild].stop_player()
-        await ctx.guild.voice_client.disconnect(force=True)
+        await ctx.defer()
+        if await ctx.bot.audio_controllers[ctx.guild].udisconnect():
+            # bot was connected and need some rest
+            await asyncio.sleep(1)
 
-        ctx.bot.audio_controllers[ctx.guild] = AudioController(self.bot, ctx.guild)
-        await ctx.bot.audio_controllers[ctx.guild].register_voice_channel(
-            ctx.author.voice.channel
+        audiocontroller = ctx.bot.audio_controllers[ctx.guild] = AudioController(
+            self.bot, ctx.guild
         )
-
-        await ctx.send(
-            "{} Connected to {}".format(
-                ":white_check_mark:", ctx.author.voice.channel.name
+        if await audiocontroller.uconnect(ctx):
+            await ctx.send(
+                "{} Connected to {}".format(
+                    ":white_check_mark:", ctx.author.voice.channel.name
+                )
             )
-        )
 
     @commands.command(
         name="changechannel",

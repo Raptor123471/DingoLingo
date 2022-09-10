@@ -44,10 +44,6 @@ if __name__ == "__main__":
         print("Error: No bot token!")
         exit()
 
-    for extension in initial_extensions:
-        try:
-            bot.load_extension(extension, store=False)
-        except Exception as e:
-            print(e)
+    bot.load_extensions(*initial_extensions)
 
     bot.run(config.BOT_TOKEN, reconnect=True)

@@ -1,8 +1,8 @@
+import asyncio
 import discord
 from config import config
-from discord.ext import commands
+from discord.ext import commands, bridge
 from discord.ext.commands import has_permissions
-from musicbot import utils
 from musicbot.bot import Context, MusicBot
 from musicbot.audiocontroller import AudioController
 
@@ -18,7 +18,7 @@ class General(commands.Cog):
         self.bot = bot
 
     # logic is split to uconnect() for wide usage
-    @commands.command(
+    @bridge.bridge_command(
         name="connect",
         description=config.HELP_CONNECT_LONG,
         help=config.HELP_CONNECT_SHORT,
@@ -26,9 +26,10 @@ class General(commands.Cog):
     )
     async def _connect(self, ctx: Context):  # dest_channel_name: str
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
-        await audiocontroller.uconnect(ctx)
+        if await audiocontroller.uconnect(ctx):
+            await ctx.send("Connected.")
 
-    @commands.command(
+    @bridge.bridge_command(
         name="disconnect",
         description=config.HELP_DISCONNECT_LONG,
         help=config.HELP_DISCONNECT_SHORT,
@@ -36,9 +37,12 @@ class General(commands.Cog):
     )
     async def _disconnect(self, ctx: Context):
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
-        await audiocontroller.udisconnect()
+        if await audiocontroller.udisconnect():
+            await ctx.send("Disconnected.")
+        else:
+            await ctx.send(config.NOT_CONNECTED_MESSAGE)
 
-    @commands.command(
+    @bridge.bridge_command(
         name="reset",
         description=config.HELP_RESET_LONG,
         help=config.HELP_RESET_SHORT,
@@ -60,28 +64,32 @@ class General(commands.Cog):
                 )
             )
 
-    @commands.command(
+    @bridge.bridge_command(
         name="ping", description=config.HELP_PING_LONG, help=config.HELP_PING_SHORT
     )
     async def _ping(self, ctx):
         await ctx.send("Pong")
 
-    @commands.command(
+    @bridge.bridge_command(
         name="setting",
         description=config.HELP_SHUFFLE_LONG,
         help=config.HELP_SETTINGS_SHORT,
         aliases=["settings", "set"],
     )
     @has_permissions(administrator=True)
-    async def _settings(self, ctx: Context, *args):
+    async def _settings(self, ctx: Context, setting=None, *, value=None):
 
         sett = ctx.bot.settings[ctx.guild]
 
-        if len(args) == 0:
+        if setting is None and value is None:
             await ctx.send(embed=sett.format(ctx))
             return
 
-        response = await sett.process_setting(args[0], " ".join(args[1:]), ctx)
+        if setting is None or value is None:
+            await ctx.send("Error: setting or value is missing.")
+            return
+
+        response = await sett.process_setting(setting, value, ctx)
 
         if response is None:
             await ctx.send("`Error: Setting not found`")
@@ -91,7 +99,7 @@ class General(commands.Cog):
                 await session.commit()
             await ctx.send("Setting updated!")
 
-    @commands.command(
+    @bridge.bridge_command(
         name="addbot",
         description=config.HELP_ADDBOT_LONG,
         help=config.HELP_ADDBOT_SHORT,

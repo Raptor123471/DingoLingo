@@ -1,6 +1,6 @@
 import discord
 from config import config
-from discord.ext import commands
+from discord.ext import commands, bridge
 from musicbot import linkutils, utils
 from musicbot.bot import MusicBot, Context
 
@@ -15,18 +15,16 @@ class Music(commands.Cog):
     def __init__(self, bot: MusicBot):
         self.bot = bot
 
-    @commands.command(
+    @bridge.bridge_command(
         name="play",
         description=config.HELP_YT_LONG,
         help=config.HELP_YT_SHORT,
         aliases=["p", "yt", "pl"],
     )
     async def _play_song(self, ctx: Context, *, track: str):
+        await ctx.defer()
 
         if not await utils.play_check(ctx):
-            return
-
-        if track.isspace() or not track:
             return
 
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
@@ -39,7 +37,7 @@ class Music(commands.Cog):
         #     await ctx.send("Loop is enabled! Use {}loop to disable".format(config.BOT_PREFIX))
         #     return
 
-        audiocontroller.command_channel = ctx.channel
+        audiocontroller.command_channel = ctx
         song = await audiocontroller.process_song(track)
 
         if song is None:
@@ -59,7 +57,7 @@ class Music(commands.Cog):
                     embed=song.info.format_output(config.SONGINFO_NOW_PLAYING)
                 )
 
-    @commands.command(
+    @bridge.bridge_command(
         name="loop",
         description=config.HELP_LOOP_LONG,
         help=config.HELP_LOOP_SHORT,
@@ -93,7 +91,7 @@ class Music(commands.Cog):
         else:
             await ctx.send("Loop disabled :x:")
 
-    @commands.command(
+    @bridge.bridge_command(
         name="shuffle",
         description=config.HELP_SHUFFLE_LONG,
         help=config.HELP_SHUFFLE_SHORT,
@@ -115,26 +113,25 @@ class Music(commands.Cog):
         for song in list(audiocontroller.playlist.playque)[: config.MAX_SONG_PRELOAD]:
             audiocontroller.add_task(audiocontroller.preload(song))
 
-    @commands.command(
+    @bridge.bridge_command(
         name="pause", description=config.HELP_PAUSE_LONG, help=config.HELP_PAUSE_SHORT
     )
     async def _pause(self, ctx: Context):
         if not await utils.play_check(ctx):
             return
 
-        if ctx.guild.voice_client is None:
-            return
+        if ctx.guild.voice_client is not None:
+            if ctx.guild.voice_client.is_paused():
+                return await self._resume(ctx)
 
-        if ctx.guild.voice_client.is_paused():
-            return await self._resume(ctx)
+            elif ctx.guild.voice_client.is_playing():
+                ctx.guild.voice_client.pause()
+                return await ctx.send("Playback Paused :pause_button:")
 
-        if not ctx.guild.voice_client.is_playing():
-            return
+        await ctx.send("Nothing to pause.")
+        return
 
-        ctx.guild.voice_client.pause()
-        await ctx.send("Playback Paused :pause_button:")
-
-    @commands.command(
+    @bridge.bridge_command(
         name="queue",
         description=config.HELP_QUEUE_LONG,
         help=config.HELP_QUEUE_SHORT,
@@ -173,7 +170,7 @@ class Music(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.command(
+    @bridge.bridge_command(
         name="stop",
         description=config.HELP_STOP_LONG,
         help=config.HELP_STOP_SHORT,
@@ -188,35 +185,25 @@ class Music(commands.Cog):
         await audiocontroller.stop_player()
         await ctx.send("Stopped all sessions :octagonal_sign:")
 
-    @commands.command(
+    @bridge.bridge_command(
         name="move",
         description=config.HELP_MOVE_LONG,
         help=config.HELP_MOVE_SHORT,
         aliases=["mv"],
     )
-    async def _move(self, ctx: Context, *args):
-        if len(args) != 2:
-            ctx.send("Wrong number of arguments")
-            return
-
-        try:
-            oldindex, newindex = map(int, args)
-        except ValueError:
-            ctx.send("Wrong argument")
-            return
-
+    async def _move(self, ctx: Context, src_pos: int, dest_pos: int):
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
         if not audiocontroller.is_active():
             await ctx.send(config.QUEUE_EMPTY)
             return
         try:
-            audiocontroller.playlist.move(oldindex - 1, newindex - 1)
+            audiocontroller.playlist.move(src_pos - 1, dest_pos - 1)
         except IndexError:
             await ctx.send("Wrong position")
             return
         await ctx.send("Moved")
 
-    @commands.command(
+    @bridge.bridge_command(
         name="skip",
         description=config.HELP_SKIP_LONG,
         help=config.HELP_SKIP_SHORT,
@@ -238,7 +225,7 @@ class Music(commands.Cog):
         ctx.guild.voice_client.stop()
         await ctx.send("Skipped current song :fast_forward:")
 
-    @commands.command(
+    @bridge.bridge_command(
         name="clear",
         description=config.HELP_CLEAR_LONG,
         help=config.HELP_CLEAR_SHORT,
@@ -254,7 +241,7 @@ class Music(commands.Cog):
         audiocontroller.playlist.loop = "off"
         await ctx.send("Cleared queue :no_entry_sign:")
 
-    @commands.command(
+    @bridge.bridge_command(
         name="prev",
         description=config.HELP_PREV_LONG,
         help=config.HELP_PREV_SHORT,
@@ -275,7 +262,7 @@ class Music(commands.Cog):
         else:
             await ctx.send("No previous track.")
 
-    @commands.command(
+    @bridge.bridge_command(
         name="resume",
         description=config.HELP_RESUME_LONG,
         help=config.HELP_RESUME_SHORT,
@@ -290,7 +277,7 @@ class Music(commands.Cog):
         else:
             await ctx.send("Playback is not paused.")
 
-    @commands.command(
+    @bridge.bridge_command(
         name="songinfo",
         description=config.HELP_SONGINFO_LONG,
         help=config.HELP_SONGINFO_SHORT,
@@ -302,10 +289,11 @@ class Music(commands.Cog):
 
         song = ctx.bot.audio_controllers[ctx.guild].current_song
         if song is None:
+            await ctx.send("No song is playing now.")
             return
         await ctx.send(embed=song.info.format_output(config.SONGINFO_SONGINFO))
 
-    @commands.command(
+    @bridge.bridge_command(
         name="history",
         description=config.HELP_HISTORY_LONG,
         help=config.HELP_HISTORY_SHORT,
@@ -316,7 +304,7 @@ class Music(commands.Cog):
 
         await ctx.send(ctx.bot.audio_controllers[ctx.guild].track_history())
 
-    @commands.command(
+    @bridge.bridge_command(
         name="volume",
         aliases=["vol"],
         description=config.HELP_VOL_LONG,

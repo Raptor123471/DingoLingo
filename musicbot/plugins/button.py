@@ -1,87 +1,76 @@
 import discord
 from discord.ext import commands
 from musicbot import linkutils, utils
+from musicbot.bot import MusicBot
+
+SUPPORTED_SITES = (
+    linkutils.Sites.Spotify,
+    linkutils.Sites.Spotify_Playlist,
+    linkutils.Sites.YouTube,
+)
 
 
 class Button(commands.Cog):
-
-    def __init__(self, bot):
+    def __init__(self, bot: MusicBot):
         self.bot = bot
 
     @commands.Cog.listener()
-    async def on_message(self, message):
-
-        sett = utils.guild_to_settings[message.guild]
-        button_name = sett.get('button_emote')
-
-        if button_name == "":
+    async def on_message(self, message: discord.Message):
+        if not message.guild or message.author == self.bot.user:
             return
 
-        if message.author == self.bot.user:
+        sett = self.bot.settings[message.guild]
+        button = sett.get("button_emote")
+
+        if not button:
+            return
+
+        emoji = utils.get_emoji(message.guild, button)
+        if not emoji:
             return
 
         host = linkutils.identify_url(message.content)
 
-        guild = message.guild
-        emoji = discord.utils.get(guild.emojis, name=button_name)
-
-        if host == linkutils.Sites.YouTube:
-            if emoji:
-                await message.add_reaction(emoji)
-
-        if host == linkutils.Sites.Spotify:
-            if emoji:
-                await message.add_reaction(emoji)
-
-        if host == linkutils.Sites.Spotify_Playlist:
-            if emoji:
-                await message.add_reaction(emoji)
+        if host in SUPPORTED_SITES:
+            await message.add_reaction(emoji)
 
     @commands.Cog.listener()
-    async def on_raw_reaction_add(self, reaction):
+    async def on_raw_reaction_add(self, reaction: discord.RawReactionActionEvent):
 
         serv = self.bot.get_guild(reaction.guild_id)
 
-        sett = utils.guild_to_settings[serv]
-        button_name = sett.get('button_emote')
+        user_vc = reaction.member.voice
 
-        if button_name == "":
+        if not serv or reaction.member == self.bot.user or not user_vc:
             return
 
-        if reaction.emoji.name == button_name:
-            channels = serv.text_channels
+        sett = self.bot.settings[serv]
+        button = sett.get("button_emote")
 
-            for chan in channels:
-                if chan.id == reaction.channel_id:
-                    if reaction.member == self.bot.user:
-                        return
+        if not button:
+            return
 
-                    try:
-                        if reaction.member.voice.channel == None:
-                            return
-                    except:
-                        message = await chan.fetch_message(reaction.message_id)
-                        await message.remove_reaction(reaction.emoji, reaction.member)
-                        return
-                    message = await chan.fetch_message(reaction.message_id)
-                    await message.remove_reaction(reaction.emoji, reaction.member)
-
-            current_guild = utils.get_guild(self.bot, message)
-            audiocontroller = utils.guild_to_audiocontroller[current_guild]
-
+        if reaction.emoji.name == button or str(reaction.emoji.id or "") == button:
+            chan = serv.get_channel(reaction.channel_id)
+            message = await chan.fetch_message(reaction.message_id)
             url = linkutils.get_url(message.content)
 
             host = linkutils.identify_url(url)
 
-            if host == linkutils.Sites.Spotify:
-                await audiocontroller.process_song(url)
+            if host not in SUPPORTED_SITES:
+                return
 
-            if host == linkutils.Sites.Spotify.Spotify_Playlist:
-                await audiocontroller.process_song(url)
+            if chan.permissions_for(serv.me).manage_messages:
+                await message.remove_reaction(reaction.emoji, reaction.member)
 
-            if host == linkutils.Sites.YouTube:
-                await audiocontroller.process_song(url)
+            audiocontroller = self.bot.audio_controllers[serv]
+
+            if serv.voice_client is None:
+                await audiocontroller.register_voice_channel(user_vc.channel)
+            elif serv.voice_client.channel != user_vc.channel:
+                return
+            await audiocontroller.process_song(url)
 
 
-def setup(bot):
+def setup(bot: MusicBot):
     bot.add_cog(Button(bot))

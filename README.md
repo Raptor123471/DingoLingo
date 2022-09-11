@@ -36,7 +36,7 @@ Obtained keys must be entered into ```config/config.py```
 
 #### Requirements
 
-* Installation of Python 3.7+
+* Installation of Python 3.8+
 
 Install dependancies:
 ```
@@ -104,10 +104,10 @@ $shuffle /$sh
 * Shuffle the queue
 
 ```
-$l / $loop
+$l / $loop [all/single/off]
 ```
 
-* Loop the current playing song, toggle on/off
+* Loops the entire queue by default. `$loop single` loops current track.
 
 ```
 $mv / $move
@@ -212,7 +212,7 @@ $addbot
 ## License
 
 This program is free software: you can redistribute it and/or modify
-it under the terms of the [GNU General Public License](LICENSE.txt) as published by
+it under the terms of the [GNU General Public License](LICENSE) as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 

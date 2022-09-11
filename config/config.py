@@ -41,6 +41,13 @@ VC_TIMOUT_DEFAULT = True  # default template setting for VC timeout true= yes, t
 ALLOW_VC_TIMEOUT_EDIT = True  # allow or disallow editing the vc_timeout guild setting
 
 
+actual_prefix = (  # for internal use
+    BOT_PREFIX
+    if BOT_PREFIX is not None
+    else ("/" if ENABLE_SLASH_COMMANDS else "@bot ")
+)
+
+
 STARTUP_MESSAGE = "Starting Bot..."
 STARTUP_COMPLETE_MESSAGE = "Startup Complete"
 
@@ -80,7 +87,7 @@ HELP_DISCONNECT_SHORT = "Disonnect bot from voicechannel"
 HELP_DISCONNECT_LONG = "Disconnect the bot from the voice channel and stop audio."
 
 HELP_SETTINGS_SHORT = "View and set bot settings"
-HELP_SETTINGS_LONG = "View and set bot settings in the server. Usage: {}settings setting_name value".format(BOT_PREFIX)
+HELP_SETTINGS_LONG = "View and set bot settings in the server. Usage: {}settings setting_name value".format(actual_prefix)
 
 HELP_HISTORY_SHORT = "Show history of songs"
 HELP_HISTORY_LONG = "Shows the " + str(MAX_TRACKNAME_HISTORY_LENGTH) + " last played songs."
@@ -98,10 +105,10 @@ HELP_SONGINFO_SHORT = "Info about current Song"
 HELP_SONGINFO_LONG = "Shows details about the song currently being played and posts a link to the song."
 HELP_STOP_SHORT = "Stop Music"
 HELP_STOP_LONG = "Stops the AudioPlayer and clears the songqueue"
-HELP_MOVE_LONG = f"{BOT_PREFIX}move [position] [new position]"
+HELP_MOVE_LONG = f"{actual_prefix}move [position] [new position]"
 HELP_MOVE_SHORT = "Moves a track in the queue"
 HELP_YT_SHORT = "Play a supported link or search on youtube"
-HELP_YT_LONG = f"{BOT_PREFIX}p [link/video title/keywords/playlist/soundcloud link/spotify link/bandcamp link/twitter link]"
+HELP_YT_LONG = f"{actual_prefix}p [link/video title/keywords/playlist/soundcloud link/spotify link/bandcamp link/twitter link]"
 HELP_PING_SHORT = "Pong"
 HELP_PING_LONG = "Test bot response status"
 HELP_CLEAR_SHORT = "Clear the queue."

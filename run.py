@@ -10,7 +10,6 @@ from musicbot.utils import check_dependencies
 initial_extensions = [
     "musicbot.commands.music",
     "musicbot.commands.general",
-    "musicbot.plugins.button",
 ]
 
 
@@ -23,6 +22,10 @@ else:
     prefix = " "  # messages can't start with space
 if config.MENTION_AS_PREFIX:
     prefix = commands.when_mentioned_or(prefix)
+
+if config.ENABLE_BUTTON_PLUGIN:
+    intents.message_content = True
+    initial_extensions.append("musicbot.plugins.button")
 
 bot = MusicBot(
     command_prefix=prefix,

@@ -221,6 +221,10 @@ class GuildSettings(Base):
         return True
 
     async def set_button_emote(self, setting, value, ctx):
+        if not config.ENABLE_BUTTON_PLUGIN:
+            await ctx.send("`Error: Button plugin is disabled`")
+            return False
+
         if value.lower() == "unset":
             self.button_emote = None
             return True

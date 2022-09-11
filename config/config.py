@@ -12,6 +12,8 @@ BOT_PREFIX: Optional[str] = "d!"  # set to None to disable
 MENTION_AS_PREFIX = True
 ENABLE_SLASH_COMMANDS = False
 
+ENABLE_BUTTON_PLUGIN = True
+
 EMBED_COLOR = 0x4dd4d0  # replace after'0x' with desired hex code ex. '#ff0188' >> '0xff0188'
 
 SUPPORTED_EXTENSIONS = (".webm", ".mp4", ".mp3", ".avi", ".wav", ".m4v", ".ogg", ".mov")

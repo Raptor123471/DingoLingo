@@ -1,7 +1,8 @@
-from typing import Dict
+from typing import Dict, Union
 
 import discord
-from discord.ext import commands
+from discord.ext import bridge
+from discord.ext.commands import DefaultHelpCommand
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -10,8 +11,9 @@ from musicbot.audiocontroller import AudioController
 from musicbot.settings import GuildSettings, run_migrations, extract_legacy_settings
 
 
-class MusicBot(commands.Bot):
+class MusicBot(bridge.Bot):
     def __init__(self, *args, **kwargs):
+        kwargs.setdefault("help_command", UniversalHelpCommand())
         super().__init__(*args, **kwargs)
 
         # A dictionary that remembers which guild belongs to which audiocontroller
@@ -24,6 +26,9 @@ class MusicBot(commands.Bot):
         self.DbSession = sessionmaker(
             self.db_engine, expire_on_commit=False, class_=AsyncSession
         )
+        # replace default to register slash command
+        self._default_help = self.remove_command("help")
+        self.add_bridge_command(self._help)
 
     async def start(self, *args, **kwargs):
         print(config.STARTUP_MESSAGE)
@@ -46,11 +51,34 @@ class MusicBot(commands.Bot):
         print(guild.name)
         await self.register(guild)
 
+    def add_command(self, command):
+        # fix empty description
+        # https://github.com/Pycord-Development/pycord/issues/1619
+        if command.brief and not command.description:
+            command.description = command.brief
+        return super().add_command(command)
+
+    def add_application_command(self, command):
+        if not config.ENABLE_SLASH_COMMANDS:
+            return
+        return super().add_application_command(command)
+
+    async def get_prefix(
+        self, message: Union[discord.Message, bridge.BridgeApplicationContext]
+    ):
+        if isinstance(message, bridge.BridgeApplicationContext):
+            # display this as prefix for slash commands
+            return "/"
+        return await super().get_prefix(message)
+
+    async def get_application_context(self, interaction):
+        return await super().get_application_context(interaction, ApplicationContext)
+
     async def process_commands(self, message: discord.Message):
         if message.author.bot:
             return
 
-        ctx = await self.get_context(message, cls=Context)
+        ctx = await self.get_context(message, cls=ExtContext)
 
         if ctx.valid and not message.guild:
             await message.channel.send(config.NO_GUILD_MESSAGE)
@@ -80,7 +108,34 @@ class MusicBot(commands.Bot):
             except Exception as e:
                 print(e)
 
+    @bridge.bridge_command(name="help", description="Help command")
+    async def _help(ctx, *, command=None):
+        help_command = ctx.bot._default_help
+        if ctx.is_app:
+            # trick the command to run as slash
+            ctx.content = "/help"
+            ctx = await ctx.bot.get_context(ctx, ExtContext)
+        await help_command.prepare(ctx)
+        await help_command.callback(ctx, command=command)
 
-class Context(commands.Context):
+
+class Context(bridge.BridgeContext):
     bot: MusicBot
     guild: discord.Guild
+
+    async def send(self, *args, **kwargs):
+        # use `respond` for compatibility
+        return await self.respond(*args, **kwargs)
+
+
+class ExtContext(bridge.BridgeExtContext, Context):
+    pass
+
+
+class ApplicationContext(bridge.BridgeApplicationContext, Context):
+    pass
+
+
+class UniversalHelpCommand(DefaultHelpCommand):
+    def get_destination(self):
+        return self.context

@@ -221,6 +221,10 @@ class GuildSettings(Base):
         return True
 
     async def set_button_emote(self, setting, value, ctx):
+        if not config.ENABLE_BUTTON_PLUGIN:
+            await ctx.send("`Error: Button plugin is disabled`")
+            return False
+
         if value.lower() == "unset":
             self.button_emote = None
             return True
@@ -263,7 +267,8 @@ class GuildSettings(Base):
     async def set_vc_timeout(self, setting, value, ctx):
 
         if not config.ALLOW_VC_TIMEOUT_EDIT:
-            await ctx.send("`Error: This value cannot be modified")
+            await ctx.send("`Error: This value cannot be modified`")
+            return False
 
         if value.lower() == "true":
             self.vc_timeout = True

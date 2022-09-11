@@ -367,13 +367,17 @@ class AudioController(object):
 
         if self.guild.voice_client is None:
             await self.register_voice_channel(ctx.author.voice.channel)
-        else:
-            await ctx.send(config.ALREADY_CONNECTED_MESSAGE)
-        return True
+            return True
+
+        await ctx.send(config.ALREADY_CONNECTED_MESSAGE)
+        return False
 
     async def udisconnect(self):
         await self.stop_player()
+        if self.guild.voice_client is None:
+            return False
         await self.guild.voice_client.disconnect(force=True)
+        return True
 
     def clear_queue(self):
         self.playlist.playque.clear()

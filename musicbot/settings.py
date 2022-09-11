@@ -263,7 +263,8 @@ class GuildSettings(Base):
     async def set_vc_timeout(self, setting, value, ctx):
 
         if not config.ALLOW_VC_TIMEOUT_EDIT:
-            await ctx.send("`Error: This value cannot be modified")
+            await ctx.send("`Error: This value cannot be modified`")
+            return False
 
         if value.lower() == "true":
             self.vc_timeout = True

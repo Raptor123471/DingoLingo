@@ -23,18 +23,13 @@ class Music(commands.Cog):
     )
     async def _play_song(self, ctx: Context, *, track: str):
 
-        audiocontroller = ctx.bot.audio_controllers[ctx.guild]
-
-        if not await utils.is_connected(ctx) and not await audiocontroller.uconnect(
-            ctx
-        ):
+        if not await utils.play_check(ctx):
             return
 
         if track.isspace() or not track:
             return
 
-        if not await utils.play_check(ctx):
-            return
+        audiocontroller = ctx.bot.audio_controllers[ctx.guild]
 
         # reset timer
         audiocontroller.timer.cancel()
@@ -112,7 +107,7 @@ class Music(commands.Cog):
             return
 
         if len(audiocontroller.playlist.playque) == 0:
-            await ctx.send("Queue is empty :x:")
+            await ctx.send(config.QUEUE_EMPTY)
             return
 
         audiocontroller.playlist.shuffle()
@@ -145,7 +140,7 @@ class Music(commands.Cog):
 
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
         if not audiocontroller.is_active():
-            await ctx.send("Queue is empty :x:")
+            await ctx.send(config.QUEUE_EMPTY)
             return
 
         playlist = audiocontroller.playlist
@@ -157,7 +152,6 @@ class Music(commands.Cog):
         embed = discord.Embed(
             title=":scroll: Queue [{}]".format(len(playlist.playque)),
             color=config.EMBED_COLOR,
-            inline=False,
         )
 
         for counter, song in enumerate(
@@ -207,7 +201,7 @@ class Music(commands.Cog):
 
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
         if not audiocontroller.is_active():
-            await ctx.send("Queue is empty :x:")
+            await ctx.send(config.QUEUE_EMPTY)
             return
         try:
             audiocontroller.playlist.move(oldindex - 1, newindex - 1)
@@ -233,7 +227,7 @@ class Music(commands.Cog):
         audiocontroller.timer = utils.Timer(audiocontroller.timeout_handler)
 
         if not audiocontroller.is_active():
-            await ctx.send("Queue is empty :x:")
+            await ctx.send(config.QUEUE_EMPTY)
             return
         ctx.guild.voice_client.stop()
         await ctx.send("Skipped current song :fast_forward:")

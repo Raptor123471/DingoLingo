@@ -312,6 +312,36 @@ class Music(commands.Cog):
         except:
             await ctx.send("Error: Volume must be a number 1-100")
 
+    @commands.command(name='filter', description=config.HELP_FILTER_LONG, help=config.HELP_FILTER_SHORT)
+    async def _filter(self, ctx, *args):
+        audiocontroller = utils.guild_to_audiocontroller[ctx.guild]
+
+        if ctx.guild is None:
+            await ctx.send(config.NO_GUILD_MESSAGE)
+            return
+
+        if await utils.play_check(ctx) == False:
+            return
+
+        if len(args) == 0:
+            await ctx.send(f':information_source: | Current filters: `{", ".join(audiocontroller.filters)}`')
+            return
+
+        if args[0] == 'off':
+            audiocontroller.filters = []
+            await audiocontroller.restart_player()
+            await ctx.send(':no_entry_sign: | All filters disabled!')
+        elif args[0] in config.FILTERS:
+            if args[0] not in audiocontroller.filters:
+                audiocontroller.filters.append(args[0])
+                await audiocontroller.restart_player()
+                await ctx.send(f':notes: | Filter `{args[0]}` enabled!')
+            else:
+                audiocontroller.filters.remove(args[0])
+                await audiocontroller.restart_player()
+                await ctx.send(f':no_entry_sign: | Filter `{args[0]}` disabled!')
+        else:
+            await ctx.send(":warning: | Invalid filter!")
 
 def setup(bot):
     bot.add_cog(Music(bot))

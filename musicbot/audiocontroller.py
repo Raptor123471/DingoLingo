@@ -31,6 +31,8 @@ class AudioController(object):
 
         self.timer = utils.Timer(self.timeout_handler)
 
+        self.ctx = None
+
     @property
     def volume(self):
         return self._volume
@@ -104,6 +106,11 @@ class AudioController(object):
 
         self.guild.voice_client.play(discord.FFmpegPCMAudio(
             song.base_url, before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5'), after=lambda e: self.next_song(e))
+        
+        sett = utils.guild_to_settings[self.guild]
+
+        if self.ctx is not None and sett.get("announce_tracks"):
+            await self.ctx.invoke(self.bot.get_command('songinfo'))
 
         self.guild.voice_client.source = discord.PCMVolumeTransformer(
             self.guild.voice_client.source)
@@ -341,6 +348,7 @@ class AudioController(object):
         await self.udisconnect()
 
     async def uconnect(self, ctx):
+        self.ctx = ctx
 
         if not ctx.author.voice:
             await ctx.send(config.NO_GUILD_MESSAGE)

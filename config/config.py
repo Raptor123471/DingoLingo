@@ -18,7 +18,6 @@ VC_TIMEOUT = 600 #seconds
 VC_TIMOUT_DEFAULT = True  #default template setting for VC timeout true= yes, timeout false= no timeout
 ALLOW_VC_TIMEOUT_EDIT = True  #allow or disallow editing the vc_timeout guild setting
 
-
 STARTUP_MESSAGE = "Starting Bot..."
 STARTUP_COMPLETE_MESSAGE = "Startup Complete"
 
@@ -44,7 +43,8 @@ SONGINFO_LIKES = "Likes: "
 SONGINFO_DISLIKES = "Dislikes: "
 SONGINFO_NOW_PLAYING = "Now Playing"
 SONGINFO_QUEUE_ADDED = "Added to queue"
-SONGINFO_SONGINFO = "Song info"
+SONGINFO_SONGINFO = "Now playing"
+SONGINFO_UNKNOWN_SITE = "Unknown site :question:"
 SONGINFO_ERROR = "Error: Unsupported site or age restricted content. To enable age restricted content check the documentation/wiki."
 SONGINFO_PLAYLIST_QUEUED = "Queued playlist :page_with_curl:"
 SONGINFO_UNKNOWN_DURATION = "Unknown"

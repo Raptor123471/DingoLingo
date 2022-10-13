@@ -52,6 +52,14 @@ class AudioController(object):
             history_string += "\n" + trackname
         return history_string
 
+    def remove_song(self, queue_number):
+        removed_title = self.playlist.get_title(queue_number)
+        if removed_title is None:
+            return "Queue position \"" + str(queue_number) + "\" does not exist."
+        success_str = "Removed track \#" + str(queue_number) + ": " + removed_title
+        self.playlist.remove(queue_number)
+        return success_str
+
     def next_song(self, error):
         """Invoked after a song is finished. Plays the next song if there is one."""
 

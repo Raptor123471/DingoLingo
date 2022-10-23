@@ -5,3 +5,5 @@ aiohttp
 asyncio
 beautifulsoup4
 spotipy
+dotenv
+discord

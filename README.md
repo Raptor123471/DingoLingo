@@ -31,8 +31,9 @@ A Discord music bot written in Python with support for Youtube, SoundCloud, Spot
   - Client ID
   - Client Secret
   - Note: Limited to 50 playlist items without API
-
-Obtained keys must be entered into ```config/config.py```
+* After obtaining API keys:
+  1. Change the name of ```config/.env-example``` to ```config/.env```
+  2. Enter API keys into ```config/.env```
 
 #### Requirements
 

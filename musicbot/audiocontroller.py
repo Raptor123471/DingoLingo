@@ -84,13 +84,14 @@ class AudioController(object):
                     "format": "bestaudio",
                     "title": True,
                     "cookiefile": config.COOKIE_PATH,
+                    "quiet": True,
                 },
             )
         except Exception as e:
             if "ERROR: Sign in to confirm your age" in str(e):
                 return
             info = await self.extract_info(
-                song, {"title": True, "cookiefile": config.COOKIE_PATH}
+                song, {"title": True, "cookiefile": config.COOKIE_PATH, "quiet": True}
             )
         song.update(info)
 
@@ -223,6 +224,7 @@ class AudioController(object):
                 "format": "bestaudio/best",
                 "extract_flat": True,
                 "cookiefile": config.COOKIE_PATH,
+                "quiet": True,
             }
 
             r = await self.extract_info(url, options)
@@ -250,7 +252,7 @@ class AudioController(object):
                 self.playlist.add(song)
 
         if playlist_type == linkutils.Playlist_Types.BandCamp_Playlist:
-            options = {"format": "bestaudio/best", "extract_flat": True}
+            options = {"format": "bestaudio/best", "extract_flat": True, "quiet": True}
             r = await self.extract_info(url, options)
 
             for entry in r["entries"]:
@@ -302,6 +304,7 @@ class AudioController(object):
             "default_search": "auto",
             "noplaylist": True,
             "cookiefile": config.COOKIE_PATH,
+            "quiet": True,
         }
 
         r = await self.extract_info("ytsearch:" + title, options)

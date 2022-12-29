@@ -75,22 +75,8 @@ class Music(commands.Cog):
             await ctx.send("No songs in queue!")
             return
 
-        if mode is None:
-            if audiocontroller.playlist.loop == "off":
-                mode = "all"
-            else:
-                mode = "off"
-
-        if mode not in ("all", "single", "off"):
-            await ctx.send("Invalid loop mode!")
-            return
-
-        audiocontroller.playlist.loop = mode
-
-        if mode in ("all", "single"):
-            await ctx.send("Loop enabled :arrows_counterclockwise:")
-        else:
-            await ctx.send("Loop disabled :x:")
+        result = audiocontroller.loop(mode)
+        await ctx.send(result.value)
 
     @bridge.bridge_command(
         name="shuffle",
@@ -218,7 +204,7 @@ class Music(commands.Cog):
         if not audiocontroller.is_active():
             await ctx.send(config.QUEUE_EMPTY)
             return
-        ctx.guild.voice_client.stop()
+        audiocontroller.next_song()
         await ctx.send("Skipped current song :fast_forward:")
 
     @bridge.bridge_command(
@@ -253,7 +239,7 @@ class Music(commands.Cog):
         audiocontroller.timer.cancel()
         audiocontroller.timer = utils.Timer(audiocontroller.timeout_handler)
 
-        if await audiocontroller.prev_song():
+        if audiocontroller.prev_song():
             await ctx.send("Playing previous song :track_previous:")
         else:
             await ctx.send("No previous track.")

@@ -1,12 +1,13 @@
 from typing import Dict, Union
 
 import discord
-from discord.ext import bridge
+from discord.ext import bridge, tasks
 from discord.ext.commands import DefaultHelpCommand
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from config import config
+from musicbot.utils import compare_components
 from musicbot.audiocontroller import AudioController
 from musicbot.settings import GuildSettings, run_migrations, extract_legacy_settings
 
@@ -47,9 +48,24 @@ class MusicBot(bridge.Bot):
 
         print(config.STARTUP_COMPLETE_MESSAGE)
 
+        self.update_views.start()
+
     async def on_guild_join(self, guild):
         print(guild.name)
         await self.register(guild)
+
+    @tasks.loop(seconds=1)
+    async def update_views(self):
+        for audiocontroller in self.audio_controllers.values():
+            if audiocontroller.last_message:
+                old_view = audiocontroller.last_view
+                new_view = audiocontroller.make_view()
+                if not compare_components(
+                    new_view.to_components(),
+                    old_view.to_components(),
+                ):
+                    print("updating")
+                    await audiocontroller.last_message.edit(view=new_view)
 
     def add_command(self, command):
         # fix empty description
@@ -73,6 +89,13 @@ class MusicBot(bridge.Bot):
 
     async def get_application_context(self, interaction):
         return await super().get_application_context(interaction, ApplicationContext)
+
+    async def process_application_commands(self, inter):
+        if not inter.guild:
+            await inter.response.send_message(config.NO_GUILD_MESSAGE)
+            return
+
+        await super().process_application_commands(inter)
 
     async def process_commands(self, message: discord.Message):
         if message.author.bot:
@@ -124,16 +147,19 @@ class Context(bridge.BridgeContext):
     guild: discord.Guild
 
     async def send(self, *args, **kwargs):
-        audiocontroller = self.bot.audio_controllers.get(self.guild, None)
-        if audiocontroller:
-            if audiocontroller.last_message:
-                await audiocontroller.last_message.edit(view=None)
-            kwargs["view"] = audiocontroller.view
+        audiocontroller = self.bot.audio_controllers[self.guild]
+        msg = audiocontroller.last_message
+        if msg:
+            audiocontroller.last_message = None
+            await msg.edit(view=None)
+        kwargs["view"] = audiocontroller.make_view()
         # use `respond` for compatibility
-        msg = await self.respond(*args, **kwargs)
-        if audiocontroller:
-            audiocontroller.last_message = msg
-        return msg
+        res = await self.respond(*args, **kwargs)
+        if isinstance(res, discord.Interaction):
+            audiocontroller.last_message = await res.original_message()
+        else:
+            audiocontroller.last_message = res
+        return res
 
 
 class ExtContext(bridge.BridgeExtContext, Context):

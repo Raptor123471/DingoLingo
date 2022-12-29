@@ -23,14 +23,20 @@ class PauseState(Enum):
     RESUMED = "Resumed playback :arrow_forward:"
 
 
+class LoopState(Enum):
+    INVALID = "Invalid loop mode!"
+    ENABLED = "Loop enabled :arrows_counterclockwise:"
+    DISABLED = "Loop disabled :x:"
+
+
 class MusicButton(discord.ui.Button):
-    def __init__(self, emoji, callback):
-        super().__init__(emoji=emoji)
+    def __init__(self, callback):
+        super().__init__()
         self._callback = callback
 
     async def callback(self, inter):
-        self._callback()
         await inter.response.defer()
+        self._callback()
 
 
 class AudioController(object):
@@ -56,10 +62,8 @@ class AudioController(object):
 
         self.command_channel: Optional[discord.abc.Messageable] = None
 
-        self.view = discord.ui.View(timeout=None)
-        self.view.add_item(MusicButton("⏸️", self.pause))
-        self.view.add_item(MusicButton("⏭️", self.next_song))
         self.last_message = None
+        self.last_view = None
 
         # according to Python documentation, we need
         # to keep strong references to all tasks
@@ -117,6 +121,35 @@ class AudioController(object):
             )
         song.update(info)
 
+    def make_view(self):
+        view = discord.ui.View(timeout=None)
+
+        prev_button = MusicButton(self.prev_song)
+        prev_button.disabled = len(self.playlist.playhistory) == 0
+        prev_button.emoji = "⏮️"
+        view.add_item(prev_button)
+
+        pause_button = MusicButton(self.pause)
+        pause_button.emoji = "⏸️"
+        if not self.is_active():
+            pause_button.disabled = True
+        else:
+            if self.guild.voice_client.is_paused():
+                pause_button.emoji = "▶️"
+        view.add_item(pause_button)
+
+        next_button = MusicButton(self.next_song)
+        next_button.emoji = "⏭️"
+        view.add_item(next_button)
+
+        loop_button = MusicButton(self.loop)
+        loop_button.emoji = "🔁"
+        view.add_item(loop_button)
+
+        self.last_view = view
+
+        return view
+
     def is_active(self) -> bool:
         client = self.guild.voice_client
         return client is not None and (client.is_playing() or client.is_paused())
@@ -139,6 +172,22 @@ class AudioController(object):
             else:
                 return PauseState.NOTHING_TO_PAUSE
         return PauseState.NOTHING_TO_PAUSE
+
+    def loop(self, mode=None):
+        if mode is None:
+            if self.playlist.loop == "off":
+                mode = "all"
+            else:
+                mode = "off"
+
+        if mode not in ("all", "single", "off"):
+            return LoopState.INVALID
+
+        self.playlist.loop = mode
+
+        if mode == "off":
+            return LoopState.DISABLED
+        return LoopState.ENABLED
 
     def next_song(self, error=None):
         """Invoked after a song is finished. Plays the next song if there is one."""
@@ -363,7 +412,7 @@ class AudioController(object):
         self.clear_queue()
         self.guild.voice_client.stop()
 
-    async def prev_song(self) -> bool:
+    def prev_song(self) -> bool:
         """Loads the last song from the history into the queue and starts it"""
 
         self.timer.cancel()
@@ -379,7 +428,7 @@ class AudioController(object):
             if prev_song == "Dummy":
                 self.playlist.next(self.current_song)
                 return False
-            await self.play_song(prev_song)
+            self.add_task(self.play_song(prev_song))
         else:
             self.guild.voice_client.stop()
         return True

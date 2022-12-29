@@ -1,6 +1,7 @@
 import discord
-from config import config
 from discord.ext import commands, bridge
+
+from config import config
 from musicbot import linkutils, utils
 from musicbot.bot import MusicBot, Context
 
@@ -114,22 +115,17 @@ class Music(commands.Cog):
             audiocontroller.add_task(audiocontroller.preload(song))
 
     @bridge.bridge_command(
-        name="pause", description=config.HELP_PAUSE_LONG, help=config.HELP_PAUSE_SHORT
+        name="pause",
+        description=config.HELP_PAUSE_LONG,
+        help=config.HELP_PAUSE_SHORT,
+        aliases=["resume"],
     )
     async def _pause(self, ctx: Context):
         if not await utils.play_check(ctx):
             return
 
-        if ctx.guild.voice_client is not None:
-            if ctx.guild.voice_client.is_paused():
-                return await self._resume(ctx)
-
-            elif ctx.guild.voice_client.is_playing():
-                ctx.guild.voice_client.pause()
-                return await ctx.send("Playback Paused :pause_button:")
-
-        await ctx.send("Nothing to pause.")
-        return
+        result = ctx.bot.audio_controllers[ctx.guild].pause()
+        await ctx.send(result.value)
 
     @bridge.bridge_command(
         name="queue",
@@ -261,21 +257,6 @@ class Music(commands.Cog):
             await ctx.send("Playing previous song :track_previous:")
         else:
             await ctx.send("No previous track.")
-
-    @bridge.bridge_command(
-        name="resume",
-        description=config.HELP_RESUME_LONG,
-        help=config.HELP_RESUME_SHORT,
-    )
-    async def _resume(self, ctx: Context):
-        if not await utils.play_check(ctx):
-            return
-
-        if ctx.guild.voice_client and ctx.guild.voice_client.is_paused():
-            ctx.guild.voice_client.resume()
-            await ctx.send("Resumed playback :arrow_forward:")
-        else:
-            await ctx.send("Playback is not paused.")
 
     @bridge.bridge_command(
         name="songinfo",

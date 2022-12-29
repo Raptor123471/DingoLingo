@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import TYPE_CHECKING, Coroutine, Optional, List, Tuple
 
 import discord
@@ -14,6 +15,12 @@ if TYPE_CHECKING:
 
 
 _cached_downloaders: List[Tuple[dict, yt_dlp.YoutubeDL]] = []
+
+
+class PauseState(Enum):
+    NOTHING_TO_PAUSE = "Nothing to pause or resume."
+    PAUSED = "Playback Paused :pause_button:"
+    RESUMED = "Resumed playback :arrow_forward:"
 
 
 class AudioController(object):
@@ -104,6 +111,19 @@ class AudioController(object):
         for trackname in self.playlist.trackname_history:
             history_string += "\n" + trackname
         return history_string
+
+    def pause(self):
+        client = self.guild.voice_client
+        if client:
+            if client.is_playing():
+                client.pause()
+                return PauseState.PAUSED
+            elif client.is_paused():
+                client.resume()
+                return PauseState.RESUMED
+            else:
+                return PauseState.NOTHING_TO_PAUSE
+        return PauseState.NOTHING_TO_PAUSE
 
     def next_song(self, error=None):
         """Invoked after a song is finished. Plays the next song if there is one."""

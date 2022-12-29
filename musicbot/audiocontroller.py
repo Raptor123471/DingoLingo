@@ -23,6 +23,16 @@ class PauseState(Enum):
     RESUMED = "Resumed playback :arrow_forward:"
 
 
+class MusicButton(discord.ui.Button):
+    def __init__(self, emoji, callback):
+        super().__init__(emoji=emoji)
+        self._callback = callback
+
+    async def callback(self, inter):
+        self._callback()
+        await inter.response.defer()
+
+
 class AudioController(object):
     """Controls the playback of audio and the sequential playing of the songs.
 
@@ -45,6 +55,11 @@ class AudioController(object):
         self.timer = utils.Timer(self.timeout_handler)
 
         self.command_channel: Optional[discord.abc.Messageable] = None
+
+        self.view = discord.ui.View(timeout=None)
+        self.view.add_item(MusicButton("⏸️", self.pause))
+        self.view.add_item(MusicButton("⏭️", self.next_song))
+        self.last_message = None
 
         # according to Python documentation, we need
         # to keep strong references to all tasks
@@ -127,6 +142,10 @@ class AudioController(object):
 
     def next_song(self, error=None):
         """Invoked after a song is finished. Plays the next song if there is one."""
+
+        if self.is_active():
+            self.guild.voice_client.stop()
+            return
 
         next_song = self.playlist.next(self.current_song)
 

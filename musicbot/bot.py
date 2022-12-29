@@ -124,8 +124,16 @@ class Context(bridge.BridgeContext):
     guild: discord.Guild
 
     async def send(self, *args, **kwargs):
+        audiocontroller = self.bot.audio_controllers.get(self.guild, None)
+        if audiocontroller:
+            if audiocontroller.last_message:
+                await audiocontroller.last_message.edit(view=None)
+            kwargs["view"] = audiocontroller.view
         # use `respond` for compatibility
-        return await self.respond(*args, **kwargs)
+        msg = await self.respond(*args, **kwargs)
+        if audiocontroller:
+            audiocontroller.last_message = msg
+        return msg
 
 
 class ExtContext(bridge.BridgeExtContext, Context):

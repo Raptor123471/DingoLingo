@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 def check_dependencies():
     try:
-        check_call(["ffmpeg", "--help"], stdout=DEVNULL, stderr=DEVNULL)
+        check_call("ffmpeg --help", stdout=DEVNULL, stderr=DEVNULL, shell=True)
     except Exception as e:
         if sys.platform == "win32":
             download_ffmpeg()

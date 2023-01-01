@@ -53,6 +53,7 @@ class AudioController(object):
         self.bot = bot
         self.playlist = Playlist()
         self.current_song = None
+        self._next_song = None
         self.guild = guild
 
         sett = bot.settings[guild]
@@ -125,7 +126,7 @@ class AudioController(object):
         view = discord.ui.View(timeout=None)
 
         prev_button = MusicButton(self.prev_song)
-        prev_button.disabled = len(self.playlist.playhistory) == 0
+        prev_button.disabled = not self.playlist.has_prev()
         prev_button.emoji = "⏮️"
         view.add_item(prev_button)
 
@@ -133,17 +134,18 @@ class AudioController(object):
         pause_button.emoji = "⏸️"
         if not self.is_active():
             pause_button.disabled = True
-        else:
-            if self.guild.voice_client.is_paused():
-                pause_button.emoji = "▶️"
+        elif self.guild.voice_client.is_paused():
+            pause_button.emoji = "▶️"
         view.add_item(pause_button)
 
         next_button = MusicButton(self.next_song)
+        next_button.disabled = not self.playlist.has_next()
         next_button.emoji = "⏭️"
         view.add_item(next_button)
 
         loop_button = MusicButton(self.loop)
         loop_button.emoji = "🔁"
+        loop_button.label = "Loop: " + self.playlist.loop
         view.add_item(loop_button)
 
         self.last_view = view
@@ -169,8 +171,6 @@ class AudioController(object):
             elif client.is_paused():
                 client.resume()
                 return PauseState.RESUMED
-            else:
-                return PauseState.NOTHING_TO_PAUSE
         return PauseState.NOTHING_TO_PAUSE
 
     def loop(self, mode=None):
@@ -196,7 +196,11 @@ class AudioController(object):
             self.guild.voice_client.stop()
             return
 
-        next_song = self.playlist.next(self.current_song)
+        if self._next_song:
+            next_song = self._next_song
+            self._next_song = None
+        else:
+            next_song = self.playlist.next()
 
         self.current_song = None
 
@@ -226,8 +230,6 @@ class AudioController(object):
         self.playlist.add_name(song.info.title)
         self.current_song = song
 
-        self.playlist.playhistory.append(self.current_song)
-
         self.guild.voice_client.play(
             discord.FFmpegPCMAudio(
                 song.base_url,
@@ -245,8 +247,6 @@ class AudioController(object):
             await self.command_channel.send(
                 embed=song.info.format_output(config.SONGINFO_NOW_PLAYING)
             )
-
-        self.playlist.playque.popleft()
 
         for song in list(self.playlist.playque)[: config.MAX_SONG_PRELOAD]:
             self.add_task(self.preload(song))
@@ -408,7 +408,7 @@ class AudioController(object):
             return
 
         self.playlist.loop = "off"
-        self.playlist.next(self.current_song)
+        self.playlist.next()
         self.clear_queue()
         self.guild.voice_client.stop()
 
@@ -418,18 +418,14 @@ class AudioController(object):
         self.timer.cancel()
         self.timer = utils.Timer(self.timeout_handler)
 
-        if len(self.playlist.playhistory) == 0:
+        prev_song = self.playlist.prev()
+        if not prev_song:
             return False
 
-        prev_song = self.playlist.prev(self.current_song)
-
         if not self.is_active():
-
-            if prev_song == "Dummy":
-                self.playlist.next(self.current_song)
-                return False
             self.add_task(self.play_song(prev_song))
         else:
+            self._next_song = prev_song
             self.guild.voice_client.stop()
         return True
 

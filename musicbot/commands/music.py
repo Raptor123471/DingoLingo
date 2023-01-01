@@ -4,6 +4,7 @@ from discord.ext import commands, bridge
 from config import config
 from musicbot import linkutils, utils
 from musicbot.bot import MusicBot, Context
+from musicbot.playlist import PlaylistError
 
 
 class Music(commands.Cog):
@@ -180,10 +181,9 @@ class Music(commands.Cog):
             return
         try:
             audiocontroller.playlist.move(src_pos - 1, dest_pos - 1)
-        except IndexError:
-            await ctx.send("Wrong position")
-            return
-        await ctx.send("Moved")
+            await ctx.send("Moved ↔️")
+        except PlaylistError as e:
+            await ctx.send(e)
 
     @bridge.bridge_command(
         name="skip",

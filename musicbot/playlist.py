@@ -6,6 +6,10 @@ from config import config
 from musicbot.songinfo import Song
 
 
+class PlaylistError(Exception):
+    pass
+
+
 class Playlist:
     """Stores the youtube links of songs to be played and already played and offers basic operation on the queues"""
 
@@ -30,40 +34,61 @@ class Playlist:
     def add(self, track: Song):
         self.playque.append(track)
 
-    def next(self, song_played: Optional[Song]) -> Optional[Song]:
+    def has_next(self) -> bool:
+        return len(self.playque) >= (2 if self.loop == "off" else 1)
 
-        if self.loop == "single":
-            self.playque.appendleft(self.playhistory[-1])
-        elif self.loop == "all":
-            self.playque.append(self.playhistory[-1])
+    def has_prev(self) -> bool:
+        return len(self.playhistory if self.loop == "off" else self.playque) != 0
+
+    def next(self) -> Optional[Song]:
+        if len(self.playque) == 0:
+            return None
+
+        if self.loop == "off":
+            self.playhistory.append(self.playque.popleft())
+            if len(self.playhistory) > config.MAX_HISTORY_LENGTH:
+                self.playhistory.popleft()
+            if len(self.playque) != 0:
+                return self.playque[0]
+            else:
+                return None
+
+        if self.loop == "all":
+            self.playque.rotate(-1)
+
+        return self.playque[0]
+
+    def prev(self) -> Optional[Song]:
+        if self.loop == "off":
+            if len(self.playhistory) != 0:
+                song = self.playhistory.pop()
+                self.playque.appendleft(song)
+                return song
+            else:
+                return None
 
         if len(self.playque) == 0:
             return None
 
-        if song_played != "Dummy":
-            if len(self.playhistory) > config.MAX_HISTORY_LENGTH:
-                self.playhistory.popleft()
+        if self.loop == "all":
+            self.playque.rotate()
 
         return self.playque[0]
-
-    def prev(self, current_song: Optional[Song]) -> Song:
-
-        if current_song is None:
-            self.playque.appendleft(self.playhistory[-1])
-            return self.playque[0]
-
-        ind = self.playhistory.index(current_song)
-        prev = self.playhistory[ind - 1]
-        self.playque.appendleft(prev)
-        if current_song is not None:
-            self.playque.insert(1, current_song)
-        return prev
 
     def shuffle(self):
         random.shuffle(self.playque)
 
     def move(self, oldindex: int, newindex: int):
-        temp = self.playque[oldindex]
+        if oldindex < 0 or newindex < 0:
+            raise PlaylistError("Negative indexes are not supported.")
+        if oldindex == 0 or newindex == 0:
+            raise PlaylistError(
+                "Cannot move the first song since it's already playing."
+            )
+        try:
+            temp = self.playque[oldindex]
+        except IndexError as e:
+            raise PlaylistError("Invalid position.") from e
         del self.playque[oldindex]
         self.playque.insert(newindex, temp)
 

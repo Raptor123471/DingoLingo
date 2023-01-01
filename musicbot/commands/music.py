@@ -135,23 +135,7 @@ class Music(commands.Cog):
         if config.MAX_SONG_PRELOAD > 25:
             config.MAX_SONG_PRELOAD = 25
 
-        embed = discord.Embed(
-            title=":scroll: Queue [{}]".format(len(playlist.playque)),
-            color=config.EMBED_COLOR,
-        )
-
-        for counter, song in enumerate(
-            list(playlist.playque)[: config.MAX_SONG_PRELOAD], start=1
-        ):
-            embed.add_field(
-                name="{}.".format(str(counter)),
-                value="[{}]({})".format(
-                    song.info.title or song.info.webpage_url, song.info.webpage_url
-                ),
-                inline=False,
-            )
-
-        await ctx.send(embed=embed)
+        await ctx.send(embed=playlist.queue_embed())
 
     @bridge.bridge_command(
         name="stop",

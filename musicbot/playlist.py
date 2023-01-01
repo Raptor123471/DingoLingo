@@ -2,6 +2,8 @@ import random
 from typing import Optional
 from collections import deque
 
+from discord import Embed
+
 from config import config
 from musicbot.songinfo import Song
 
@@ -76,7 +78,9 @@ class Playlist:
         return self.playque[0]
 
     def shuffle(self):
+        first = self.playque.popleft()
         random.shuffle(self.playque)
+        self.playque.appendleft(first)
 
     def move(self, oldindex: int, newindex: int):
         if oldindex < 0 or newindex < 0:
@@ -95,3 +99,22 @@ class Playlist:
     def empty(self):
         self.playque.clear()
         self.playhistory.clear()
+
+    def queue_embed(self) -> Embed:
+        embed = Embed(
+            title=":scroll: Queue [{}]".format(len(self.playque)),
+            color=config.EMBED_COLOR,
+        )
+
+        for counter, song in enumerate(
+            list(self.playque)[: config.MAX_SONG_PRELOAD], start=1
+        ):
+            embed.add_field(
+                name="{}.".format(str(counter)),
+                value="[{}]({})".format(
+                    song.info.title or song.info.webpage_url, song.info.webpage_url
+                ),
+                inline=False,
+            )
+
+        return embed

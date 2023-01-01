@@ -148,8 +148,7 @@ class Music(commands.Cog):
             return
 
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
-        audiocontroller.playlist.loop = "off"
-        await audiocontroller.stop_player()
+        audiocontroller.stop_player()
         await ctx.send("Stopped all sessions :octagonal_sign:")
 
     @bridge.bridge_command(

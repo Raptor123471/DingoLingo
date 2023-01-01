@@ -1,4 +1,5 @@
 from enum import Enum
+from inspect import isawaitable
 from typing import TYPE_CHECKING, Coroutine, Optional, List, Tuple
 
 import discord
@@ -30,13 +31,15 @@ class LoopState(Enum):
 
 
 class MusicButton(discord.ui.Button):
-    def __init__(self, callback):
-        super().__init__()
+    def __init__(self, callback, **kwargs):
+        super().__init__(**kwargs)
         self._callback = callback
 
     async def callback(self, inter):
         await inter.response.defer()
-        self._callback()
+        res = self._callback(inter)
+        if isawaitable(res):
+            await res
 
 
 class AudioController(object):
@@ -125,32 +128,77 @@ class AudioController(object):
     def make_view(self):
         view = discord.ui.View(timeout=None)
 
-        prev_button = MusicButton(self.prev_song)
-        prev_button.disabled = not self.playlist.has_prev()
-        prev_button.emoji = "⏮️"
+        prev_button = MusicButton(
+            lambda _: self.prev_song(),
+            disabled=not self.playlist.has_prev(),
+            emoji="⏮️",
+        )
         view.add_item(prev_button)
 
-        pause_button = MusicButton(self.pause)
-        pause_button.emoji = "⏸️"
-        if not self.is_active():
-            pause_button.disabled = True
-        elif self.guild.voice_client.is_paused():
-            pause_button.emoji = "▶️"
+        pause_button = MusicButton(lambda _: self.pause(), emoji="⏸️")
         view.add_item(pause_button)
 
-        next_button = MusicButton(self.next_song)
-        next_button.disabled = not self.playlist.has_next()
-        next_button.emoji = "⏭️"
+        next_button = MusicButton(
+            lambda _: self.next_song(),
+            disabled=not self.playlist.has_next(),
+            emoji="⏭️",
+        )
         view.add_item(next_button)
 
-        loop_button = MusicButton(self.loop)
-        loop_button.emoji = "🔁"
-        loop_button.label = "Loop: " + self.playlist.loop
+        loop_button = MusicButton(
+            lambda _: self.loop(),
+            disabled=len(self.playlist) == 0,
+            emoji="🔁",
+            label="Loop: " + self.playlist.loop,
+        )
         view.add_item(loop_button)
+
+        np_button = MusicButton(
+            self.current_song_callback,
+            row=1,
+            disabled=self.current_song is None,
+            emoji="💿",
+        )
+        view.add_item(np_button)
+
+        shuffle_button = MusicButton(
+            lambda _: self.playlist.shuffle(),
+            row=1,
+            disabled=len(self.playlist) == 0,
+            emoji="🔀",
+        )
+        view.add_item(shuffle_button)
+
+        queue_button = MusicButton(self.queue_callback, row=1, emoji="📜")
+        view.add_item(queue_button)
+
+        stop_button = MusicButton(
+            lambda _: self.stop_player(),
+            row=1,
+            emoji="⏹️",
+            style=discord.ButtonStyle.red,
+        )
+        view.add_item(stop_button)
+
+        if not self.is_active():
+            pause_button.disabled = True
+            stop_button.disabled = True
+        elif self.guild.voice_client.is_paused():
+            pause_button.emoji = "▶️"
 
         self.last_view = view
 
         return view
+
+    async def current_song_callback(self, inter):
+        await (await inter.client.get_application_context(inter)).send(
+            embed=self.current_song.info.format_output(config.SONGINFO_SONGINFO),
+        )
+
+    async def queue_callback(self, inter):
+        await (await inter.client.get_application_context(inter)).send(
+            embed=self.playlist.queue_embed(),
+        )
 
     def is_active(self) -> bool:
         client = self.guild.voice_client
@@ -402,7 +450,7 @@ class AudioController(object):
 
         return r["entries"][0]
 
-    async def stop_player(self):
+    def stop_player(self):
         """Stops the player and removes all songs from the queue"""
         if not self.is_active():
             return
@@ -460,7 +508,7 @@ class AudioController(object):
         return False
 
     async def udisconnect(self):
-        await self.stop_player()
+        self.stop_player()
         if self.guild.voice_client is None:
             return False
         await self.guild.voice_client.disconnect(force=True)

@@ -128,6 +128,9 @@ class AudioController(object):
         song.update(info)
 
     def make_view(self):
+        if not self.is_active():
+            return None
+
         view = discord.ui.View(timeout=None)
         is_empty = len(self.playlist) == 0
 
@@ -138,7 +141,10 @@ class AudioController(object):
         )
         view.add_item(prev_button)
 
-        pause_button = MusicButton(lambda _: self.pause(), emoji="⏸️")
+        pause_button = MusicButton(
+            lambda _: self.pause(),
+            emoji="⏸️" if self.guild.voice_client.is_playing() else "▶️",
+        )
         view.add_item(pause_button)
 
         next_button = MusicButton(
@@ -184,12 +190,6 @@ class AudioController(object):
             style=discord.ButtonStyle.red,
         )
         view.add_item(stop_button)
-
-        if not self.is_active():
-            pause_button.disabled = True
-            stop_button.disabled = True
-        elif self.guild.voice_client.is_paused():
-            pause_button.emoji = "▶️"
 
         self.last_view = view
 
@@ -537,6 +537,7 @@ class AudioController(object):
 
     async def udisconnect(self):
         self.stop_player()
+        await self.update_view(None)
         if self.guild.voice_client is None:
             return False
         await self.guild.voice_client.disconnect(force=True)

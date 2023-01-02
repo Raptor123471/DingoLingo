@@ -38,6 +38,11 @@ class MusicBot(bridge.Bot):
         await extract_legacy_settings(self)
         return await super().start(*args, **kwargs)
 
+    async def close(self):
+        for audiocontroller in self.audio_controllers.values():
+            await audiocontroller.udisconnect()
+        return await super().close()
+
     async def on_ready(self):
         self.settings.update(await GuildSettings.load_many(self, self.guilds))
 
@@ -141,7 +146,9 @@ class Context(bridge.BridgeContext):
     async def send(self, *args, **kwargs):
         audiocontroller = self.bot.audio_controllers[self.guild]
         await audiocontroller.update_view(None)
-        kwargs["view"] = audiocontroller.make_view()
+        view = audiocontroller.make_view()
+        if view:
+            kwargs["view"] = view
         # use `respond` for compatibility
         res = await self.respond(*args, **kwargs)
         if isinstance(res, discord.Interaction):

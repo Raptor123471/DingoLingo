@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from config import config
-from musicbot.utils import compare_components
 from musicbot.audiocontroller import AudioController
 from musicbot.settings import GuildSettings, run_migrations, extract_legacy_settings
 
@@ -48,7 +47,8 @@ class MusicBot(bridge.Bot):
 
         print(config.STARTUP_COMPLETE_MESSAGE)
 
-        self.update_views.start()
+        if not self.update_views.is_running():
+            self.update_views.start()
 
     async def on_guild_join(self, guild):
         print(guild.name)
@@ -57,15 +57,7 @@ class MusicBot(bridge.Bot):
     @tasks.loop(seconds=1)
     async def update_views(self):
         for audiocontroller in self.audio_controllers.values():
-            if audiocontroller.last_message:
-                old_view = audiocontroller.last_view
-                new_view = audiocontroller.make_view()
-                if not compare_components(
-                    new_view.to_components(),
-                    old_view.to_components(),
-                ):
-                    print("updating")
-                    await audiocontroller.last_message.edit(view=new_view)
+            await audiocontroller.update_view()
 
     def add_command(self, command):
         # fix empty description
@@ -148,10 +140,7 @@ class Context(bridge.BridgeContext):
 
     async def send(self, *args, **kwargs):
         audiocontroller = self.bot.audio_controllers[self.guild]
-        msg = audiocontroller.last_message
-        if msg:
-            audiocontroller.last_message = None
-            await msg.edit(view=None)
+        await audiocontroller.update_view(None)
         kwargs["view"] = audiocontroller.make_view()
         # use `respond` for compatibility
         res = await self.respond(*args, **kwargs)

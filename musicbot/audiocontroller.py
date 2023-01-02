@@ -9,6 +9,7 @@ from config import config
 from musicbot import linkutils, utils
 from musicbot.playlist import Playlist
 from musicbot.songinfo import Song
+from musicbot.utils import compare_components
 
 # avoiding circular import
 if TYPE_CHECKING:
@@ -16,6 +17,7 @@ if TYPE_CHECKING:
 
 
 _cached_downloaders: List[Tuple[dict, yt_dlp.YoutubeDL]] = []
+_not_provided = object()
 
 
 class PauseState(Enum):
@@ -127,6 +129,7 @@ class AudioController(object):
 
     def make_view(self):
         view = discord.ui.View(timeout=None)
+        is_empty = len(self.playlist) == 0
 
         prev_button = MusicButton(
             lambda _: self.prev_song(),
@@ -147,7 +150,7 @@ class AudioController(object):
 
         loop_button = MusicButton(
             lambda _: self.loop(),
-            disabled=len(self.playlist) == 0,
+            disabled=is_empty,
             emoji="🔁",
             label="Loop: " + self.playlist.loop,
         )
@@ -164,12 +167,14 @@ class AudioController(object):
         shuffle_button = MusicButton(
             lambda _: self.playlist.shuffle(),
             row=1,
-            disabled=len(self.playlist) == 0,
+            disabled=is_empty,
             emoji="🔀",
         )
         view.add_item(shuffle_button)
 
-        queue_button = MusicButton(self.queue_callback, row=1, emoji="📜")
+        queue_button = MusicButton(
+            self.queue_callback, row=1, disabled=is_empty, emoji="📜"
+        )
         view.add_item(queue_button)
 
         stop_button = MusicButton(
@@ -199,6 +204,29 @@ class AudioController(object):
         await (await inter.client.get_application_context(inter)).send(
             embed=self.playlist.queue_embed(),
         )
+
+    async def update_view(self, view=_not_provided):
+        msg = self.last_message
+        if not msg:
+            return
+        old_view = self.last_view
+        if view is _not_provided:
+            view = self.make_view()
+        if view is None:
+            self.last_message = None
+        elif compare_components(old_view.to_components(), view.to_components()):
+            return
+        try:
+            await msg.edit(view=view)
+        except discord.HTTPException as e:
+            if e.code == 50027:  # Invalid Webhook Token
+                try:
+                    self.last_message = await msg.channel.fetch_message(msg.id)
+                    await self.update_view(view)
+                except discord.NotFound:
+                    self.last_message = None
+            else:
+                print("Failed to update view:", e)
 
     def is_active(self) -> bool:
         client = self.guild.voice_client

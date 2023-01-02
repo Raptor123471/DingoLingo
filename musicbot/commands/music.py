@@ -4,6 +4,7 @@ from discord.ext import commands, bridge
 from config import config
 from musicbot import linkutils, utils
 from musicbot.bot import MusicBot, Context
+from musicbot.playlist import PlaylistError
 
 
 class Music(commands.Cog):
@@ -75,22 +76,8 @@ class Music(commands.Cog):
             await ctx.send("No songs in queue!")
             return
 
-        if mode is None:
-            if audiocontroller.playlist.loop == "off":
-                mode = "all"
-            else:
-                mode = "off"
-
-        if mode not in ("all", "single", "off"):
-            await ctx.send("Invalid loop mode!")
-            return
-
-        audiocontroller.playlist.loop = mode
-
-        if mode in ("all", "single"):
-            await ctx.send("Loop enabled :arrows_counterclockwise:")
-        else:
-            await ctx.send("Loop disabled :x:")
+        result = audiocontroller.loop(mode)
+        await ctx.send(result.value)
 
     @bridge.bridge_command(
         name="shuffle",
@@ -148,23 +135,7 @@ class Music(commands.Cog):
         if config.MAX_SONG_PRELOAD > 25:
             config.MAX_SONG_PRELOAD = 25
 
-        embed = discord.Embed(
-            title=":scroll: Queue [{}]".format(len(playlist.playque)),
-            color=config.EMBED_COLOR,
-        )
-
-        for counter, song in enumerate(
-            list(playlist.playque)[: config.MAX_SONG_PRELOAD], start=1
-        ):
-            embed.add_field(
-                name="{}.".format(str(counter)),
-                value="[{}]({})".format(
-                    song.info.title or song.info.webpage_url, song.info.webpage_url
-                ),
-                inline=False,
-            )
-
-        await ctx.send(embed=embed)
+        await ctx.send(embed=playlist.queue_embed())
 
     @bridge.bridge_command(
         name="stop",
@@ -177,8 +148,7 @@ class Music(commands.Cog):
             return
 
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
-        audiocontroller.playlist.loop = "off"
-        await audiocontroller.stop_player()
+        audiocontroller.stop_player()
         await ctx.send("Stopped all sessions :octagonal_sign:")
 
     @bridge.bridge_command(
@@ -194,10 +164,9 @@ class Music(commands.Cog):
             return
         try:
             audiocontroller.playlist.move(src_pos - 1, dest_pos - 1)
-        except IndexError:
-            await ctx.send("Wrong position")
-            return
-        await ctx.send("Moved")
+            await ctx.send("Moved ↔️")
+        except PlaylistError as e:
+            await ctx.send(e)
 
     @bridge.bridge_command(
         name="skip",
@@ -218,7 +187,7 @@ class Music(commands.Cog):
         if not audiocontroller.is_active():
             await ctx.send(config.QUEUE_EMPTY)
             return
-        ctx.guild.voice_client.stop()
+        audiocontroller.next_song()
         await ctx.send("Skipped current song :fast_forward:")
 
     @bridge.bridge_command(
@@ -253,7 +222,7 @@ class Music(commands.Cog):
         audiocontroller.timer.cancel()
         audiocontroller.timer = utils.Timer(audiocontroller.timeout_handler)
 
-        if await audiocontroller.prev_song():
+        if audiocontroller.prev_song():
             await ctx.send("Playing previous song :track_previous:")
         else:
             await ctx.send("No previous track.")

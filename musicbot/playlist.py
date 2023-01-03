@@ -30,6 +30,11 @@ class Playlist:
     def add(self, track: Song):
         self.playque.append(track)
 
+    def remove(self, queue_number):
+        if queue_number > len(self.playque):
+            return
+        del self.playque[queue_number-1]
+        
     def next(self, song_played: Optional[Song]) -> Optional[Song]:
 
         if self.loop == "single":

@@ -237,14 +237,6 @@ class AudioController(object):
         for trackname in self.playlist.trackname_history:
             history_string += "\n" + trackname
         return history_string
-    
-     def remove_song(self, queue_number):
-        removed_title = self.playlist.get_title(queue_number)
-        if removed_title is None:
-            return "Are you sure you wrote the order in which the song is located correctly?\"" + str(queue_number) + "\" "
-        success_str = "Successfuly removed that song \#" + str(queue_number) + ": " + removed_title
-        self.playlist.remove(queue_number)
-        return success_str
 
     def pause(self):
         client = self.guild.voice_client

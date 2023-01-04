@@ -121,5 +121,7 @@ HELP_SHUFFLE_SHORT = "Shuffle the queue"
 HELP_SHUFFLE_LONG = "Randomly sort the songs in the current queue"
 HELP_RESET_SHORT = "Disconnect and reconnect"
 HELP_RESET_LONG = "Stop player, disconnect and reconnect to the channel you are in"
+HELP_REMOVE_SHORT = "Remove the specific song in queue."
+HELP_REMOVE_LONG = "This command allows you to remove the song in the queue by typing the number of the song."
 
 ABSOLUTE_PATH = ""  # do not modify

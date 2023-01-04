@@ -82,6 +82,11 @@ class Playlist:
         random.shuffle(self.playque)
         self.playque.appendleft(first)
 
+    def remove(self, queue_number):
+        if queue_number > len(self.playque):
+            return
+        del self.playque[queue_number-1]
+
     def move(self, oldindex: int, newindex: int):
         if oldindex < 0 or newindex < 0:
             raise PlaylistError("Negative indexes are not supported.")

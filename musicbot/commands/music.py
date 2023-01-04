@@ -168,6 +168,19 @@ class Music(commands.Cog):
         except PlaylistError as e:
             await ctx.send(e)
 
+    @bridge.bridge_command(name='remove', description=config.HELP_REMOVE_LONG, help=config.HELP_REMOVE_SHORT, aliases=['rm'])
+    async def _remove(self, ctx, *, queue_number: int):
+        ctx.guild = utils.get_guild(self.bot, ctx.message)
+
+        if queue_number is None:
+            ctx.send("You need to enter in queue number of the song you want to get out of the playlist.")
+
+        audiocontroller = ctx.bot.audio_controllers[ctx.guild]
+
+        response = audiocontroller.remove_song(queue_number)
+        await ctx.message.add_reaction('👍')
+        await ctx.send(response)
+
     @bridge.bridge_command(
         name="skip",
         description=config.HELP_SKIP_LONG,

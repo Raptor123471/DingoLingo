@@ -169,6 +169,28 @@ class Music(commands.Cog):
             await ctx.send(e)
 
     @bridge.bridge_command(
+        name="remove",
+        description=config.HELP_REMOVE_LONG,
+        help=config.HELP_REMOVE_SHORT,
+        aliases=["rm"],
+    )
+    async def _remove(self, ctx, queue_number: int = -1):
+        audiocontroller = ctx.bot.audio_controllers[ctx.guild]
+        if not audiocontroller.is_active():
+            await ctx.send(config.QUEUE_EMPTY)
+            return
+
+        if queue_number == -1:
+            queue_number = len(audiocontroller.playlist)
+        try:
+            song = audiocontroller.playlist.remove(queue_number - 1)
+            await ctx.send(
+                f"Removed #{queue_number}: {song.info.title or song.info.webpage_url}"
+            )
+        except PlaylistError as e:
+            await ctx.send(e)
+
+    @bridge.bridge_command(
         name="skip",
         description=config.HELP_SKIP_LONG,
         help=config.HELP_SKIP_SHORT,

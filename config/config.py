@@ -1,9 +1,15 @@
 # fmt: off
 import os
-import setup
 from typing import Optional
+from typing import Type, TypeVar
 
 
+T = TypeVar('T')
+
+def get_env_var(key: str, fallback: T) -> T:
+    if key in os.environ:
+        return type(fallback)(os.environ[key])
+    return fallback
 
 BOT_TOKEN: str = get_env_var("BOT_TOKEN", "YOURTOKEN_GOES_HERE")
 SPOTIFY_ID: str = get_env_var("SPOTIFY_ID", "")
@@ -21,19 +27,6 @@ SUPPORTED_EXTENSIONS = (".webm", ".mp4", ".mp3", ".avi", ".wav", ".m4v", ".ogg",
 
 MAX_SONG_PRELOAD = get_env_var("MAX_SONG_PRELOAD", 5)   # maximum of 25
 
-# database url in SQL Alchemy-supported format, must be async-compatible
-# CHANGE ONLY IF YOU KNOW WHAT YOU'RE DOING
-DATABASE = "sqlite+aiosqlite:///settings.db"
-if os.getenv("HEROKU"):
-    # example with Heroku Postgres
-    DATABASE = os.getenv(
-        "DATABASE_URL",  # environment variable with the DB url
-        "postgres",  # default url (as env vars are not available at build time)
-    ).replace(
-        "postgres", "postgresql+asyncpg", 1  # make url supported by SQL Alchemy
-    )
-    # another example with MySQL
-    # DATABASE = os.getenv("DATABASE_URL", "mysql").replace("mysql", "mysql+aiomysql", 1)
 
 COOKIE_PATH = "/config/cookies/cookies.txt"
 
@@ -51,6 +44,7 @@ actual_prefix = (  # for internal use
 )
 
 
+
 STARTUP_MESSAGE = "Starting Bot..."
 STARTUP_COMPLETE_MESSAGE = "Startup Complete"
 
@@ -66,8 +60,8 @@ INVALID_INVITE_MESSAGE = "Error: Invalid invitation link"
 ADD_MESSAGE = "To add this bot to your own Server, click [here]"  # brackets will be the link text
 
 INFO_HISTORY_TITLE = "Songs Played:"
-MAX_HISTORY_LENGTH = 10
-MAX_TRACKNAME_HISTORY_LENGTH = 15
+MAX_HISTORY_LENGTH = get_env_var("MAX_HISTORY_LENGTH", 10)
+MAX_TRACKNAME_HISTORY_LENGTH = get_env_var("MAX_TRACKNAME_HISTORY_LENGTH", 15)
 
 SONGINFO_UPLOADER = "Uploader: "
 SONGINFO_DURATION = "Duration: "

@@ -1,3 +1,5 @@
+from enum import Enum
+from inspect import isawaitable
 from typing import TYPE_CHECKING, Coroutine, Optional, List, Tuple
 
 import discord
@@ -7,6 +9,7 @@ from config import config
 from musicbot import linkutils, utils
 from musicbot.playlist import Playlist
 from musicbot.songinfo import Song
+from musicbot.utils import compare_components
 
 # avoiding circular import
 if TYPE_CHECKING:
@@ -14,6 +17,31 @@ if TYPE_CHECKING:
 
 
 _cached_downloaders: List[Tuple[dict, yt_dlp.YoutubeDL]] = []
+_not_provided = object()
+
+
+class PauseState(Enum):
+    NOTHING_TO_PAUSE = "Nothing to pause or resume."
+    PAUSED = "Playback Paused :pause_button:"
+    RESUMED = "Resumed playback :arrow_forward:"
+
+
+class LoopState(Enum):
+    INVALID = "Invalid loop mode!"
+    ENABLED = "Loop enabled :arrows_counterclockwise:"
+    DISABLED = "Loop disabled :x:"
+
+
+class MusicButton(discord.ui.Button):
+    def __init__(self, callback, **kwargs):
+        super().__init__(**kwargs)
+        self._callback = callback
+
+    async def callback(self, inter):
+        await inter.response.defer()
+        res = self._callback(inter)
+        if isawaitable(res):
+            await res
 
 
 class AudioController(object):
@@ -30,6 +58,7 @@ class AudioController(object):
         self.bot = bot
         self.playlist = Playlist()
         self.current_song = None
+        self._next_song = None
         self.guild = guild
 
         sett = bot.settings[guild]
@@ -38,6 +67,9 @@ class AudioController(object):
         self.timer = utils.Timer(self.timeout_handler)
 
         self.command_channel: Optional[discord.abc.Messageable] = None
+
+        self.last_message = None
+        self.last_view = None
 
         # according to Python documentation, we need
         # to keep strong references to all tasks
@@ -95,6 +127,107 @@ class AudioController(object):
             )
         song.update(info)
 
+    def make_view(self):
+        if not self.is_active():
+            return None
+
+        view = discord.ui.View(timeout=None)
+        is_empty = len(self.playlist) == 0
+
+        prev_button = MusicButton(
+            lambda _: self.prev_song(),
+            disabled=not self.playlist.has_prev(),
+            emoji="⏮️",
+        )
+        view.add_item(prev_button)
+
+        pause_button = MusicButton(
+            lambda _: self.pause(),
+            emoji="⏸️" if self.guild.voice_client.is_playing() else "▶️",
+        )
+        view.add_item(pause_button)
+
+        next_button = MusicButton(
+            lambda _: self.next_song(),
+            disabled=not self.playlist.has_next(),
+            emoji="⏭️",
+        )
+        view.add_item(next_button)
+
+        loop_button = MusicButton(
+            lambda _: self.loop(),
+            disabled=is_empty,
+            emoji="🔁",
+            label="Loop: " + self.playlist.loop,
+        )
+        view.add_item(loop_button)
+
+        np_button = MusicButton(
+            self.current_song_callback,
+            row=1,
+            disabled=self.current_song is None,
+            emoji="💿",
+        )
+        view.add_item(np_button)
+
+        shuffle_button = MusicButton(
+            lambda _: self.playlist.shuffle(),
+            row=1,
+            disabled=is_empty,
+            emoji="🔀",
+        )
+        view.add_item(shuffle_button)
+
+        queue_button = MusicButton(
+            self.queue_callback, row=1, disabled=is_empty, emoji="📜"
+        )
+        view.add_item(queue_button)
+
+        stop_button = MusicButton(
+            lambda _: self.stop_player(),
+            row=1,
+            emoji="⏹️",
+            style=discord.ButtonStyle.red,
+        )
+        view.add_item(stop_button)
+
+        self.last_view = view
+
+        return view
+
+    async def current_song_callback(self, inter):
+        await (await inter.client.get_application_context(inter)).send(
+            embed=self.current_song.info.format_output(config.SONGINFO_SONGINFO),
+        )
+
+    async def queue_callback(self, inter):
+        await (await inter.client.get_application_context(inter)).send(
+            embed=self.playlist.queue_embed(),
+        )
+
+    async def update_view(self, view=_not_provided):
+        msg = self.last_message
+        if not msg:
+            return
+        old_view = self.last_view
+        if view is _not_provided:
+            view = self.make_view()
+        if view is None:
+            self.last_message = None
+        elif compare_components(old_view.to_components(), view.to_components()):
+            return
+        try:
+            await msg.edit(view=view)
+        except discord.HTTPException as e:
+            if e.code == 50027:  # Invalid Webhook Token
+                try:
+                    self.last_message = await msg.channel.fetch_message(msg.id)
+                    await self.update_view(view)
+                except discord.NotFound:
+                    self.last_message = None
+            else:
+                print("Failed to update view:", e)
+
     def is_active(self) -> bool:
         client = self.guild.voice_client
         return client is not None and (client.is_playing() or client.is_paused())
@@ -105,10 +238,45 @@ class AudioController(object):
             history_string += "\n" + trackname
         return history_string
 
+    def pause(self):
+        client = self.guild.voice_client
+        if client:
+            if client.is_playing():
+                client.pause()
+                return PauseState.PAUSED
+            elif client.is_paused():
+                client.resume()
+                return PauseState.RESUMED
+        return PauseState.NOTHING_TO_PAUSE
+
+    def loop(self, mode=None):
+        if mode is None:
+            if self.playlist.loop == "off":
+                mode = "all"
+            else:
+                mode = "off"
+
+        if mode not in ("all", "single", "off"):
+            return LoopState.INVALID
+
+        self.playlist.loop = mode
+
+        if mode == "off":
+            return LoopState.DISABLED
+        return LoopState.ENABLED
+
     def next_song(self, error=None):
         """Invoked after a song is finished. Plays the next song if there is one."""
 
-        next_song = self.playlist.next(self.current_song)
+        if self.is_active():
+            self.guild.voice_client.stop()
+            return
+
+        if self._next_song:
+            next_song = self._next_song
+            self._next_song = None
+        else:
+            next_song = self.playlist.next()
 
         self.current_song = None
 
@@ -138,8 +306,6 @@ class AudioController(object):
         self.playlist.add_name(song.info.title)
         self.current_song = song
 
-        self.playlist.playhistory.append(self.current_song)
-
         self.guild.voice_client.play(
             discord.FFmpegPCMAudio(
                 song.base_url,
@@ -157,8 +323,6 @@ class AudioController(object):
             await self.command_channel.send(
                 embed=song.info.format_output(config.SONGINFO_NOW_PLAYING)
             )
-
-        self.playlist.playque.popleft()
 
         for song in list(self.playlist.playque)[: config.MAX_SONG_PRELOAD]:
             self.add_task(self.preload(song))
@@ -314,34 +478,30 @@ class AudioController(object):
 
         return r["entries"][0]
 
-    async def stop_player(self):
+    def stop_player(self):
         """Stops the player and removes all songs from the queue"""
         if not self.is_active():
             return
 
         self.playlist.loop = "off"
-        self.playlist.next(self.current_song)
+        self.playlist.next()
         self.clear_queue()
         self.guild.voice_client.stop()
 
-    async def prev_song(self) -> bool:
+    def prev_song(self) -> bool:
         """Loads the last song from the history into the queue and starts it"""
 
         self.timer.cancel()
         self.timer = utils.Timer(self.timeout_handler)
 
-        if len(self.playlist.playhistory) == 0:
+        prev_song = self.playlist.prev()
+        if not prev_song:
             return False
 
-        prev_song = self.playlist.prev(self.current_song)
-
         if not self.is_active():
-
-            if prev_song == "Dummy":
-                self.playlist.next(self.current_song)
-                return False
-            await self.play_song(prev_song)
+            self.add_task(self.play_song(prev_song))
         else:
+            self._next_song = prev_song
             self.guild.voice_client.stop()
         return True
 
@@ -376,7 +536,8 @@ class AudioController(object):
         return False
 
     async def udisconnect(self):
-        await self.stop_player()
+        self.stop_player()
+        await self.update_view(None)
         if self.guild.voice_client is None:
             return False
         await self.guild.voice_client.disconnect(force=True)

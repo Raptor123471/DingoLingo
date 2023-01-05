@@ -1,8 +1,10 @@
 import discord
-from config import config
 from discord.ext import commands, bridge
+
+from config import config
 from musicbot import linkutils, utils
 from musicbot.bot import MusicBot, Context
+from musicbot.playlist import PlaylistError
 
 
 class Music(commands.Cog):
@@ -74,22 +76,8 @@ class Music(commands.Cog):
             await ctx.send("No songs in queue!")
             return
 
-        if mode is None:
-            if audiocontroller.playlist.loop == "off":
-                mode = "all"
-            else:
-                mode = "off"
-
-        if mode not in ("all", "single", "off"):
-            await ctx.send("Invalid loop mode!")
-            return
-
-        audiocontroller.playlist.loop = mode
-
-        if mode in ("all", "single"):
-            await ctx.send("Loop enabled :arrows_counterclockwise:")
-        else:
-            await ctx.send("Loop disabled :x:")
+        result = audiocontroller.loop(mode)
+        await ctx.send(result.value)
 
     @bridge.bridge_command(
         name="shuffle",
@@ -114,22 +102,17 @@ class Music(commands.Cog):
             audiocontroller.add_task(audiocontroller.preload(song))
 
     @bridge.bridge_command(
-        name="pause", description=config.HELP_PAUSE_LONG, help=config.HELP_PAUSE_SHORT
+        name="pause",
+        description=config.HELP_PAUSE_LONG,
+        help=config.HELP_PAUSE_SHORT,
+        aliases=["resume"],
     )
     async def _pause(self, ctx: Context):
         if not await utils.play_check(ctx):
             return
 
-        if ctx.guild.voice_client is not None:
-            if ctx.guild.voice_client.is_paused():
-                return await self._resume(ctx)
-
-            elif ctx.guild.voice_client.is_playing():
-                ctx.guild.voice_client.pause()
-                return await ctx.send("Playback Paused :pause_button:")
-
-        await ctx.send("Nothing to pause.")
-        return
+        result = ctx.bot.audio_controllers[ctx.guild].pause()
+        await ctx.send(result.value)
 
     @bridge.bridge_command(
         name="queue",
@@ -152,23 +135,7 @@ class Music(commands.Cog):
         if config.MAX_SONG_PRELOAD > 25:
             config.MAX_SONG_PRELOAD = 25
 
-        embed = discord.Embed(
-            title=":scroll: Queue [{}]".format(len(playlist.playque)),
-            color=config.EMBED_COLOR,
-        )
-
-        for counter, song in enumerate(
-            list(playlist.playque)[: config.MAX_SONG_PRELOAD], start=1
-        ):
-            embed.add_field(
-                name="{}.".format(str(counter)),
-                value="[{}]({})".format(
-                    song.info.title or song.info.webpage_url, song.info.webpage_url
-                ),
-                inline=False,
-            )
-
-        await ctx.send(embed=embed)
+        await ctx.send(embed=playlist.queue_embed())
 
     @bridge.bridge_command(
         name="stop",
@@ -181,8 +148,7 @@ class Music(commands.Cog):
             return
 
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
-        audiocontroller.playlist.loop = "off"
-        await audiocontroller.stop_player()
+        audiocontroller.stop_player()
         await ctx.send("Stopped all sessions :octagonal_sign:")
 
     @bridge.bridge_command(
@@ -198,10 +164,31 @@ class Music(commands.Cog):
             return
         try:
             audiocontroller.playlist.move(src_pos - 1, dest_pos - 1)
-        except IndexError:
-            await ctx.send("Wrong position")
+            await ctx.send("Moved ↔️")
+        except PlaylistError as e:
+            await ctx.send(e)
+
+    @bridge.bridge_command(
+        name="remove",
+        description=config.HELP_REMOVE_LONG,
+        help=config.HELP_REMOVE_SHORT,
+        aliases=["rm"],
+    )
+    async def _remove(self, ctx, queue_number: int = -1):
+        audiocontroller = ctx.bot.audio_controllers[ctx.guild]
+        if not audiocontroller.is_active():
+            await ctx.send(config.QUEUE_EMPTY)
             return
-        await ctx.send("Moved")
+
+        if queue_number == -1:
+            queue_number = len(audiocontroller.playlist)
+        try:
+            song = audiocontroller.playlist.remove(queue_number - 1)
+            await ctx.send(
+                f"Removed #{queue_number}: {song.info.title or song.info.webpage_url}"
+            )
+        except PlaylistError as e:
+            await ctx.send(e)
 
     @bridge.bridge_command(
         name="skip",
@@ -222,7 +209,7 @@ class Music(commands.Cog):
         if not audiocontroller.is_active():
             await ctx.send(config.QUEUE_EMPTY)
             return
-        ctx.guild.voice_client.stop()
+        audiocontroller.next_song()
         await ctx.send("Skipped current song :fast_forward:")
 
     @bridge.bridge_command(
@@ -257,25 +244,10 @@ class Music(commands.Cog):
         audiocontroller.timer.cancel()
         audiocontroller.timer = utils.Timer(audiocontroller.timeout_handler)
 
-        if await audiocontroller.prev_song():
+        if audiocontroller.prev_song():
             await ctx.send("Playing previous song :track_previous:")
         else:
             await ctx.send("No previous track.")
-
-    @bridge.bridge_command(
-        name="resume",
-        description=config.HELP_RESUME_LONG,
-        help=config.HELP_RESUME_SHORT,
-    )
-    async def _resume(self, ctx: Context):
-        if not await utils.play_check(ctx):
-            return
-
-        if ctx.guild.voice_client and ctx.guild.voice_client.is_paused():
-            ctx.guild.voice_client.resume()
-            await ctx.send("Resumed playback :arrow_forward:")
-        else:
-            await ctx.send("Playback is not paused.")
 
     @bridge.bridge_command(
         name="songinfo",

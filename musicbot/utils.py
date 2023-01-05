@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 def check_dependencies():
     try:
-        check_call(["ffmpeg", "--help"], stdout=DEVNULL, stderr=DEVNULL, console=True)
+        check_call("ffmpeg --help", stdout=DEVNULL, stderr=DEVNULL, shell=True)
     except Exception as e:
         if sys.platform == "win32":
             download_ffmpeg()
@@ -145,6 +145,21 @@ def get_emoji(guild: Guild, string: str) -> Optional[Union[str, Emoji]]:
         if emoji:
             return emoji
     return utils.get(guild.emojis, name=string)
+
+
+def compare_components(obj1, obj2):
+    "compare two objects recursively but ignore custom_id in dicts"
+    if isinstance(obj1, (list, tuple)) and isinstance(obj2, (list, tuple)):
+        if len(obj1) != len(obj2):
+            return False
+        return all(compare_components(x1, x2) for x1, x2 in zip(obj1, obj2))
+    elif isinstance(obj1, dict) and isinstance(obj2, dict):
+        obj1.pop("custom_id", None)
+        obj2.pop("custom_id", None)
+        if obj1.keys() != obj2.keys():
+            return False
+        return all(compare_components(obj1[k], obj2[k]) for k in obj1)
+    return obj1 == obj2
 
 
 class Timer:

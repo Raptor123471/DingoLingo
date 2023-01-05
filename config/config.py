@@ -42,6 +42,19 @@ actual_prefix = (  # for internal use
     else ("/" if ENABLE_SLASH_COMMANDS else "@bot ")
 )
 
+# database url in SQL Alchemy-supported format, must be async-compatible
+# CHANGE ONLY IF YOU KNOW WHAT YOU'RE DOING
+DATABASE = "sqlite+aiosqlite:///settings.db"
+if os.getenv("HEROKU"):
+    # example with Heroku Postgres
+    DATABASE = os.getenv(
+        "DATABASE_URL",  # environment variable with the DB url
+        "postgres",  # default url (as env vars are not available at build time)
+    ).replace(
+        "postgres", "postgresql+asyncpg", 1  # make url supported by SQL Alchemy
+    )
+    # another example with MySQL
+    # DATABASE = os.getenv("DATABASE_URL", "mysql").replace("mysql", "mysql+aiomysql", 1)
 
 
 STARTUP_MESSAGE = "Starting Bot..."

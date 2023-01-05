@@ -1,13 +1,12 @@
 # fmt: off
 import os
-from typing import Optional
-from typing import Type, TypeVar
+from typing import Optional, Type, TypeVar
 
 
 T = TypeVar('T')
 
 def get_env_var(key: str, fallback: T) -> T:
-    if key in os.environ:
+    if key in os.environ and bool(os.environ[key]):
         return type(fallback)(os.environ[key])
     return fallback
 

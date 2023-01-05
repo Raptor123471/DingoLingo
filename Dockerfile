@@ -1,11 +1,17 @@
-FROM python:3.8-slim
+FROM python:3.10-slim
 
 WORKDIR /app
 
 COPY . .
 
-ARG HEROKU
-ENV HEROKU $HEROKU
+ENV BOT_TOKEN=
+ENV SPOTIFY_ID=
+ENV SPOTIFY_SECRET=
+ENV BOT_PREFIX=
+ENV VC_TIMEOUT=
+ENV MAX_SONG_PRELOAD=
+ENV HEROKU=
+ENV ENABLE_SLASH_COMMANDS=
 
 RUN pip --no-cache-dir install -r requirements.txt \
     && apt-get update \

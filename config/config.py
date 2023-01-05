@@ -1,16 +1,17 @@
 # fmt: off
-
 import os
+import setup
 from typing import Optional
 
 
-BOT_TOKEN: str = os.getenv("BOT_TOKEN")
-SPOTIFY_ID: str = ""
-SPOTIFY_SECRET: str = ""
 
-BOT_PREFIX: Optional[str] = "d!"  # set to None to disable
+BOT_TOKEN: str = get_env_var("BOT_TOKEN", "YOURTOKEN_GOES_HERE")
+SPOTIFY_ID: str = get_env_var("SPOTIFY_ID", "")
+SPOTIFY_SECRET: str = get_env_var("SPOTIFY_SECRET", "")
+
+BOT_PREFIX: Optional[str] = get_env_var("BOT_PREFIX", "!d")  # set to None to disable
 MENTION_AS_PREFIX = True
-ENABLE_SLASH_COMMANDS = False
+ENABLE_SLASH_COMMANDS = get_env_var("ENABLE_SLASH_COMMANDS", False)
 
 ENABLE_BUTTON_PLUGIN = True
 
@@ -18,7 +19,7 @@ EMBED_COLOR = 0x4dd4d0  # replace after'0x' with desired hex code ex. '#ff0188' 
 
 SUPPORTED_EXTENSIONS = (".webm", ".mp4", ".mp3", ".avi", ".wav", ".m4v", ".ogg", ".mov")
 
-MAX_SONG_PRELOAD = 5  # maximum of 25
+MAX_SONG_PRELOAD = get_env_var("MAX_SONG_PRELOAD", 5)   # maximum of 25
 
 # database url in SQL Alchemy-supported format, must be async-compatible
 # CHANGE ONLY IF YOU KNOW WHAT YOU'RE DOING
@@ -38,8 +39,8 @@ COOKIE_PATH = "/config/cookies/cookies.txt"
 
 GLOBAL_DISABLE_AUTOJOIN_VC = False
 
-VC_TIMEOUT = 600  # seconds
-VC_TIMOUT_DEFAULT = True  # default template setting for VC timeout true= yes, timeout false= no timeout
+VC_TIMEOUT = get_env_var("VC_TIMEOUT", 600)  # seconds
+VC_TIMOUT_DEFAULT = get_env_var("VC_TIMOUT_DEFAULT", True)  # default template setting for VC timeout true= yes, timeout false= no timeout
 ALLOW_VC_TIMEOUT_EDIT = True  # allow or disallow editing the vc_timeout guild setting
 
 
@@ -121,7 +122,6 @@ HELP_SHUFFLE_SHORT = "Shuffle the queue"
 HELP_SHUFFLE_LONG = "Randomly sort the songs in the current queue"
 HELP_RESET_SHORT = "Disconnect and reconnect"
 HELP_RESET_LONG = "Stop player, disconnect and reconnect to the channel you are in"
-HELP_REMOVE_SHORT = "Remove a song"
-HELP_REMOVE_LONG = "Allows to remove a song from the queue by typing it's position (defaults to the last song)."
 
 ABSOLUTE_PATH = ""  # do not modify
+

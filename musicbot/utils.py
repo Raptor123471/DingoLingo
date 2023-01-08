@@ -184,6 +184,18 @@ def get_env_var(key: str, default: T) -> T:
     return value
 
 
+def alchemize_url(url: str) -> str:
+    SCHEMES = (
+        ("sqlite", "sqlite+aiosqlite"),
+        ("postgres", "postgresql+asyncpg"),
+        ("mysql", "mysql+aiomysql"),
+    )
+
+    for name, scheme in SCHEMES:
+        if url.startswith(name):
+            return url.replace(name, scheme, 1)
+
+
 class Timer:
     def __init__(self, callback: Callable[[], Awaitable]):
         self._callback = callback

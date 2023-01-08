@@ -3,7 +3,7 @@
 import os
 from typing import Optional
 
-from musicbot.utils import get_env_var
+from musicbot.utils import get_env_var, alchemize_url
 
 
 BOT_TOKEN: str = get_env_var("BOT_TOKEN", "YOUR_TOKEN_GOES_HERE")
@@ -38,19 +38,18 @@ actual_prefix = (  # for internal use
     else ("/" if ENABLE_SLASH_COMMANDS else "@bot ")
 )
 
-# database url in SQL Alchemy-supported format, must be async-compatible
+# if database is not one of sqlite, postgres or MySQL
+# you need to provide the url in SQL Alchemy-supported format.
+# Must be async-compatible
 # CHANGE ONLY IF YOU KNOW WHAT YOU'RE DOING
-DATABASE = "sqlite+aiosqlite:///settings.db"
-if os.getenv("HEROKU"):
-    # example with Heroku Postgres
-    DATABASE = os.getenv(
-        "DATABASE_URL",  # environment variable with the DB url
-        "postgres",  # default url (as env vars are not available at build time)
-    ).replace(
-        "postgres", "postgresql+asyncpg", 1  # make url supported by SQL Alchemy
+DATABASE = alchemize_url(
+    get_env_var(
+        "DATABASE_URL",
+        "sqlite:///settings.db" if not os.getenv("HEROKU")
+        # assume postgres as default db on Heroku
+        else "postgres",
     )
-    # another example with MySQL
-    # DATABASE = os.getenv("DATABASE_URL", "mysql").replace("mysql", "mysql+aiomysql", 1)
+)
 
 
 STARTUP_MESSAGE = "Starting Bot..."

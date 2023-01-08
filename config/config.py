@@ -10,7 +10,7 @@ BOT_TOKEN: str = get_env_var("BOT_TOKEN", "YOUR_TOKEN_GOES_HERE")
 SPOTIFY_ID: str = get_env_var("SPOTIFY_ID", "")
 SPOTIFY_SECRET: str = get_env_var("SPOTIFY_SECRET", "")
 
-BOT_PREFIX: Optional[str] = get_env_var("BOT_PREFIX", "!d")  # set to None to disable
+BOT_PREFIX: Optional[str] = get_env_var("BOT_PREFIX", "d!")  # set to None to disable
 MENTION_AS_PREFIX = True
 ENABLE_SLASH_COMMANDS = get_env_var("ENABLE_SLASH_COMMANDS", False)
 

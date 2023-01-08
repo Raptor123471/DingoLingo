@@ -57,6 +57,10 @@ Custom Cookies:
 * Overwrite the existing cookies.txt in /config/cookies/
 * (Optional) Set a custom cookies.txt location by modifying COOKIE_PATH in config.py
 
+### Docker image
+
+You can find pre-built Docker image at https://hub.docker.com/repository/docker/krutyi4el/dandelion-music/
+
 ## Commands:
 
 ### Music

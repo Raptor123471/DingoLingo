@@ -1,11 +1,18 @@
+from __future__ import annotations
 import re
+import os
 import sys
+import ast
 import asyncio
 from subprocess import DEVNULL, check_call
-from typing import TYPE_CHECKING, Callable, Awaitable, Optional, Union
+from typing import TYPE_CHECKING, Callable, Awaitable, Optional, Union, TypeVar
 
-from discord import opus, utils, Guild, Message, VoiceChannel, Emoji
-from emoji import is_emoji
+try:
+    from discord import opus, utils, Guild, Message, VoiceChannel, Emoji
+    from emoji import is_emoji
+except ImportError:
+    if not os.getenv("DANDELION_INSTALLING"):
+        raise
 
 from config import config
 
@@ -64,7 +71,7 @@ def download_ffmpeg():
     print("\nSuccess!")
 
 
-def get_guild(bot: "MusicBot", command: Message) -> Optional[Guild]:
+def get_guild(bot: MusicBot, command: Message) -> Optional[Guild]:
     """Gets the guild a command belongs to. Useful, if the command was sent via pm.
     DOES NOT WORK WITHOUT MEMBERS INTENT"""
     if command.guild is not None:
@@ -106,14 +113,14 @@ async def connect_to_channel(
         await ctx.send(config.CHANNEL_NOT_FOUND_MESSAGE + str(dest_channel_name))
 
 
-async def is_connected(ctx: "Context") -> Optional[VoiceChannel]:
+async def is_connected(ctx: Context) -> Optional[VoiceChannel]:
     try:
         return ctx.guild.voice_client.channel
     except AttributeError:
         return None
 
 
-async def play_check(ctx: "Context"):
+async def play_check(ctx: Context):
 
     sett = ctx.bot.settings[ctx.guild]
 
@@ -160,6 +167,33 @@ def compare_components(obj1, obj2):
             return False
         return all(compare_components(obj1[k], obj2[k]) for k in obj1)
     return obj1 == obj2
+
+
+T = TypeVar("T")
+
+
+def get_env_var(key: str, default: T) -> T:
+    value = os.getenv(key)
+    if not value:
+        return default
+    try:
+        value = ast.literal_eval(value)
+    except (SyntaxError, ValueError):
+        pass
+    assert type(value) == type(default), f"invalid value for {key}: {value!r}"
+    return value
+
+
+def alchemize_url(url: str) -> str:
+    SCHEMES = (
+        ("sqlite", "sqlite+aiosqlite"),
+        ("postgres", "postgresql+asyncpg"),
+        ("mysql", "mysql+aiomysql"),
+    )
+
+    for name, scheme in SCHEMES:
+        if url.startswith(name):
+            return url.replace(name, scheme, 1)
 
 
 class Timer:

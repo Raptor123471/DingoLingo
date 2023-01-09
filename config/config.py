@@ -43,12 +43,7 @@ actual_prefix = (  # for internal use
 # Must be async-compatible
 # CHANGE ONLY IF YOU KNOW WHAT YOU'RE DOING
 DATABASE = alchemize_url(
-    get_env_var(
-        "DATABASE_URL",
-        "sqlite:///settings.db" if not os.getenv("HEROKU")
-        # assume postgres as default db on Heroku
-        else "postgres",
-    )
+    get_env_var("DATABASE_URL", os.getenv("HEROKU_DB") or "sqlite:///settings.db")
 )
 
 

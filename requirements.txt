@@ -2,7 +2,7 @@ py-cord[voice]==2.3.2
 yt-dlp==2023.1.6
 aiohttp==3.8.3
 beautifulsoup4==4.11.1
-spotipy==2.20.0
+spotipy==2.22.0
 emoji==2.0.0
 SQLAlchemy[asyncio]==1.4.39
 alembic==1.8.1

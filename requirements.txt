@@ -1,5 +1,5 @@
 py-cord[voice]==2.3.2
-yt-dlp==2022.9.1
+yt-dlp==2023.1.6
 aiohttp==3.8.3
 beautifulsoup4==4.11.1
 spotipy==2.20.0

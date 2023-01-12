@@ -1,4 +1,4 @@
-py-cord[voice]==2.1.1
+py-cord[voice]==2.3.2
 yt-dlp==2022.9.1
 aiohttp==3.8.3
 beautifulsoup4==4.11.1

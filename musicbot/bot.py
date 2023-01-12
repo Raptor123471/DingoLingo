@@ -64,13 +64,6 @@ class MusicBot(bridge.Bot):
         for audiocontroller in self.audio_controllers.values():
             await audiocontroller.update_view()
 
-    def add_command(self, command):
-        # fix empty description
-        # https://github.com/Pycord-Development/pycord/issues/1619
-        if command.brief and not command.description:
-            command.description = command.brief
-        return super().add_command(command)
-
     def add_application_command(self, command):
         if not config.ENABLE_SLASH_COMMANDS:
             return

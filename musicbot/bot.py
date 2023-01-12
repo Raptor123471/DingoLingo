@@ -64,13 +64,6 @@ class MusicBot(bridge.Bot):
         for audiocontroller in self.audio_controllers.values():
             await audiocontroller.update_view()
 
-    def add_command(self, command):
-        # fix empty description
-        # https://github.com/Pycord-Development/pycord/issues/1619
-        if command.brief and not command.description:
-            command.description = command.brief
-        return super().add_command(command)
-
     def add_application_command(self, command):
         if not config.ENABLE_SLASH_COMMANDS:
             return
@@ -152,7 +145,7 @@ class Context(bridge.BridgeContext):
         # use `respond` for compatibility
         res = await self.respond(*args, **kwargs)
         if isinstance(res, discord.Interaction):
-            audiocontroller.last_message = await res.original_message()
+            audiocontroller.last_message = await res.original_response()
         else:
             audiocontroller.last_message = res
         return res

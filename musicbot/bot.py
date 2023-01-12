@@ -152,7 +152,7 @@ class Context(bridge.BridgeContext):
         # use `respond` for compatibility
         res = await self.respond(*args, **kwargs)
         if isinstance(res, discord.Interaction):
-            audiocontroller.last_message = await res.original_message()
+            audiocontroller.last_message = await res.original_response()
         else:
             audiocontroller.last_message = res
         return res

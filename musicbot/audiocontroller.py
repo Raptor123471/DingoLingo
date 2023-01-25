@@ -1,3 +1,4 @@
+import asyncio
 from enum import Enum
 from inspect import isawaitable
 from typing import TYPE_CHECKING, Coroutine, Optional, List, Tuple
@@ -18,6 +19,7 @@ if TYPE_CHECKING:
 
 _cached_downloaders: List[Tuple[dict, yt_dlp.YoutubeDL]] = []
 _not_provided = object()
+_search_lock = asyncio.Lock()
 
 
 class PauseState(Enum):
@@ -104,9 +106,10 @@ class AudioController(object):
         #     downloader = _cached_downloaders[options]
         # else:
         #     downloader = _cached_downloaders[options] = yt_dlp.YoutubeDL(options)
-        return await self.bot.loop.run_in_executor(
-            None, downloader.extract_info, url, False
-        )
+        async with _search_lock:
+            return await self.bot.loop.run_in_executor(
+                None, downloader.extract_info, url, False
+            )
 
     async def fetch_song_info(self, song: Song):
         try:
@@ -302,6 +305,10 @@ class AudioController(object):
                     song.update(conversion)
             else:
                 await self.fetch_song_info(song)
+
+        if song.base_url is None:
+            print("Something is wrong. Refusing to play a song without base_url.")
+            return
 
         self.playlist.add_name(song.info.title)
         self.current_song = song

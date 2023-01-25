@@ -89,7 +89,7 @@ async def get_spotify_playlist(url: str) -> list:
 
     soup = BeautifulSoup(page, "html.parser")
 
-    results = soup.find_all(property="music:song", attrs={"content": True})
+    results = soup.find_all(attrs={"name": "music:song", "content": True})
 
     links = []
 

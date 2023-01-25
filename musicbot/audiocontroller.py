@@ -123,7 +123,9 @@ class AudioController(object):
                 },
             )
         except Exception as e:
-            if "ERROR: Sign in to confirm your age" in str(e):
+            if "ERROR: Sign in to confirm your age" in str(
+                e
+            ) or "Video unavailable" in str(e):
                 return
             info = await self.extract_info(
                 song, {"title": True, "cookiefile": config.COOKIE_PATH, "quiet": True}
@@ -308,6 +310,7 @@ class AudioController(object):
 
         if song.base_url is None:
             print("Something is wrong. Refusing to play a song without base_url.")
+            self.next_song()
             return
 
         self.playlist.add_name(song.info.title)

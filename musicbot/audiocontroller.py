@@ -476,9 +476,13 @@ class AudioController(object):
         return success
 
     async def preload_queue(self):
+        rerun_needed = False
         for song in list(islice(self.playlist.playque, 1, config.MAX_SONG_PRELOAD)):
             if not await self.preload(song):
                 self.playlist.playque.remove(song)
+                rerun_needed = True
+        if rerun_needed:
+            self.add_task(self.preload_queue())
 
     async def search_youtube(self, title: str) -> Optional[dict]:
         """Searches youtube for the video title and returns the first results video link"""

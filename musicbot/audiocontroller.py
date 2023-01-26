@@ -1,5 +1,6 @@
 import asyncio
 from enum import Enum
+from itertools import islice
 from inspect import isawaitable
 from typing import TYPE_CHECKING, Coroutine, Optional, List, Tuple
 
@@ -77,7 +78,7 @@ class AudioController(object):
         # to keep strong references to all tasks
         self._tasks = set()
 
-        self._preloading = set()
+        self._preloading = {}
 
     @property
     def volume(self) -> int:
@@ -306,17 +307,9 @@ class AudioController(object):
             self.timer.cancel()
             self.timer = utils.Timer(self.timeout_handler)
 
-        if song.info.title is None:
-            if song.host == linkutils.Sites.Spotify:
-                conversion = await self.search_youtube(
-                    await linkutils.convert_spotify(song.info.webpage_url)
-                )
-                if conversion:
-                    song.update(conversion)
-            else:
-                if not await self.fetch_song_info(song):
-                    self.next_song()
-                    return
+        if not await self.preload(song):
+            self.next_song()
+            return
 
         if song.base_url is None:
             print("Something is wrong. Refusing to play a song without base_url.")
@@ -344,8 +337,7 @@ class AudioController(object):
                 embed=song.info.format_output(config.SONGINFO_NOW_PLAYING)
             )
 
-        for song in list(self.playlist.playque)[: config.MAX_SONG_PRELOAD]:
-            self.add_task(self.preload(song))
+        self.add_task(self.preload_queue())
 
     async def process_song(self, track: str) -> Optional[Song]:
         """Adds the track to the playlist instance and plays it, if it is the first song"""
@@ -452,8 +444,7 @@ class AudioController(object):
 
                 self.playlist.add(song)
 
-        for song in list(self.playlist.playque)[: config.MAX_SONG_PRELOAD]:
-            self.add_task(self.preload(song))
+        self.add_task(self.preload_queue())
 
     def add_task(self, coro: Coroutine):
         task = self.bot.loop.create_task(coro)
@@ -462,13 +453,14 @@ class AudioController(object):
 
     async def preload(self, song: Song):
 
-        if (
-            song.info.title is not None
-            or song in self._preloading
-            or song.info.webpage_url is None
-        ):
-            return
-        self._preloading.add(song)
+        if song.info.title is not None or song.info.webpage_url is None:
+            return True
+        future = self._preloading.get(song)
+        if future:
+            return await future
+        self._preloading[song] = asyncio.Future()
+
+        success = True
 
         if song.host == linkutils.Sites.Spotify:
             title = await linkutils.convert_spotify(song.info.webpage_url)
@@ -476,11 +468,17 @@ class AudioController(object):
             if data:
                 song.update(data)
             else:
-                self.playlist.playque.remove(song)
+                success = False
 
         elif not await self.fetch_song_info(song):
-            self.playlist.playque.remove(song)
-        self._preloading.remove(song)
+            success = False
+        self._preloading.pop(song).set_result(success)
+        return success
+
+    async def preload_queue(self):
+        for song in list(islice(self.playlist.playque, 1, config.MAX_SONG_PRELOAD)):
+            if not await self.preload(song):
+                self.playlist.playque.remove(song)
 
     async def search_youtube(self, title: str) -> Optional[dict]:
         """Searches youtube for the video title and returns the first results video link"""

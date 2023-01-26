@@ -132,6 +132,7 @@ class AudioController(object):
 
     def make_view(self):
         if not self.is_active():
+            self.last_view = None
             return None
 
         view = discord.ui.View(timeout=None)
@@ -213,11 +214,17 @@ class AudioController(object):
         if not msg:
             return
         old_view = self.last_view
-        if view is _not_provided:
-            view = self.make_view()
         if view is None:
             self.last_message = None
-        elif compare_components(old_view.to_components(), view.to_components()):
+        elif view is _not_provided:
+            view = self.make_view()
+        if view is old_view:
+            return
+        elif (
+            old_view
+            and view
+            and compare_components(old_view.to_components(), view.to_components())
+        ):
             return
         try:
             await msg.edit(view=view)

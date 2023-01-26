@@ -123,9 +123,7 @@ class AudioController(object):
                 },
             )
         except Exception as e:
-            if "ERROR: Sign in to confirm your age" in str(
-                e
-            ) or "Video unavailable" in str(e):
+            if isinstance(e, yt_dlp.DownloadError) and e.exc_info[1].expected:
                 return
             info = await self.extract_info(
                 song, {"title": True, "cookiefile": config.COOKIE_PATH, "quiet": True}

@@ -77,6 +77,8 @@ class AudioController(object):
         # to keep strong references to all tasks
         self._tasks = set()
 
+        self._preloading = set()
+
     @property
     def volume(self) -> int:
         return self._volume
@@ -111,7 +113,7 @@ class AudioController(object):
                 None, downloader.extract_info, url, False
             )
 
-    async def fetch_song_info(self, song: Song):
+    async def fetch_song_info(self, song: Song) -> bool:
         try:
             info = await self.extract_info(
                 song.info.webpage_url,
@@ -124,11 +126,12 @@ class AudioController(object):
             )
         except Exception as e:
             if isinstance(e, yt_dlp.DownloadError) and e.exc_info[1].expected:
-                return
+                return False
             info = await self.extract_info(
                 song, {"title": True, "cookiefile": config.COOKIE_PATH, "quiet": True}
             )
         song.update(info)
+        return True
 
     def make_view(self):
         if not self.is_active():
@@ -311,7 +314,9 @@ class AudioController(object):
                 if conversion:
                     song.update(conversion)
             else:
-                await self.fetch_song_info(song)
+                if not await self.fetch_song_info(song):
+                    self.next_song()
+                    return
 
         if song.base_url is None:
             print("Something is wrong. Refusing to play a song without base_url.")
@@ -378,7 +383,8 @@ class AudioController(object):
         if data:
             song.update(data)
         else:
-            await self.fetch_song_info(song)
+            if not await self.fetch_song_info(song):
+                return None
 
         self.playlist.add(song)
         if self.current_song is None:
@@ -456,20 +462,25 @@ class AudioController(object):
 
     async def preload(self, song: Song):
 
-        if song.info.title is not None:
+        if (
+            song.info.title is not None
+            or song in self._preloading
+            or song.info.webpage_url is None
+        ):
             return
+        self._preloading.add(song)
 
         if song.host == linkutils.Sites.Spotify:
             title = await linkutils.convert_spotify(song.info.webpage_url)
             data = await self.search_youtube(title)
             if data:
                 song.update(data)
-            return
+            else:
+                self.playlist.playque.remove(song)
 
-        if song.info.webpage_url is None:
-            return None
-
-        await self.fetch_song_info(song)
+        elif not await self.fetch_song_info(song):
+            self.playlist.playque.remove(song)
+        self._preloading.remove(song)
 
     async def search_youtube(self, title: str) -> Optional[dict]:
         """Searches youtube for the video title and returns the first results video link"""

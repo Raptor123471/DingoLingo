@@ -92,6 +92,12 @@ class AudioController(object):
         except Exception:
             pass
 
+    def volume_up(self):
+        self.volume = min(self.volume + 10, 100)
+
+    def volume_down(self):
+        self.volume = max(self.volume - 10, 10)
+
     async def register_voice_channel(self, channel: discord.VoiceChannel):
         await channel.connect(reconnect=True, timeout=None)
 
@@ -198,6 +204,16 @@ class AudioController(object):
             style=discord.ButtonStyle.red,
         )
         view.add_item(stop_button)
+
+        volume_down_button = MusicButton(
+            lambda _: self.volume_down(), row=2, disabled=self.volume == 10, emoji="🔉"
+        )
+        view.add_item(volume_down_button)
+
+        volume_up_button = MusicButton(
+            lambda _: self.volume_up(), row=2, disabled=self.volume == 100, emoji="🔊"
+        )
+        view.add_item(volume_up_button)
 
         self.last_view = view
 

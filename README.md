@@ -45,7 +45,7 @@ Install `ffmpeg` and `libopus` packages.
 1. Download release if available, alternatively download repository zip
 2. Complete Prerequisites
 3. Start ```run.py``` in project root
-4. See configuration options in /config/config.py
+4. See configuration options in /config/config.py (more info at https://github.com/Krutyi-4el/DandelionMusic/wiki/Configuration)
 
 Button play plugin:
 * Set emoji with the setting command to enable this feature
@@ -60,6 +60,8 @@ Custom Cookies:
 ### Docker image
 
 You can find pre-built Docker image at https://hub.docker.com/repository/docker/krutyi4el/dandelion-music/
+
+See https://github.com/Krutyi-4el/DandelionMusic/wiki/Configuration for description of environment variables.
 
 ## Commands:
 
@@ -142,6 +144,12 @@ d!volume / d!vol
 
 * Adjust the volume 1-100%
 * Pass no arguments for current volume
+
+```
+d!remove / d!rm
+```
+
+* Removes a song from the queue (defaults to last song)
 
 ```
 d!stop / d!st

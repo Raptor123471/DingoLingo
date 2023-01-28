@@ -1,4 +1,6 @@
+import asyncio
 from enum import Enum
+from itertools import islice
 from inspect import isawaitable
 from typing import TYPE_CHECKING, Coroutine, Optional, List, Tuple
 
@@ -18,6 +20,7 @@ if TYPE_CHECKING:
 
 _cached_downloaders: List[Tuple[dict, yt_dlp.YoutubeDL]] = []
 _not_provided = object()
+_search_lock = asyncio.Lock()
 
 
 class PauseState(Enum):
@@ -75,6 +78,8 @@ class AudioController(object):
         # to keep strong references to all tasks
         self._tasks = set()
 
+        self._preloading = {}
+
     @property
     def volume(self) -> int:
         return self._volume
@@ -86,6 +91,12 @@ class AudioController(object):
             self.guild.voice_client.source.volume = float(value) / 100.0
         except Exception:
             pass
+
+    def volume_up(self):
+        self.volume = min(self.volume + 10, 100)
+
+    def volume_down(self):
+        self.volume = max(self.volume - 10, 10)
 
     async def register_voice_channel(self, channel: discord.VoiceChannel):
         await channel.connect(reconnect=True, timeout=None)
@@ -104,11 +115,12 @@ class AudioController(object):
         #     downloader = _cached_downloaders[options]
         # else:
         #     downloader = _cached_downloaders[options] = yt_dlp.YoutubeDL(options)
-        return await self.bot.loop.run_in_executor(
-            None, downloader.extract_info, url, False
-        )
+        async with _search_lock:
+            return await self.bot.loop.run_in_executor(
+                None, downloader.extract_info, url, False
+            )
 
-    async def fetch_song_info(self, song: Song):
+    async def fetch_song_info(self, song: Song) -> bool:
         try:
             info = await self.extract_info(
                 song.info.webpage_url,
@@ -120,15 +132,17 @@ class AudioController(object):
                 },
             )
         except Exception as e:
-            if "ERROR: Sign in to confirm your age" in str(e):
-                return
+            if isinstance(e, yt_dlp.DownloadError) and e.exc_info[1].expected:
+                return False
             info = await self.extract_info(
                 song, {"title": True, "cookiefile": config.COOKIE_PATH, "quiet": True}
             )
         song.update(info)
+        return True
 
     def make_view(self):
         if not self.is_active():
+            self.last_view = None
             return None
 
         view = discord.ui.View(timeout=None)
@@ -191,6 +205,16 @@ class AudioController(object):
         )
         view.add_item(stop_button)
 
+        volume_down_button = MusicButton(
+            lambda _: self.volume_down(), row=2, disabled=self.volume == 10, emoji="🔉"
+        )
+        view.add_item(volume_down_button)
+
+        volume_up_button = MusicButton(
+            lambda _: self.volume_up(), row=2, disabled=self.volume == 100, emoji="🔊"
+        )
+        view.add_item(volume_up_button)
+
         self.last_view = view
 
         return view
@@ -210,11 +234,17 @@ class AudioController(object):
         if not msg:
             return
         old_view = self.last_view
-        if view is _not_provided:
-            view = self.make_view()
         if view is None:
             self.last_message = None
-        elif compare_components(old_view.to_components(), view.to_components()):
+        elif view is _not_provided:
+            view = self.make_view()
+        if view is old_view:
+            return
+        elif (
+            old_view
+            and view
+            and compare_components(old_view.to_components(), view.to_components())
+        ):
             return
         try:
             await msg.edit(view=view)
@@ -293,15 +323,14 @@ class AudioController(object):
             self.timer.cancel()
             self.timer = utils.Timer(self.timeout_handler)
 
-        if song.info.title is None:
-            if song.host == linkutils.Sites.Spotify:
-                conversion = await self.search_youtube(
-                    await linkutils.convert_spotify(song.info.webpage_url)
-                )
-                if conversion:
-                    song.update(conversion)
-            else:
-                await self.fetch_song_info(song)
+        if not await self.preload(song):
+            self.next_song()
+            return
+
+        if song.base_url is None:
+            print("Something is wrong. Refusing to play a song without base_url.")
+            self.next_song()
+            return
 
         self.playlist.add_name(song.info.title)
         self.current_song = song
@@ -324,8 +353,7 @@ class AudioController(object):
                 embed=song.info.format_output(config.SONGINFO_NOW_PLAYING)
             )
 
-        for song in list(self.playlist.playque)[: config.MAX_SONG_PRELOAD]:
-            self.add_task(self.preload(song))
+        self.add_task(self.preload_queue())
 
     async def process_song(self, track: str) -> Optional[Song]:
         """Adds the track to the playlist instance and plays it, if it is the first song"""
@@ -363,7 +391,8 @@ class AudioController(object):
         if data:
             song.update(data)
         else:
-            await self.fetch_song_info(song)
+            if not await self.fetch_song_info(song):
+                return None
 
         self.playlist.add(song)
         if self.current_song is None:
@@ -431,8 +460,7 @@ class AudioController(object):
 
                 self.playlist.add(song)
 
-        for song in list(self.playlist.playque)[: config.MAX_SONG_PRELOAD]:
-            self.add_task(self.preload(song))
+        self.add_task(self.preload_queue())
 
     def add_task(self, coro: Coroutine):
         task = self.bot.loop.create_task(coro)
@@ -441,20 +469,36 @@ class AudioController(object):
 
     async def preload(self, song: Song):
 
-        if song.info.title is not None:
-            return
+        if song.info.title is not None or song.info.webpage_url is None:
+            return True
+        future = self._preloading.get(song)
+        if future:
+            return await future
+        self._preloading[song] = asyncio.Future()
+
+        success = True
 
         if song.host == linkutils.Sites.Spotify:
             title = await linkutils.convert_spotify(song.info.webpage_url)
             data = await self.search_youtube(title)
             if data:
                 song.update(data)
-            return
+            else:
+                success = False
 
-        if song.info.webpage_url is None:
-            return None
+        elif not await self.fetch_song_info(song):
+            success = False
+        self._preloading.pop(song).set_result(success)
+        return success
 
-        await self.fetch_song_info(song)
+    async def preload_queue(self):
+        rerun_needed = False
+        for song in list(islice(self.playlist.playque, 1, config.MAX_SONG_PRELOAD)):
+            if not await self.preload(song):
+                self.playlist.playque.remove(song)
+                rerun_needed = True
+        if rerun_needed:
+            self.add_task(self.preload_queue())
 
     async def search_youtube(self, title: str) -> Optional[dict]:
         """Searches youtube for the video title and returns the first results video link"""

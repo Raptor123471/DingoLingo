@@ -43,12 +43,8 @@ async def convert_spotify(url: str) -> str:
 
     soup = BeautifulSoup(page, "html.parser")
 
-    title = soup.find("title")
-    title = title.string
-    title = title.replace("- song by", "")
-    title = title.replace("| Spotify", "")
-
-    return title
+    title = soup.find("title").string
+    return re.sub(r"(.*) - song( and lyrics)? by (.*) \| Spotify", r"\1 \3", title)
 
 
 async def get_spotify_playlist(url: str) -> list:
@@ -89,7 +85,7 @@ async def get_spotify_playlist(url: str) -> list:
 
     soup = BeautifulSoup(page, "html.parser")
 
-    results = soup.find_all(property="music:song", attrs={"content": True})
+    results = soup.find_all(attrs={"name": "music:song", "content": True})
 
     links = []
 

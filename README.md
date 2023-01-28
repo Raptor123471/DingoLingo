@@ -146,6 +146,12 @@ d!volume / d!vol
 * Pass no arguments for current volume
 
 ```
+d!remove / d!rm
+```
+
+* Removes a specific title in the queue
+
+```
 d!stop / d!st
 ```
 * Stops the current song and clears the playqueue.

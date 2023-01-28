@@ -149,7 +149,7 @@ d!volume / d!vol
 d!remove / d!rm
 ```
 
-* Removes a specific title in the queue
+* Removes a song from the queue (defaults to last song)
 
 ```
 d!stop / d!st

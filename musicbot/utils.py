@@ -174,7 +174,7 @@ T = TypeVar("T")
 
 def get_env_var(key: str, default: T) -> T:
     value = os.getenv(key)
-    if not value:
+    if value is None:
         return default
     try:
         value = ast.literal_eval(value)

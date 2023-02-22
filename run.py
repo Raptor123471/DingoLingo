@@ -15,7 +15,7 @@ initial_extensions = [
 
 
 intents = discord.Intents.default()
-if config.BOT_PREFIX is not None:
+if config.BOT_PREFIX:
     intents.message_content = True
     prefix = config.BOT_PREFIX
 else:

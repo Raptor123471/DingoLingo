@@ -6,7 +6,7 @@ from discord.ext import commands
 
 from config import config
 from musicbot.bot import MusicBot
-from musicbot.utils import check_dependencies
+from musicbot.utils import OutputWrapper, check_dependencies
 
 initial_extensions = [
     "musicbot.commands.music",
@@ -43,10 +43,8 @@ if __name__ == "__main__":
     config.ABSOLUTE_PATH = os.path.dirname(os.path.abspath(__file__))
     config.COOKIE_PATH = config.ABSOLUTE_PATH + config.COOKIE_PATH
 
-    if sys.stdout is None:
-        sys.stdout = open("log.txt", "w", encoding="utf-8")
-    if sys.stderr is None:
-        sys.stderr = sys.stdout
+    sys.stdout = OutputWrapper(sys.stdout)
+    sys.stderr = OutputWrapper(sys.stderr)
 
     check_dependencies()
 

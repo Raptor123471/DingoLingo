@@ -46,6 +46,9 @@ if __name__ == "__main__":
     sys.stdout = OutputWrapper(sys.stdout)
     sys.stderr = OutputWrapper(sys.stderr)
 
+    if "--run" in sys.argv:
+        print(os.getpid())
+
     check_dependencies()
 
     if not config.BOT_TOKEN:

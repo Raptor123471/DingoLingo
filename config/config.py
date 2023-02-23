@@ -64,6 +64,7 @@ actual_prefix = (  # for internal use
 )
 
 DATABASE = alchemize_url(DATABASE_URL)
+DATABASE_LIBRARY = DATABASE.partition("+")[2].partition(":")[0]
 
 
 STARTUP_MESSAGE = "Starting Bot..."

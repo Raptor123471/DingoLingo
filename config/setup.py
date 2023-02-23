@@ -13,10 +13,10 @@ for i, path in enumerate(sys.path):
 os.environ["DANDELION_INSTALLING"] = "1"
 
 from setuptools import setup
-from config.config import DATABASE
+from config.config import DATABASE_LIBRARY
 
 
 setup(
     name="MusicBot DB",
-    install_requires=[DATABASE.partition("+")[2].partition(":")[0]],
+    install_requires=[DATABASE_LIBRARY],
 )

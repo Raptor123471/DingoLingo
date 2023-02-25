@@ -174,7 +174,7 @@ T = TypeVar("T")
 
 def get_env_var(key: str, default: T) -> T:
     value = os.getenv(key)
-    if not value:
+    if value is None:
         return default
     try:
         value = ast.literal_eval(value)
@@ -207,3 +207,32 @@ class Timer:
 
     def cancel(self):
         self._task.cancel()
+
+
+class OutputWrapper:
+    log_file = None
+
+    def __init__(self, stream):
+        self.using_log_file = False
+        self.stream = stream
+
+    def write(self, text, /):
+        try:
+            ret = self.stream.write(text)
+            if not self.using_log_file:
+                self.stream.flush()
+        except Exception:
+            self.using_log_file = True
+            self.stream = self.get_log_file()
+            ret = self.stream.write(text)
+        return ret
+
+    def __getattr__(self, key):
+        return getattr(self.stream, key)
+
+    @classmethod
+    def get_log_file(cls):
+        if cls.log_file:
+            return cls.log_file
+        cls.log_file = open("log.txt", "w", encoding="utf-8")
+        return cls.log_file

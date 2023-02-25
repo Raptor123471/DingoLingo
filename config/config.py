@@ -1,18 +1,47 @@
 # fmt: off
 
 import os
-from typing import Optional
+import json
 
 from musicbot.utils import get_env_var, alchemize_url
 
 
-BOT_TOKEN: str = get_env_var("BOT_TOKEN", "YOUR_TOKEN_GOES_HERE")
-SPOTIFY_ID: str = get_env_var("SPOTIFY_ID", "")
-SPOTIFY_SECRET: str = get_env_var("SPOTIFY_SECRET", "")
+DEFAULTS = {
+    "BOT_TOKEN": "YOUR_TOKEN_GOES_HERE",
+    "SPOTIFY_ID": "",
+    "SPOTIFY_SECRET": "",
 
-BOT_PREFIX: Optional[str] = get_env_var("BOT_PREFIX", "d!")  # set to None to disable
+    "BOT_PREFIX": "d!",  # set to empty string to disable
+    "ENABLE_SLASH_COMMANDS": False,
+
+    "VC_TIMEOUT": 600,  # seconds
+    "VC_TIMOUT_DEFAULT": True,  # default template setting for VC timeout true= yes, timeout false= no timeout
+
+    "MAX_SONG_PRELOAD": 5,  # maximum of 25
+    "MAX_HISTORY_LENGTH": 10,
+    "MAX_TRACKNAME_HISTORY_LENGTH": 15,
+
+    # if database is not one of sqlite, postgres or MySQL
+    # you need to provide the url in SQL Alchemy-supported format.
+    # Must be async-compatible
+    # CHANGE ONLY IF YOU KNOW WHAT YOU'RE DOING
+    "DATABASE_URL": os.getenv("HEROKU_DB") or "sqlite:///settings.db",
+}
+
+
+if os.path.isfile("config.json"):
+    with open("config.json") as f:
+        DEFAULTS.update(json.load(f))
+elif not os.getenv("DANDELION_INSTALLING"):
+    with open("config.json", "w") as f:
+        json.dump(DEFAULTS, f, indent=2)
+
+
+for key, default in DEFAULTS.items():
+    globals()[key] = get_env_var(key, default)
+
+
 MENTION_AS_PREFIX = True
-ENABLE_SLASH_COMMANDS = get_env_var("ENABLE_SLASH_COMMANDS", False)
 
 ENABLE_BUTTON_PLUGIN = True
 
@@ -20,31 +49,22 @@ EMBED_COLOR = 0x4dd4d0  # replace after'0x' with desired hex code ex. '#ff0188' 
 
 SUPPORTED_EXTENSIONS = (".webm", ".mp4", ".mp3", ".avi", ".wav", ".m4v", ".ogg", ".mov")
 
-MAX_SONG_PRELOAD = get_env_var("MAX_SONG_PRELOAD", 5)   # maximum of 25
-
 
 COOKIE_PATH = "/config/cookies/cookies.txt"
 
 GLOBAL_DISABLE_AUTOJOIN_VC = False
 
-VC_TIMEOUT = get_env_var("VC_TIMEOUT", 600)  # seconds
-VC_TIMOUT_DEFAULT = get_env_var("VC_TIMOUT_DEFAULT", True)  # default template setting for VC timeout true= yes, timeout false= no timeout
 ALLOW_VC_TIMEOUT_EDIT = True  # allow or disallow editing the vc_timeout guild setting
 
 
 actual_prefix = (  # for internal use
     BOT_PREFIX
-    if BOT_PREFIX is not None
+    if BOT_PREFIX
     else ("/" if ENABLE_SLASH_COMMANDS else "@bot ")
 )
 
-# if database is not one of sqlite, postgres or MySQL
-# you need to provide the url in SQL Alchemy-supported format.
-# Must be async-compatible
-# CHANGE ONLY IF YOU KNOW WHAT YOU'RE DOING
-DATABASE = alchemize_url(
-    get_env_var("DATABASE_URL", os.getenv("HEROKU_DB") or "sqlite:///settings.db")
-)
+DATABASE = alchemize_url(DATABASE_URL)
+DATABASE_LIBRARY = DATABASE.partition("+")[2].partition(":")[0]
 
 
 STARTUP_MESSAGE = "Starting Bot..."
@@ -62,8 +82,6 @@ INVALID_INVITE_MESSAGE = "Error: Invalid invitation link"
 ADD_MESSAGE = "To add this bot to your own Server, click [here]"  # brackets will be the link text
 
 INFO_HISTORY_TITLE = "Songs Played:"
-MAX_HISTORY_LENGTH = get_env_var("MAX_HISTORY_LENGTH", 10)
-MAX_TRACKNAME_HISTORY_LENGTH = get_env_var("MAX_TRACKNAME_HISTORY_LENGTH", 15)
 
 SONGINFO_UPLOADER = "Uploader: "
 SONGINFO_DURATION = "Duration: "

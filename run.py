@@ -1,59 +1,92 @@
-import os
+"""
+This file uses some magic to make running Dandelion
+in the background easier
+Head to musicbot/__main__.py if you want to see "real" main file
+"""
 import sys
 
-import discord
-from discord.ext import commands
+if "--run" in sys.argv:
+    import runpy
 
-from config import config
-from musicbot.bot import MusicBot
-from musicbot.utils import check_dependencies
+    runpy.run_module("musicbot", run_name="__main__")
+    # reminder: there's no `exit` in frozen environment
+    sys.exit()
 
-initial_extensions = [
-    "musicbot.commands.music",
-    "musicbot.commands.general",
-]
+import os
+import signal
+import subprocess
 
+print("You can close this window and the bot will run in the background")
+print("To stop the bot, press Ctrl+C")
 
-intents = discord.Intents.default()
-if config.BOT_PREFIX is not None:
-    intents.message_content = True
-    prefix = config.BOT_PREFIX
+on_windows = sys.platform == "win32"
+
+if on_windows:
+    import ctypes
+    import ctypes.wintypes
+
+    SetHandler = ctypes.windll.kernel32.SetConsoleCtrlHandler
+
+    handler_type = ctypes.CFUNCTYPE(None, ctypes.wintypes.DWORD)
+    SetHandler.argtypes = (handler_type, ctypes.c_bool)
+
+    @handler_type
+    def handler(event):
+        if event == signal.CTRL_C_EVENT:
+            os.kill(child_pid, signal.SIGTERM)
+
+    kwargs = {
+        "creationflags": subprocess.CREATE_NO_WINDOW
+        | subprocess.CREATE_NEW_PROCESS_GROUP
+    }
 else:
-    config.BOT_PREFIX = config.actual_prefix
-    prefix = " "  # messages can't start with space
-if config.MENTION_AS_PREFIX:
-    prefix = commands.when_mentioned_or(prefix)
+    kwargs = {"start_new_session": True}
 
-if config.ENABLE_BUTTON_PLUGIN:
-    intents.message_content = True
-    initial_extensions.append("musicbot.plugins.button")
-
-bot = MusicBot(
-    command_prefix=prefix,
-    case_insensitive=True,
-    status=discord.Status.online,
-    activity=discord.Game(name="Music, type {}help".format(config.BOT_PREFIX)),
-    intents=intents,
-    allowed_mentions=discord.AllowedMentions.none(),
+p = subprocess.Popen(
+    # sys.executable may be python interpreter or pyinstaller exe
+    [sys.executable, __file__, "--run"],
+    stdout=subprocess.PIPE,
+    stderr=subprocess.STDOUT,
+    text=True,
+    **kwargs,
 )
 
 
-if __name__ == "__main__":
+# disable interrupting until we have the pid
+# (we don't want to have a wild process at this point)
+default_sigint_handler = signal.signal(signal.SIGINT, lambda s, f: None)
 
-    config.ABSOLUTE_PATH = os.path.dirname(os.path.abspath(__file__))
-    config.COOKIE_PATH = config.ABSOLUTE_PATH + config.COOKIE_PATH
+# the pid is passed via stdout because p.pid can be incorrect
+line = p.stdout.readline()
+try:
+    child_pid = int(line)
+except ValueError:
+    print("Can't grab subprocess id, something is wrong!")
+    print("The output is:", line, sep="\n", end="")
+else:
+    if on_windows:
+        assert SetHandler(handler, True), "failed to set Ctrl+C handler"
 
-    if sys.stdout is None:
-        sys.stdout = open("log.txt", "w", encoding="utf-8")
-    if sys.stderr is None:
-        sys.stderr = sys.stdout
 
-    check_dependencies()
+def new_handler(sig, frame):
+    """Handle the first interrupt and ignore others
+    to prevent showing error instead of subprocess output"""
+    global default_sigint_handler
+    h = default_sigint_handler
+    if h:
+        default_sigint_handler = None
+        h(sig, frame)
 
-    if not config.BOT_TOKEN:
-        print("Error: No bot token!")
-        exit()
 
-    bot.load_extensions(*initial_extensions)
+signal.signal(signal.SIGINT, new_handler)
 
-    bot.run(config.BOT_TOKEN, reconnect=True)
+try:
+    while line := p.stdout.readline():
+        print(line, end="")
+except KeyboardInterrupt:
+    if not on_windows:
+        os.kill(child_pid, signal.SIGINT)
+    print(p.stdout.read(), end="")
+
+if p.wait() != 0:
+    input("Press Enter to exit... ")

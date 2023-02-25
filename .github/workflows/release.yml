@@ -1,0 +1,29 @@
+name: Publish exe
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    name: Publish Windows executable
+    runs-on: windows-latest
+    permissions: write-all
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v3
+
+    - name: Build
+      run: >
+        pip install -r requirements.txt pyinstaller==5.8.0
+        && python -m config.build
+
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.ref }}
+        file: ./dist/DandelionMusic.exe
+        asset_name: DandelionMusic-$tag.exe

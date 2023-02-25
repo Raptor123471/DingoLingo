@@ -194,6 +194,7 @@ def alchemize_url(url: str) -> str:
     for name, scheme in SCHEMES:
         if url.startswith(name):
             return url.replace(name, scheme, 1)
+    return url
 
 
 class Timer:

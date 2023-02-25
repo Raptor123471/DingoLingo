@@ -63,6 +63,9 @@ actual_prefix = (  # for internal use
     else ("/" if ENABLE_SLASH_COMMANDS else "@bot ")
 )
 
+# set db url during install even if it's overriden by env
+if os.getenv("DANDELION_INSTALLING") and not DATABASE_URL:
+    DATABASE_URL = DEFAULTS["DATABASE_URL"]
 DATABASE = alchemize_url(DATABASE_URL)
 DATABASE_LIBRARY = DATABASE.partition("+")[2].partition(":")[0]
 

@@ -27,7 +27,7 @@ if on_windows:
 
     SetHandler = ctypes.windll.kernel32.SetConsoleCtrlHandler
 
-    handler_type = ctypes.CFUNCTYPE(None, ctypes.wintypes.DWORD)
+    handler_type = ctypes.WINFUNCTYPE(None, ctypes.wintypes.DWORD)
     SetHandler.argtypes = (handler_type, ctypes.c_bool)
 
     @handler_type

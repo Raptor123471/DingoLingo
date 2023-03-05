@@ -1,9 +1,12 @@
 import asyncio
+
 import discord
-from config import config
 from discord.ext import commands, bridge
 from discord.ext.commands import has_permissions
+
+from config import config
 from musicbot.bot import Context, MusicBot
+from musicbot.settings import CONFIG_OPTIONS, ConversionError
 from musicbot.audiocontroller import AudioController
 
 
@@ -70,30 +73,38 @@ class General(commands.Cog):
     async def _ping(self, ctx):
         await ctx.send("Pong")
 
-    @bridge.bridge_command(
+    @bridge.bridge_group(
         name="setting",
         description=config.HELP_SETTINGS_LONG,
         help=config.HELP_SETTINGS_SHORT,
         aliases=["settings", "set"],
+        invoke_without_command=True,
     )
     @has_permissions(administrator=True)
-    async def _settings(self, ctx: Context, setting=None, *, value=None):
-
-        sett = ctx.bot.settings[ctx.guild]
-
-        if setting is None and value is None:
-            await ctx.send(embed=sett.format(ctx))
-            return
-
-        if setting is None or value is None:
-            await ctx.send("Error: setting or value is missing.")
-            return
-
-        response = await sett.process_setting(setting, value, ctx)
-
-        if response is None:
+    async def _settings(self, ctx: Context, *, inexistent_setting=None):
+        if inexistent_setting is not None:
             await ctx.send("`Error: Setting not found`")
-        elif response is True:
+        else:
+            await self._show_settings_callback(ctx)
+
+    async def _show_settings_callback(self, ctx: Context):
+        sett = ctx.bot.settings[ctx.guild]
+        await ctx.send(embed=sett.format(ctx))
+
+    _show_settings = _settings.command(name="show")(_show_settings_callback)
+
+    for name, type_ in CONFIG_OPTIONS.items():
+
+        @_settings.command(name=name)
+        async def _set_setting(self, ctx: Context, *, value: type_):
+            sett = ctx.bot.settings[ctx.guild]
+            try:
+                sett.process_setting(ctx.command.name, value, ctx)
+            except ConversionError as e:
+                await ctx.send(f"`Error: {e}`")
+                return
+
+            print(f"{ctx.command.name}, {type(value)}, {value}")
             async with ctx.bot.DbSession() as session:
                 session.add(sett)
                 await session.commit()

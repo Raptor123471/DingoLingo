@@ -1,4 +1,4 @@
-py-cord[voice]==2.4.0
+https://github.com/Krutyi-4el/pycord/archive/42a0a332922f78771050e2d197e0b996e38f8df6.zip#egg=py-cord[voice]
 yt-dlp==2023.2.17
 aiohttp==3.8.3
 beautifulsoup4==4.11.1

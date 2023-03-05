@@ -1,9 +1,9 @@
 import json
 import os
-from typing import TYPE_CHECKING, Dict, List, Optional
+from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 import discord
-from discord.ext import commands
+from discord import Option, TextChannel, VoiceChannel
 import sqlalchemy
 from sqlalchemy import Column, String, Integer, Boolean, select
 from sqlalchemy.orm import declarative_base
@@ -31,6 +31,64 @@ DEFAULT_CONFIG = {
 }
 ID_LENGTH = 25  # more than enough to be sure :)
 Base = declarative_base()
+
+
+class ConversionError(Exception):
+    pass
+
+
+def convert_emoji(ctx: "Context", value: Optional[str]) -> Optional[str]:
+    if not config.ENABLE_BUTTON_PLUGIN:
+        raise ConversionError("Button plugin is disabled")
+
+    if value is None:
+        return None
+
+    emoji = utils.get_emoji(ctx.guild, value)
+    if emoji is None:
+        raise ConversionError("Invalid emote")
+    elif isinstance(emoji, discord.Emoji):
+        emoji = str(emoji.id)
+    return emoji
+
+
+def convert_channel(
+    ctx: "Context", value: Union[TextChannel, VoiceChannel]
+) -> Optional[str]:
+    if value is None:
+        return None
+
+    return str(value.id)
+
+
+def convert_bool(ctx: "Context", value: bool) -> bool:
+    return value
+
+
+def convert_volume(ctx: "Context", value: int) -> int:
+    if value > 100 or value < 0:
+        raise ConversionError("Value must be a number in range 0-100")
+    return value
+
+
+CONFIG_CONVERTERS = {
+    "command_channel": convert_channel,
+    "start_voice_channel": convert_channel,
+    "user_must_be_in_vc": convert_bool,
+    "button_emote": convert_emoji,
+    "default_volume": convert_volume,
+    "vc_timeout": convert_bool,
+    "announce_songs": convert_bool,
+}
+CONFIG_OPTIONS = {
+    "command_channel": Option(Union[TextChannel, VoiceChannel], required=False),
+    "start_voice_channel": Option(VoiceChannel, required=False),
+    "user_must_be_in_vc": Option(bool),
+    "button_emote": Option(str, required=False),
+    "default_volume": Option(int, min_value=0, max_value=100),
+    "vc_timeout": Option(bool),
+    "announce_songs": Option(bool),
+}
 
 
 class GuildSettings(Base):
@@ -150,152 +208,13 @@ class GuildSettings(Base):
 
         return embed
 
-    async def process_setting(
-        self, setting: str, value: str, ctx: "Context"
-    ) -> Optional[bool]:
+    def process_setting(self, setting: str, value: str, ctx: "Context") -> bool:
 
         if setting not in DEFAULT_CONFIG:
-            return None
-
-        return await getattr(self, "set_" + setting)(setting, value, ctx)
-
-    # -----setting methods-----
-
-    async def set_command_channel(self, setting, value, ctx):
-
-        if value.lower() == "unset":
-            self.command_channel = None
-            return True
-
-        chan = None
-        for converter in (
-            commands.TextChannelConverter,
-            commands.VoiceChannelConverter,
-        ):
-            try:
-                chan = await converter().convert(ctx, value)
-                break
-            except commands.ChannelNotFound:
-                pass
-
-        if not chan:
-            await ctx.send(
-                "`Error: Channel not found`\nUsage: {}set {} channel\nOther options: unset".format(
-                    config.BOT_PREFIX, setting
-                )
-            )
-            return False
-        self.command_channel = str(chan.id)
-        return True
-
-    async def set_start_voice_channel(self, setting, value, ctx):
-
-        if value.lower() == "unset":
-            self.start_voice_channel = None
-            return True
-
-        try:
-            vc = await commands.VoiceChannelConverter().convert(ctx, value)
-        except commands.ChannelNotFound:
-            await ctx.send(
-                "`Error: Voice channel not found`\nUsage: {}set {} vchannel\nOther options: unset".format(
-                    config.BOT_PREFIX, setting
-                )
-            )
-            return False
-        self.start_voice_channel = str(vc.id)
-        return True
-
-    async def set_user_must_be_in_vc(self, setting, value, ctx):
-        if value.lower() == "true":
-            self.user_must_be_in_vc = True
-        elif value.lower() == "false":
-            self.user_must_be_in_vc = False
-        else:
-            await ctx.send(
-                "`Error: Value must be True/False`\nUsage: {}set {} True/False".format(
-                    config.BOT_PREFIX, setting
-                )
-            )
-            return False
-        return True
-
-    async def set_button_emote(self, setting, value, ctx):
-        if not config.ENABLE_BUTTON_PLUGIN:
-            await ctx.send("`Error: Button plugin is disabled`")
             return False
 
-        if value.lower() == "unset":
-            self.button_emote = None
-            return True
-
-        emoji = utils.get_emoji(ctx.guild, value)
-        if emoji is None:
-            await ctx.send(
-                "`Error: Invalid emote`\nUsage: {}set {} emote\nOther options: unset".format(
-                    config.BOT_PREFIX, setting
-                )
-            )
-            return False
-        elif isinstance(emoji, discord.Emoji):
-            emoji = str(emoji.id)
-        self.button_emote = emoji
-        return True
-
-    async def set_default_volume(self, setting, value, ctx):
-        try:
-            value = int(value)
-        except ValueError:
-            await ctx.send(
-                "`Error: Value must be a number`\nUsage: {}set {} 0-100".format(
-                    config.BOT_PREFIX, setting
-                )
-            )
-            return False
-
-        if value > 100 or value < 0:
-            await ctx.send(
-                "`Error: Value must be a number`\nUsage: {}set {} 0-100".format(
-                    config.BOT_PREFIX, setting
-                )
-            )
-            return False
-
-        self.default_volume = value
-        return True
-
-    async def set_vc_timeout(self, setting, value, ctx):
-
-        if not config.ALLOW_VC_TIMEOUT_EDIT:
-            await ctx.send("`Error: This value cannot be modified`")
-            return False
-
-        if value.lower() == "true":
-            self.vc_timeout = True
-            self.start_voice_channel = None
-        elif value.lower() == "false":
-            self.vc_timeout = False
-        else:
-            await ctx.send(
-                "`Error: Value must be True/False`\nUsage: {}set {} True/False".format(
-                    config.BOT_PREFIX, setting
-                )
-            )
-            return False
-        return True
-
-    async def set_announce_songs(self, setting, value, ctx):
-        if value.lower() == "true":
-            self.announce_songs = True
-        elif value.lower() == "false":
-            self.announce_songs = False
-        else:
-            await ctx.send(
-                "`Error: Value must be True/False`\nUsage: {}set {} True/False".format(
-                    config.BOT_PREFIX, setting
-                )
-            )
-            return False
+        value = CONFIG_CONVERTERS[setting](ctx, value)
+        setattr(self, setting, value)
         return True
 
 

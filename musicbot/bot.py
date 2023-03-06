@@ -155,6 +155,9 @@ class Context(bridge.BridgeContext):
     guild: discord.Guild
 
     async def send(self, *args, **kwargs):
+        if kwargs.get("ephemeral", False):
+            # sending ephemeral message, don't bother with views
+            return await self.respond(*args, **kwargs)
         audiocontroller = self.bot.audio_controllers[self.guild]
         await audiocontroller.update_view(None)
         view = audiocontroller.make_view()

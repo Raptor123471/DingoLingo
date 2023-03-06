@@ -11,7 +11,7 @@ from config import config
 from musicbot import linkutils, utils
 from musicbot.playlist import Playlist
 from musicbot.songinfo import Song
-from musicbot.utils import CheckError, compare_components
+from musicbot.utils import CheckError, compare_components, play_check
 
 # avoiding circular import
 if TYPE_CHECKING:
@@ -41,8 +41,14 @@ class MusicButton(discord.ui.Button):
         self._callback = callback
 
     async def callback(self, inter):
+        ctx = await inter.client.get_application_context(inter)
+        try:
+            await play_check(ctx)
+        except CheckError as e:
+            await ctx.send(e, ephemeral=True)
+            return
         await inter.response.defer()
-        res = self._callback(inter)
+        res = self._callback(ctx)
         if isawaitable(res):
             await res
 
@@ -222,13 +228,13 @@ class AudioController(object):
 
         return view
 
-    async def current_song_callback(self, inter):
-        await (await inter.client.get_application_context(inter)).send(
+    async def current_song_callback(self, ctx):
+        await ctx.send(
             embed=self.current_song.info.format_output(config.SONGINFO_SONGINFO),
         )
 
-    async def queue_callback(self, inter):
-        await (await inter.client.get_application_context(inter)).send(
+    async def queue_callback(self, ctx):
+        await ctx.send(
             embed=self.playlist.queue_embed(),
         )
 

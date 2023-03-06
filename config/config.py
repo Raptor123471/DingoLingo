@@ -74,7 +74,7 @@ STARTUP_MESSAGE = "Starting Bot..."
 STARTUP_COMPLETE_MESSAGE = "Startup Complete"
 
 NO_GUILD_MESSAGE = "Error: Please join a voice channel or enter the command in guild chat"
-USER_NOT_IN_VC_MESSAGE = "Error: Please join the active voice channel to use commands"
+USER_NOT_IN_VC_MESSAGE = "Error: Please join the active voice channel to use commands and buttons"
 WRONG_CHANNEL_MESSAGE = "Error: Please use configured command channel"
 NOT_CONNECTED_MESSAGE = "Error: Bot not connected to any voice channel"
 ALREADY_CONNECTED_MESSAGE = "Error: Already connected to a voice channel"

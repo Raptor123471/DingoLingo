@@ -141,7 +141,7 @@ async def play_check(ctx: Context):
         bot_vc = ctx.guild.voice_client
         if not bot_vc:
             await ctx.bot.audio_controllers[ctx.guild].uconnect(ctx)
-        if not author_voice or author_voice.channel != bot_vc.channel:
+        elif not author_voice or author_voice.channel != bot_vc.channel:
             raise CheckError(config.USER_NOT_IN_VC_MESSAGE)
     return True
 

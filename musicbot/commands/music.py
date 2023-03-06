@@ -21,6 +21,10 @@ class Music(commands.Cog):
     async def cog_check(self, ctx: Context):
         return await utils.play_check(ctx)
 
+    async def cog_before_invoke(self, ctx: Context):
+        audiocontroller = ctx.bot.audio_controllers[ctx.guild]
+        audiocontroller.command_channel = ctx
+
     @bridge.bridge_command(
         name="play",
         description=config.HELP_YT_LONG,
@@ -40,7 +44,6 @@ class Music(commands.Cog):
         #     await ctx.send("Loop is enabled! Use {}loop to disable".format(config.BOT_PREFIX))
         #     return
 
-        audiocontroller.command_channel = ctx
         song = await audiocontroller.process_song(track)
 
         if song is None:

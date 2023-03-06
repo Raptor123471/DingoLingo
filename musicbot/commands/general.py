@@ -25,11 +25,11 @@ class General(commands.Cog):
         name="connect",
         description=config.HELP_CONNECT_LONG,
         help=config.HELP_CONNECT_SHORT,
-        aliases=["c"],
+        aliases=["c", "cc"],  # this command replaces removed changechannel
     )
     async def _connect(self, ctx: Context):  # dest_channel_name: str
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
-        if await audiocontroller.uconnect(ctx):
+        if await audiocontroller.uconnect(ctx, move=True):
             await ctx.send("Connected.")
 
     @bridge.bridge_command(
@@ -49,7 +49,7 @@ class General(commands.Cog):
         name="reset",
         description=config.HELP_RESET_LONG,
         help=config.HELP_RESET_SHORT,
-        aliases=["rs", "restart", "cc"],  # this command replaces removed changechannel
+        aliases=["rs", "restart"],
     )
     async def _reset(self, ctx: Context):
         await ctx.defer()

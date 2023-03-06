@@ -569,18 +569,22 @@ class AudioController(object):
 
         await self.udisconnect()
 
-    async def uconnect(self, ctx):
+    async def uconnect(self, ctx, move=False) -> bool:
+        author_vc = ctx.author.voice
+        bot_vc = self.guild.voice_client
 
-        if not ctx.author.voice:
+        if not author_vc:
             await ctx.send(config.NO_GUILD_MESSAGE)
             return False
 
-        if self.guild.voice_client is None:
-            await self.register_voice_channel(ctx.author.voice.channel)
-            return True
-
-        await ctx.send(config.ALREADY_CONNECTED_MESSAGE)
-        return False
+        if bot_vc is None:
+            await self.register_voice_channel(author_vc.channel)
+        elif move and bot_vc.channel != author_vc.channel:
+            await bot_vc.move_to(author_vc.channel)
+        else:
+            await ctx.send(config.ALREADY_CONNECTED_MESSAGE)
+            return False
+        return True
 
     async def udisconnect(self):
         self.stop_player()

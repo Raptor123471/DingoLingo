@@ -29,8 +29,8 @@ class General(commands.Cog):
     )
     async def _connect(self, ctx: Context):  # dest_channel_name: str
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
-        if await audiocontroller.uconnect(ctx, move=True):
-            await ctx.send("Connected.")
+        audiocontroller.uconnect(ctx, move=True)
+        await ctx.send("Connected.")
 
     @bridge.bridge_command(
         name="disconnect",
@@ -60,12 +60,12 @@ class General(commands.Cog):
         audiocontroller = ctx.bot.audio_controllers[ctx.guild] = AudioController(
             self.bot, ctx.guild
         )
-        if await audiocontroller.uconnect(ctx):
-            await ctx.send(
-                "{} Connected to {}".format(
-                    ":white_check_mark:", ctx.author.voice.channel.name
-                )
+        audiocontroller.uconnect(ctx)
+        await ctx.send(
+            "{} Connected to {}".format(
+                ":white_check_mark:", ctx.author.voice.channel.name
             )
+        )
 
     @bridge.bridge_command(
         name="ping", description=config.HELP_PING_LONG, help=config.HELP_PING_SHORT

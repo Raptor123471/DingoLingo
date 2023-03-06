@@ -11,7 +11,7 @@ from config import config
 from musicbot import linkutils, utils
 from musicbot.playlist import Playlist
 from musicbot.songinfo import Song
-from musicbot.utils import compare_components
+from musicbot.utils import CheckError, compare_components
 
 # avoiding circular import
 if TYPE_CHECKING:
@@ -569,22 +569,19 @@ class AudioController(object):
 
         await self.udisconnect()
 
-    async def uconnect(self, ctx, move=False) -> bool:
+    async def uconnect(self, ctx, move=False):
         author_vc = ctx.author.voice
         bot_vc = self.guild.voice_client
 
         if not author_vc:
-            await ctx.send(config.NO_GUILD_MESSAGE)
-            return False
+            raise CheckError(config.NO_GUILD_MESSAGE)
 
         if bot_vc is None:
             await self.register_voice_channel(author_vc.channel)
         elif move and bot_vc.channel != author_vc.channel:
             await bot_vc.move_to(author_vc.channel)
         else:
-            await ctx.send(config.ALREADY_CONNECTED_MESSAGE)
-            return False
-        return True
+            raise CheckError(config.ALREADY_CONNECTED_MESSAGE)
 
     async def udisconnect(self):
         self.stop_player()

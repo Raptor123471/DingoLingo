@@ -18,6 +18,9 @@ class Music(commands.Cog):
     def __init__(self, bot: MusicBot):
         self.bot = bot
 
+    async def cog_check(self, ctx: Context):
+        return await utils.play_check(ctx)
+
     @bridge.bridge_command(
         name="play",
         description=config.HELP_YT_LONG,
@@ -26,9 +29,6 @@ class Music(commands.Cog):
     )
     async def _play_song(self, ctx: Context, *, track: str):
         await ctx.defer()
-
-        if not await utils.play_check(ctx):
-            return
 
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
 
@@ -70,9 +70,6 @@ class Music(commands.Cog):
 
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
 
-        if not await utils.play_check(ctx):
-            return
-
         if not audiocontroller.is_active():
             await ctx.send("No songs in queue!")
             return
@@ -88,9 +85,6 @@ class Music(commands.Cog):
     )
     async def _shuffle(self, ctx: Context):
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
-
-        if not await utils.play_check(ctx):
-            return
 
         if len(audiocontroller.playlist.playque) == 0:
             await ctx.send(config.QUEUE_EMPTY)
@@ -109,9 +103,6 @@ class Music(commands.Cog):
         aliases=["resume"],
     )
     async def _pause(self, ctx: Context):
-        if not await utils.play_check(ctx):
-            return
-
         result = ctx.bot.audio_controllers[ctx.guild].pause()
         await ctx.send(result.value)
 
@@ -122,9 +113,6 @@ class Music(commands.Cog):
         aliases=["playlist", "q"],
     )
     async def _queue(self, ctx: Context):
-        if not await utils.play_check(ctx):
-            return
-
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
         if not audiocontroller.is_active():
             await ctx.send(config.QUEUE_EMPTY)
@@ -145,9 +133,6 @@ class Music(commands.Cog):
         aliases=["st"],
     )
     async def _stop(self, ctx: Context):
-        if not await utils.play_check(ctx):
-            return
-
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
         audiocontroller.stop_player()
         await ctx.send("Stopped all sessions :octagonal_sign:")
@@ -203,9 +188,6 @@ class Music(commands.Cog):
         aliases=["s"],
     )
     async def _skip(self, ctx: Context):
-        if not await utils.play_check(ctx):
-            return
-
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
         # audiocontroller.playlist.loop = False
 
@@ -225,9 +207,6 @@ class Music(commands.Cog):
         aliases=["cl"],
     )
     async def _clear(self, ctx: Context):
-        if not await utils.play_check(ctx):
-            return
-
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
         audiocontroller.clear_queue()
         ctx.guild.voice_client.stop()
@@ -241,9 +220,6 @@ class Music(commands.Cog):
         aliases=["back"],
     )
     async def _prev(self, ctx: Context):
-        if not await utils.play_check(ctx):
-            return
-
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
         # audiocontroller.playlist.loop = False
 
@@ -262,9 +238,6 @@ class Music(commands.Cog):
         aliases=["np"],
     )
     async def _songinfo(self, ctx: Context):
-        if not await utils.play_check(ctx):
-            return
-
         song = ctx.bot.audio_controllers[ctx.guild].current_song
         if song is None:
             await ctx.send("No song is playing now.")
@@ -277,9 +250,6 @@ class Music(commands.Cog):
         help=config.HELP_HISTORY_SHORT,
     )
     async def _history(self, ctx: Context):
-        if not await utils.play_check(ctx):
-            return
-
         await ctx.send(ctx.bot.audio_controllers[ctx.guild].track_history())
 
     @bridge.bridge_command(
@@ -291,9 +261,6 @@ class Music(commands.Cog):
     async def _volume(
         self, ctx: Context, value: Option(int, min_value=0, max_value=100) = None
     ):
-        if not await utils.play_check(ctx):
-            return
-
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
 
         if value is None:

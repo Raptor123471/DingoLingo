@@ -10,6 +10,7 @@ from sqlalchemy.orm import sessionmaker
 from config import config
 from musicbot.audiocontroller import AudioController
 from musicbot.settings import GuildSettings, run_migrations, extract_legacy_settings
+from musicbot.utils import CheckError
 
 
 class MusicBot(bridge.Bot):
@@ -59,6 +60,13 @@ class MusicBot(bridge.Bot):
     async def on_guild_join(self, guild):
         print(guild.name)
         await self.register(guild)
+
+    async def on_command_error(self, ctx, error):
+        if isinstance(error, CheckError):
+            await ctx.send(error)
+
+    async def on_application_command_error(self, ctx, error):
+        await self.on_command_error(ctx, error)
 
     @tasks.loop(seconds=1)
     async def update_views(self):

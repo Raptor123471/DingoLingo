@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Callable, Awaitable, Optional, Union, TypeVar
 
 try:
     from discord import opus, utils, Guild, Message, VoiceChannel, Emoji
+    from discord.ext.commands import CommandError
     from emoji import is_emoji
 except ImportError:
     if not os.getenv("DANDELION_INSTALLING"):
@@ -120,6 +121,10 @@ async def is_connected(ctx: Context) -> Optional[VoiceChannel]:
         return None
 
 
+class CheckError(CommandError):
+    pass
+
+
 async def play_check(ctx: Context):
 
     sett = ctx.bot.settings[ctx.guild]
@@ -129,17 +134,15 @@ async def play_check(ctx: Context):
 
     if cm_channel is not None:
         if int(cm_channel) != ctx.channel.id:
-            await ctx.send(config.WRONG_CHANNEL_MESSAGE)
-            return False
+            raise CheckError(config.WRONG_CHANNEL_MESSAGE)
 
     if vc_rule:
         author_voice = ctx.author.voice
         bot_vc = ctx.guild.voice_client
         if not bot_vc:
-            return await ctx.bot.audio_controllers[ctx.guild].uconnect(ctx)
+            await ctx.bot.audio_controllers[ctx.guild].uconnect(ctx)
         if not author_voice or author_voice.channel != bot_vc.channel:
-            await ctx.send(config.USER_NOT_IN_VC_MESSAGE)
-            return False
+            raise CheckError(config.USER_NOT_IN_VC_MESSAGE)
     return True
 
 

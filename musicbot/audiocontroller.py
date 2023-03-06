@@ -88,6 +88,7 @@ class AudioController(object):
         self._tasks = set()
 
         self._preloading = {}
+        self.message_lock = asyncio.Lock()
 
     @property
     def volume(self) -> int:

@@ -159,16 +159,17 @@ class Context(bridge.BridgeContext):
             # sending ephemeral message, don't bother with views
             return await self.respond(*args, **kwargs)
         audiocontroller = self.bot.audio_controllers[self.guild]
-        await audiocontroller.update_view(None)
-        view = audiocontroller.make_view()
-        if view:
-            kwargs["view"] = view
-        # use `respond` for compatibility
-        res = await self.respond(*args, **kwargs)
-        if isinstance(res, discord.Interaction):
-            audiocontroller.last_message = await res.original_response()
-        else:
-            audiocontroller.last_message = res
+        async with audiocontroller.message_lock:
+            await audiocontroller.update_view(None)
+            view = audiocontroller.make_view()
+            if view:
+                kwargs["view"] = view
+            # use `respond` for compatibility
+            res = await self.respond(*args, **kwargs)
+            if isinstance(res, discord.Interaction):
+                audiocontroller.last_message = await res.original_response()
+            else:
+                audiocontroller.last_message = res
         return res
 
 

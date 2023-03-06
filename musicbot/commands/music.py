@@ -1,10 +1,11 @@
-import discord
+from discord import Option
 from discord.ext import commands, bridge
 
 from config import config
 from musicbot import linkutils, utils
 from musicbot.bot import MusicBot, Context
 from musicbot.playlist import PlaylistError
+from musicbot.audiocontroller import LOOP_MODES
 
 
 class Music(commands.Cog):
@@ -65,7 +66,7 @@ class Music(commands.Cog):
         help=config.HELP_LOOP_SHORT,
         aliases=["l"],
     )
-    async def _loop(self, ctx: Context, mode=None):
+    async def _loop(self, ctx: Context, mode: Option(str, choices=LOOP_MODES) = None):
 
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
 
@@ -157,7 +158,12 @@ class Music(commands.Cog):
         help=config.HELP_MOVE_SHORT,
         aliases=["mv"],
     )
-    async def _move(self, ctx: Context, src_pos: int, dest_pos: int):
+    async def _move(
+        self,
+        ctx: Context,
+        src_pos: Option(int, min_value=2),
+        dest_pos: Option(int, min_value=2),
+    ):
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
         if not audiocontroller.is_active():
             await ctx.send(config.QUEUE_EMPTY)
@@ -174,13 +180,13 @@ class Music(commands.Cog):
         help=config.HELP_REMOVE_SHORT,
         aliases=["rm"],
     )
-    async def _remove(self, ctx, queue_number: int = -1):
+    async def _remove(self, ctx, queue_number: Option(int, min_value=2) = None):
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
         if not audiocontroller.is_active():
             await ctx.send(config.QUEUE_EMPTY)
             return
 
-        if queue_number == -1:
+        if queue_number is None:
             queue_number = len(audiocontroller.playlist)
         try:
             song = audiocontroller.playlist.remove(queue_number - 1)
@@ -282,7 +288,9 @@ class Music(commands.Cog):
         description=config.HELP_VOL_LONG,
         help=config.HELP_VOL_SHORT,
     )
-    async def _volume(self, ctx: Context, value=None):
+    async def _volume(
+        self, ctx: Context, value: Option(int, min_value=0, max_value=100) = None
+    ):
         if not await utils.play_check(ctx):
             return
 
@@ -294,19 +302,15 @@ class Music(commands.Cog):
             )
             return
 
-        try:
-            volume = int(value)
-            if volume > 100 or volume < 0:
-                raise ValueError()
-        except ValueError:
+        if value > 100 or value < 0:
             await ctx.send("Error: Volume must be a number 1-100")
             return
 
-        if audiocontroller.volume >= volume:
-            await ctx.send("Volume set to {}% :sound:".format(str(volume)))
+        if audiocontroller.volume >= value:
+            await ctx.send("Volume set to {}% :sound:".format(str(value)))
         else:
-            await ctx.send("Volume set to {}% :loud_sound:".format(str(volume)))
-        audiocontroller.volume = volume
+            await ctx.send("Volume set to {}% :loud_sound:".format(str(value)))
+        audiocontroller.volume = value
 
 
 def setup(bot: MusicBot):

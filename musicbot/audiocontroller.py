@@ -47,6 +47,9 @@ class MusicButton(discord.ui.Button):
             await res
 
 
+LOOP_MODES = ("all", "single", "off")
+
+
 class AudioController(object):
     """Controls the playback of audio and the sequential playing of the songs.
 
@@ -286,7 +289,7 @@ class AudioController(object):
             else:
                 mode = "off"
 
-        if mode not in ("all", "single", "off"):
+        if mode not in LOOP_MODES:
             return LoopState.INVALID
 
         self.playlist.loop = mode

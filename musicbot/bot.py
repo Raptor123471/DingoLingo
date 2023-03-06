@@ -1,6 +1,7 @@
-from typing import Dict, Union
+from typing import Dict, Union, List
 
 import discord
+from discord import Option
 from discord.ext import bridge, tasks
 from discord.ext.commands import DefaultHelpCommand
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -121,8 +122,18 @@ class MusicBot(bridge.Bot):
             except Exception as e:
                 print(e)
 
+    @staticmethod
+    def _help_autocomplete(ctx: discord.AutocompleteContext) -> List[str]:
+        return [
+            c.qualified_name
+            for c in ctx.bot.walk_commands()
+            if c.qualified_name.startswith(ctx.value)
+        ]
+
     @bridge.bridge_command(name="help", description="Help command")
-    async def _help(ctx, *, command=None):
+    async def _help(
+        ctx, *, command: Option(str, autocomplete=_help_autocomplete) = None
+    ):
         help_command = ctx.bot._default_help
         if ctx.is_app:
             # trick the command to run as slash

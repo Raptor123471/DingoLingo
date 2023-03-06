@@ -62,8 +62,7 @@ class MusicBot(bridge.Bot):
         await self.register(guild)
 
     async def on_command_error(self, ctx, error):
-        if isinstance(error, CheckError):
-            await ctx.send(error)
+        await ctx.send(error)
 
     async def on_application_command_error(self, ctx, error):
         await self.on_command_error(ctx, error)

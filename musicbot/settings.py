@@ -3,7 +3,7 @@ import os
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 import discord
-from discord import Option, TextChannel, VoiceChannel
+from discord import Option, TextChannel, VoiceChannel, Role
 import sqlalchemy
 from sqlalchemy import Column, String, Integer, Boolean, select
 from sqlalchemy.orm import declarative_base
@@ -23,6 +23,7 @@ LEGACY_SETTINGS = DIR_PATH + "/generated/settings.json"
 DEFAULT_CONFIG = {
     "command_channel": None,
     "start_voice_channel": None,
+    "dj_role": None,
     "user_must_be_in_vc": True,
     "button_emote": None,
     "default_volume": 100,
@@ -52,9 +53,7 @@ def convert_emoji(ctx: "Context", value: Optional[str]) -> Optional[str]:
     return emoji
 
 
-def convert_channel(
-    ctx: "Context", value: Union[TextChannel, VoiceChannel]
-) -> Optional[str]:
+def convert_object(ctx: "Context", value: Optional[discord.Object]) -> Optional[str]:
     if value is None:
         return None
 
@@ -72,8 +71,9 @@ def convert_volume(ctx: "Context", value: int) -> int:
 
 
 CONFIG_CONVERTERS = {
-    "command_channel": convert_channel,
-    "start_voice_channel": convert_channel,
+    "command_channel": convert_object,
+    "start_voice_channel": convert_object,
+    "dj_role": convert_object,
     "user_must_be_in_vc": convert_bool,
     "button_emote": convert_emoji,
     "default_volume": convert_volume,
@@ -83,6 +83,7 @@ CONFIG_CONVERTERS = {
 CONFIG_OPTIONS = {
     "command_channel": Option(Union[TextChannel, VoiceChannel], required=False),
     "start_voice_channel": Option(VoiceChannel, required=False),
+    "dj_role": Option(Role, required=False),
     "user_must_be_in_vc": Option(bool),
     "button_emote": Option(str, required=False),
     "default_volume": Option(int, min_value=0, max_value=100),
@@ -98,6 +99,7 @@ class GuildSettings(Base):
     guild_id: str = Column(String(ID_LENGTH), primary_key=True)
     command_channel: Optional[str] = Column(String(ID_LENGTH))
     start_voice_channel: Optional[str] = Column(String(ID_LENGTH))
+    dj_role: Optional[str] = Column(String(ID_LENGTH))
     user_must_be_in_vc: bool = Column(Boolean, nullable=False)
     button_emote: Optional[str] = Column(String(ID_LENGTH))
     default_volume: int = Column(Integer, nullable=False)
@@ -195,6 +197,15 @@ class GuildSettings(Base):
                 embed.add_field(
                     name=key,
                     value=chan.name if chan else "Invalid Channel",
+                    inline=False,
+                )
+                continue
+
+            elif key == "dj_role":
+                role = ctx.guild.get_role(int(self.dj_role))
+                embed.add_field(
+                    name=key,
+                    value=role.name if role else "Invalid Role",
                     inline=False,
                 )
                 continue

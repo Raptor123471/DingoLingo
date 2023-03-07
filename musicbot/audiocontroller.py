@@ -589,6 +589,7 @@ class AudioController(object):
             await bot_vc.move_to(author_vc.channel)
         else:
             raise CheckError(config.ALREADY_CONNECTED_MESSAGE)
+        return True
 
     async def udisconnect(self):
         self.stop_player()

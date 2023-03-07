@@ -2,12 +2,12 @@ import asyncio
 
 import discord
 from discord.ext import commands, bridge
-from discord.ext.commands import has_permissions
 
 from config import config
 from musicbot.bot import Context, MusicBot
 from musicbot.settings import CONFIG_OPTIONS, ConversionError
 from musicbot.audiocontroller import AudioController
+from musicbot.utils import dj_check, voice_check
 
 
 class General(commands.Cog):
@@ -27,6 +27,7 @@ class General(commands.Cog):
         help=config.HELP_CONNECT_SHORT,
         aliases=["c", "cc"],  # this command replaces removed changechannel
     )
+    @commands.check(voice_check)
     async def _connect(self, ctx: Context):  # dest_channel_name: str
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
         await audiocontroller.uconnect(ctx, move=True)
@@ -38,6 +39,7 @@ class General(commands.Cog):
         help=config.HELP_DISCONNECT_SHORT,
         aliases=["dc"],
     )
+    @commands.check(voice_check)
     async def _disconnect(self, ctx: Context):
         audiocontroller = ctx.bot.audio_controllers[ctx.guild]
         if await audiocontroller.udisconnect():
@@ -51,6 +53,7 @@ class General(commands.Cog):
         help=config.HELP_RESET_SHORT,
         aliases=["rs", "restart"],
     )
+    @commands.check(voice_check)
     async def _reset(self, ctx: Context):
         await ctx.defer()
         if await ctx.bot.audio_controllers[ctx.guild].udisconnect():
@@ -80,7 +83,6 @@ class General(commands.Cog):
         aliases=["settings", "set"],
         invoke_without_command=True,
     )
-    @has_permissions(administrator=True)
     async def _settings(self, ctx: Context, *, inexistent_setting=None):
         if inexistent_setting is not None:
             await ctx.send("`Error: Setting not found`")
@@ -96,6 +98,7 @@ class General(commands.Cog):
     for name, type_ in CONFIG_OPTIONS.items():
 
         @_settings.command(name=name)
+        @commands.check(dj_check)
         async def _set_setting(self, ctx: Context, *, value: type_):
             sett = ctx.bot.settings[ctx.guild]
             try:
@@ -104,7 +107,6 @@ class General(commands.Cog):
                 await ctx.send(f"`Error: {e}`")
                 return
 
-            print(f"{ctx.command.name}, {type(value)}, {value}")
             async with ctx.bot.DbSession() as session:
                 session.add(sett)
                 await session.commit()

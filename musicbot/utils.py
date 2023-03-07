@@ -74,7 +74,7 @@ def download_ffmpeg():
 
 def get_guild(bot: MusicBot, command: Message) -> Optional[Guild]:
     """Gets the guild a command belongs to. Useful, if the command was sent via pm.
-    DOES NOT WORK WITHOUT MEMBERS INTENT"""
+    Needs voice states intent"""
     if command.guild is not None:
         return command.guild
     for guild in bot.guilds:
@@ -125,7 +125,47 @@ class CheckError(CommandError):
     pass
 
 
+async def dj_check(ctx: Context):
+    "Check if the user has DJ permissions"
+    if ctx.channel.permissions_for(ctx.author).administrator:
+        return True
+
+    sett = ctx.bot.settings[ctx.guild]
+    if sett.dj_role:
+        if int(sett.dj_role) not in [r.id for r in ctx.author.roles]:
+            raise CheckError(config.NOT_A_DJ)
+        return True
+
+    raise CheckError(config.USER_MISSING_PERMISSIONS)
+
+
+async def voice_check(ctx: Context):
+    "Check if the user can use the bot now"
+    try:
+        if await dj_check(ctx):
+            # DJs and admins can always run commands
+            return True
+    except CheckError:
+        pass
+
+    bot_vc = ctx.guild.voice_client
+    if not bot_vc:
+        # the bot is free
+        return True
+
+    author_voice = ctx.author.voice
+    if author_voice and author_voice.channel == bot_vc.channel:
+        return True
+
+    if all(m.bot for m in bot_vc.channel.members):
+        # current channel doesn't have any user in it
+        return await ctx.bot.audio_controllers[ctx.guild].uconnect(ctx, move=True)
+
+    raise CheckError(config.USER_NOT_IN_VC_MESSAGE)
+
+
 async def play_check(ctx: Context):
+    "Prepare for music commands"
 
     sett = ctx.bot.settings[ctx.guild]
 
@@ -136,13 +176,12 @@ async def play_check(ctx: Context):
         if int(cm_channel) != ctx.channel.id:
             raise CheckError(config.WRONG_CHANNEL_MESSAGE)
 
+    if not ctx.guild.voice_client:
+        return await ctx.bot.audio_controllers[ctx.guild].uconnect(ctx)
+
     if vc_rule:
-        author_voice = ctx.author.voice
-        bot_vc = ctx.guild.voice_client
-        if not bot_vc:
-            await ctx.bot.audio_controllers[ctx.guild].uconnect(ctx)
-        elif not author_voice or author_voice.channel != bot_vc.channel:
-            raise CheckError(config.USER_NOT_IN_VC_MESSAGE)
+        return await voice_check(ctx)
+
     return True
 
 

@@ -74,7 +74,7 @@ class General(commands.Cog):
         name="ping", description=config.HELP_PING_LONG, help=config.HELP_PING_SHORT
     )
     async def _ping(self, ctx):
-        await ctx.send("Pong")
+        await ctx.send(f"Pong ({int(ctx.bot.latency * 1000)} ms)")
 
     @bridge.bridge_group(
         name="setting",

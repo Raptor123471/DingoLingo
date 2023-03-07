@@ -8,7 +8,15 @@ from subprocess import DEVNULL, check_call
 from typing import TYPE_CHECKING, Callable, Awaitable, Optional, Union, TypeVar
 
 try:
-    from discord import opus, utils, Guild, Message, VoiceChannel, Emoji
+    from discord import (
+        __version__ as pycord_version,
+        opus,
+        utils,
+        Guild,
+        Message,
+        VoiceChannel,
+        Emoji,
+    )
     from discord.ext.commands import CommandError
     from emoji import is_emoji
 except ImportError:
@@ -23,6 +31,10 @@ if TYPE_CHECKING:
 
 
 def check_dependencies():
+    assert pycord_version == "2.5", (
+        "you don't have necessary version of Pycord."
+        " Please install the version specified in requirements.txt"
+    )
     try:
         check_call("ffmpeg --help", stdout=DEVNULL, stderr=DEVNULL, shell=True)
     except Exception as e:

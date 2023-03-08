@@ -10,7 +10,6 @@ from sqlalchemy.orm import sessionmaker
 from config import config
 from musicbot.audiocontroller import AudioController
 from musicbot.settings import GuildSettings, run_migrations, extract_legacy_settings
-from musicbot.utils import CheckError
 
 
 class MusicBot(bridge.Bot):
@@ -155,10 +154,16 @@ class Context(bridge.BridgeContext):
     guild: discord.Guild
 
     async def send(self, *args, **kwargs):
-        if kwargs.get("ephemeral", False):
-            # sending ephemeral message, don't bother with views
-            return await self.respond(*args, **kwargs)
         audiocontroller = self.bot.audio_controllers[self.guild]
+        channel = audiocontroller.command_channel
+        if kwargs.get("ephemeral", False) or (
+            channel
+            # unwrap channel from context
+            and getattr(channel, "channel", channel) != self.channel
+        ):
+            # sending ephemeral message or using different channel
+            # don't bother with views
+            return await self.respond(*args, **kwargs)
         async with audiocontroller.message_lock:
             await audiocontroller.update_view(None)
             view = audiocontroller.make_view()

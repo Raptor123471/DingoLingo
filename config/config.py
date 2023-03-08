@@ -3,7 +3,7 @@
 import os
 import json
 
-from musicbot.utils import get_env_var, alchemize_url
+from config.utils import get_env_var, alchemize_url
 
 
 DEFAULTS = {

@@ -153,25 +153,26 @@ async def dj_check(ctx: Context):
 
 async def voice_check(ctx: Context):
     "Check if the user can use the bot now"
-    try:
-        if await dj_check(ctx):
-            # DJs and admins can always run commands
-            return True
-    except CheckError:
-        pass
-
     bot_vc = ctx.guild.voice_client
     if not bot_vc:
         # the bot is free
         return True
 
     author_voice = ctx.author.voice
-    if author_voice and author_voice.channel == bot_vc.channel:
-        return True
+    if author_voice:
+        if author_voice.channel == bot_vc.channel:
+            return True
 
-    if all(m.bot for m in bot_vc.channel.members):
-        # current channel doesn't have any user in it
-        return await ctx.bot.audio_controllers[ctx.guild].uconnect(ctx, move=True)
+        if all(m.bot for m in bot_vc.channel.members):
+            # current channel doesn't have any user in it
+            return await ctx.bot.audio_controllers[ctx.guild].uconnect(ctx, move=True)
+
+    try:
+        if await dj_check(ctx):
+            # DJs and admins can always run commands
+            return True
+    except CheckError:
+        pass
 
     raise CheckError(config.USER_NOT_IN_VC_MESSAGE)
 

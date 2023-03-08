@@ -1,27 +1,21 @@
 from __future__ import annotations
 import re
-import os
 import sys
-import ast
 import asyncio
 from subprocess import DEVNULL, check_call
-from typing import TYPE_CHECKING, Callable, Awaitable, Optional, Union, TypeVar
+from typing import TYPE_CHECKING, Callable, Awaitable, Optional, Union
 
-try:
-    from discord import (
-        __version__ as pycord_version,
-        opus,
-        utils,
-        Guild,
-        Message,
-        VoiceChannel,
-        Emoji,
-    )
-    from discord.ext.commands import CommandError
-    from emoji import is_emoji
-except ImportError:
-    if not os.getenv("DANDELION_INSTALLING"):
-        raise
+from discord import (
+    __version__ as pycord_version,
+    opus,
+    utils,
+    Guild,
+    Message,
+    VoiceChannel,
+    Emoji,
+)
+from discord.ext.commands import CommandError
+from emoji import is_emoji
 
 from config import config
 
@@ -222,34 +216,6 @@ def compare_components(obj1, obj2):
             return False
         return all(compare_components(obj1[k], obj2[k]) for k in obj1)
     return obj1 == obj2
-
-
-T = TypeVar("T")
-
-
-def get_env_var(key: str, default: T) -> T:
-    value = os.getenv(key)
-    if value is None:
-        return default
-    try:
-        value = ast.literal_eval(value)
-    except (SyntaxError, ValueError):
-        pass
-    assert type(value) == type(default), f"invalid value for {key}: {value!r}"
-    return value
-
-
-def alchemize_url(url: str) -> str:
-    SCHEMES = (
-        ("sqlite", "sqlite+aiosqlite"),
-        ("postgres", "postgresql+asyncpg"),
-        ("mysql", "mysql+aiomysql"),
-    )
-
-    for name, scheme in SCHEMES:
-        if url.startswith(name):
-            return url.replace(name, scheme, 1)
-    return url
 
 
 class Timer:

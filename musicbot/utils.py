@@ -8,7 +8,16 @@ from subprocess import DEVNULL, check_call
 from typing import TYPE_CHECKING, Callable, Awaitable, Optional, Union, TypeVar
 
 try:
-    from discord import opus, utils, Guild, Message, VoiceChannel, Emoji
+    from discord import (
+        __version__ as pycord_version,
+        opus,
+        utils,
+        Guild,
+        Message,
+        VoiceChannel,
+        Emoji,
+    )
+    from discord.ext.commands import CommandError
     from emoji import is_emoji
 except ImportError:
     if not os.getenv("DANDELION_INSTALLING"):
@@ -22,6 +31,10 @@ if TYPE_CHECKING:
 
 
 def check_dependencies():
+    assert pycord_version == "2.5", (
+        "you don't have necessary version of Pycord."
+        " Please install the version specified in requirements.txt"
+    )
     try:
         check_call("ffmpeg --help", stdout=DEVNULL, stderr=DEVNULL, shell=True)
     except Exception as e:
@@ -73,7 +86,7 @@ def download_ffmpeg():
 
 def get_guild(bot: MusicBot, command: Message) -> Optional[Guild]:
     """Gets the guild a command belongs to. Useful, if the command was sent via pm.
-    DOES NOT WORK WITHOUT MEMBERS INTENT"""
+    Needs voice states intent"""
     if command.guild is not None:
         return command.guild
     for guild in bot.guilds:
@@ -120,7 +133,52 @@ async def is_connected(ctx: Context) -> Optional[VoiceChannel]:
         return None
 
 
+class CheckError(CommandError):
+    pass
+
+
+async def dj_check(ctx: Context):
+    "Check if the user has DJ permissions"
+    if ctx.channel.permissions_for(ctx.author).administrator:
+        return True
+
+    sett = ctx.bot.settings[ctx.guild]
+    if sett.dj_role:
+        if int(sett.dj_role) not in [r.id for r in ctx.author.roles]:
+            raise CheckError(config.NOT_A_DJ)
+        return True
+
+    raise CheckError(config.USER_MISSING_PERMISSIONS)
+
+
+async def voice_check(ctx: Context):
+    "Check if the user can use the bot now"
+    bot_vc = ctx.guild.voice_client
+    if not bot_vc:
+        # the bot is free
+        return True
+
+    author_voice = ctx.author.voice
+    if author_voice:
+        if author_voice.channel == bot_vc.channel:
+            return True
+
+        if all(m.bot for m in bot_vc.channel.members):
+            # current channel doesn't have any user in it
+            return await ctx.bot.audio_controllers[ctx.guild].uconnect(ctx, move=True)
+
+    try:
+        if await dj_check(ctx):
+            # DJs and admins can always run commands
+            return True
+    except CheckError:
+        pass
+
+    raise CheckError(config.USER_NOT_IN_VC_MESSAGE)
+
+
 async def play_check(ctx: Context):
+    "Prepare for music commands"
 
     sett = ctx.bot.settings[ctx.guild]
 
@@ -129,17 +187,14 @@ async def play_check(ctx: Context):
 
     if cm_channel is not None:
         if int(cm_channel) != ctx.channel.id:
-            await ctx.send(config.WRONG_CHANNEL_MESSAGE)
-            return False
+            raise CheckError(config.WRONG_CHANNEL_MESSAGE)
+
+    if not ctx.guild.voice_client:
+        return await ctx.bot.audio_controllers[ctx.guild].uconnect(ctx)
 
     if vc_rule:
-        author_voice = ctx.author.voice
-        bot_vc = ctx.guild.voice_client
-        if not bot_vc:
-            return await ctx.bot.audio_controllers[ctx.guild].uconnect(ctx)
-        if not author_voice or author_voice.channel != bot_vc.channel:
-            await ctx.send(config.USER_NOT_IN_VC_MESSAGE)
-            return False
+        return await voice_check(ctx)
+
     return True
 
 

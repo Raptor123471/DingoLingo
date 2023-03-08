@@ -1,6 +1,7 @@
-from typing import Dict, Union
+from typing import Dict, Union, List
 
 import discord
+from discord import Option
 from discord.ext import bridge, tasks
 from discord.ext.commands import DefaultHelpCommand
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -58,6 +59,12 @@ class MusicBot(bridge.Bot):
     async def on_guild_join(self, guild):
         print(guild.name)
         await self.register(guild)
+
+    async def on_command_error(self, ctx, error):
+        await ctx.send(error)
+
+    async def on_application_command_error(self, ctx, error):
+        await self.on_command_error(ctx, error)
 
     @tasks.loop(seconds=1)
     async def update_views(self):
@@ -121,8 +128,18 @@ class MusicBot(bridge.Bot):
             except Exception as e:
                 print(e)
 
+    @staticmethod
+    def _help_autocomplete(ctx: discord.AutocompleteContext) -> List[str]:
+        return [
+            c.qualified_name
+            for c in ctx.bot.walk_commands()
+            if c.qualified_name.startswith(ctx.value)
+        ]
+
     @bridge.bridge_command(name="help", description="Help command")
-    async def _help(ctx, *, command=None):
+    async def _help(
+        ctx, *, command: Option(str, autocomplete=_help_autocomplete) = None
+    ):
         help_command = ctx.bot._default_help
         if ctx.is_app:
             # trick the command to run as slash
@@ -138,16 +155,26 @@ class Context(bridge.BridgeContext):
 
     async def send(self, *args, **kwargs):
         audiocontroller = self.bot.audio_controllers[self.guild]
-        await audiocontroller.update_view(None)
-        view = audiocontroller.make_view()
-        if view:
-            kwargs["view"] = view
-        # use `respond` for compatibility
-        res = await self.respond(*args, **kwargs)
-        if isinstance(res, discord.Interaction):
-            audiocontroller.last_message = await res.original_response()
-        else:
-            audiocontroller.last_message = res
+        channel = audiocontroller.command_channel
+        if kwargs.get("ephemeral", False) or (
+            channel
+            # unwrap channel from context
+            and getattr(channel, "channel", channel) != self.channel
+        ):
+            # sending ephemeral message or using different channel
+            # don't bother with views
+            return await self.respond(*args, **kwargs)
+        async with audiocontroller.message_lock:
+            await audiocontroller.update_view(None)
+            view = audiocontroller.make_view()
+            if view:
+                kwargs["view"] = view
+            # use `respond` for compatibility
+            res = await self.respond(*args, **kwargs)
+            if isinstance(res, discord.Interaction):
+                audiocontroller.last_message = await res.original_response()
+            else:
+                audiocontroller.last_message = res
         return res
 
 

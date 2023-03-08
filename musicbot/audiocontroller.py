@@ -11,7 +11,7 @@ from config import config
 from musicbot import linkutils, utils
 from musicbot.playlist import Playlist
 from musicbot.songinfo import Song
-from musicbot.utils import compare_components
+from musicbot.utils import CheckError, compare_components, play_check
 
 # avoiding circular import
 if TYPE_CHECKING:
@@ -41,10 +41,19 @@ class MusicButton(discord.ui.Button):
         self._callback = callback
 
     async def callback(self, inter):
+        ctx = await inter.client.get_application_context(inter)
+        try:
+            await play_check(ctx)
+        except CheckError as e:
+            await ctx.send(e, ephemeral=True)
+            return
         await inter.response.defer()
-        res = self._callback(inter)
+        res = self._callback(ctx)
         if isawaitable(res):
             await res
+
+
+LOOP_MODES = ("all", "single", "off")
 
 
 class AudioController(object):
@@ -79,6 +88,7 @@ class AudioController(object):
         self._tasks = set()
 
         self._preloading = {}
+        self.message_lock = asyncio.Lock()
 
     @property
     def volume(self) -> int:
@@ -219,13 +229,13 @@ class AudioController(object):
 
         return view
 
-    async def current_song_callback(self, inter):
-        await (await inter.client.get_application_context(inter)).send(
+    async def current_song_callback(self, ctx):
+        await ctx.send(
             embed=self.current_song.info.format_output(config.SONGINFO_SONGINFO),
         )
 
-    async def queue_callback(self, inter):
-        await (await inter.client.get_application_context(inter)).send(
+    async def queue_callback(self, ctx):
+        await ctx.send(
             embed=self.playlist.queue_embed(),
         )
 
@@ -286,7 +296,7 @@ class AudioController(object):
             else:
                 mode = "off"
 
-        if mode not in ("all", "single", "off"):
+        if mode not in LOOP_MODES:
             return LoopState.INVALID
 
         self.playlist.loop = mode
@@ -566,18 +576,20 @@ class AudioController(object):
 
         await self.udisconnect()
 
-    async def uconnect(self, ctx):
+    async def uconnect(self, ctx, move=False):
+        author_vc = ctx.author.voice
+        bot_vc = self.guild.voice_client
 
-        if not ctx.author.voice:
-            await ctx.send(config.NO_GUILD_MESSAGE)
-            return False
+        if not author_vc:
+            raise CheckError(config.NO_GUILD_MESSAGE)
 
-        if self.guild.voice_client is None:
-            await self.register_voice_channel(ctx.author.voice.channel)
-            return True
-
-        await ctx.send(config.ALREADY_CONNECTED_MESSAGE)
-        return False
+        if bot_vc is None:
+            await self.register_voice_channel(author_vc.channel)
+        elif move and bot_vc.channel != author_vc.channel:
+            await bot_vc.move_to(author_vc.channel)
+        else:
+            raise CheckError(config.ALREADY_CONNECTED_MESSAGE)
+        return True
 
     async def udisconnect(self):
         self.stop_player()

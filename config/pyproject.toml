@@ -1,0 +1,11 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+
+[project]
+name = "MusicBot-DB"
+description = "Dummy package that requires DB library as dependency"
+version = "0.0.1"
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = "db.txt"}

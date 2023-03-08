@@ -16,7 +16,9 @@ from setuptools import setup
 from config.config import DATABASE_LIBRARY
 
 
-setup(
-    name="MusicBot DB",
-    install_requires=[DATABASE_LIBRARY],
-)
+with open("db.txt", "w") as f:
+    print(DATABASE_LIBRARY, file=f)
+
+setup()
+
+os.remove("db.txt")

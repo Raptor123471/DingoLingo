@@ -183,7 +183,7 @@ d!dc
 ```
 d!history
 ```
-* Shows you the titles of the X last played songs. Configurable in config.config.py
+* Shows you the titles of the X last played songs. Configurable in config.json
 
 
 ### Utility

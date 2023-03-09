@@ -164,9 +164,9 @@ d!settings / d!setting / d!set
 ```
 * No Arguments: Lists server settings
 * Arguments: (setting) (value)
-* Use "unset" as an argument to reset a setting
+* Omit the value to reset a setting
 * Example: d!setting start_voice_channel ChannelName
-* Administrators only
+* Administrators and DJs only
 
 ```
 d!c

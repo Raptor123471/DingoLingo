@@ -1,7 +1,7 @@
 py-cord[voice] @ https://github.com/Krutyi-4el/pycord/archive/10ce5cec7db3ded3153a2d3d03cb8b40bbbb3539.zip
 yt-dlp==2023.3.4
 aiohttp==3.8.4
-beautifulsoup4==4.11.1
+beautifulsoup4==4.12.0
 spotipy==2.22.0
 emoji==2.2.0
 SQLAlchemy[asyncio]==1.4.46

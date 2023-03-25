@@ -5,5 +5,5 @@ beautifulsoup4==4.12.0
 spotipy==2.22.1
 emoji==2.2.0
 SQLAlchemy[asyncio]==2.0.7
-alembic==1.9.1
+alembic==1.10.2
 ./config

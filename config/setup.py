@@ -5,6 +5,7 @@ from pathlib import Path
 
 # imitate running in root directory
 cfg_dir = Path(__file__).parent
+sys.path.insert(0, str(cfg_dir.parent))
 for i, path in enumerate(sys.path):
     if Path(path).absolute() == cfg_dir:
         sys.path[i] = str(cfg_dir.parent)

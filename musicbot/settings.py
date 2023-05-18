@@ -5,11 +5,12 @@ from typing import TYPE_CHECKING, Dict, List, Optional, Union
 import discord
 from discord import Option, TextChannel, VoiceChannel, Role
 import sqlalchemy
-from sqlalchemy import Column, String, Integer, Boolean, select
-from sqlalchemy.orm import declarative_base
+from sqlalchemy import String, select
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from alembic.migration import MigrationContext
 from alembic.autogenerate import produce_migrations, render_python_code
 from alembic.operations import Operations
+from typing_extensions import Annotated
 
 from musicbot import utils
 from config import config
@@ -30,8 +31,15 @@ DEFAULT_CONFIG = {
     "vc_timeout": config.VC_TIMOUT_DEFAULT,
     "announce_songs": sqlalchemy.false(),
 }
+# use String for ids to be sure we won't hit overflow
 ID_LENGTH = 25  # more than enough to be sure :)
-Base = declarative_base()
+DiscordIdStr = Annotated[str, ID_LENGTH]
+
+
+class Base(DeclarativeBase):
+    type_annotation_map = {
+        DiscordIdStr: String(ID_LENGTH),
+    }
 
 
 class ConversionError(Exception):
@@ -95,17 +103,16 @@ CONFIG_OPTIONS = {
 class GuildSettings(Base):
     __tablename__ = "settings"
 
-    # use String for ids to be sure we won't hit overflow
-    guild_id: str = Column(String(ID_LENGTH), primary_key=True)
-    command_channel: Optional[str] = Column(String(ID_LENGTH))
-    start_voice_channel: Optional[str] = Column(String(ID_LENGTH))
-    dj_role: Optional[str] = Column(String(ID_LENGTH))
-    user_must_be_in_vc: bool = Column(Boolean, nullable=False)
-    button_emote: Optional[str] = Column(String(ID_LENGTH))
-    default_volume: int = Column(Integer, nullable=False)
-    vc_timeout: bool = Column(Boolean, nullable=False)
-    announce_songs: bool = Column(
-        Boolean, nullable=False, server_default=DEFAULT_CONFIG["announce_songs"]
+    guild_id: Mapped[DiscordIdStr] = mapped_column(primary_key=True)
+    command_channel: Mapped[Optional[DiscordIdStr]]
+    start_voice_channel: Mapped[Optional[DiscordIdStr]]
+    dj_role: Mapped[Optional[DiscordIdStr]]
+    user_must_be_in_vc: Mapped[bool]
+    button_emote: Mapped[Optional[DiscordIdStr]]
+    default_volume: Mapped[int]
+    vc_timeout: Mapped[bool]
+    announce_songs: Mapped[bool] = mapped_column(
+        server_default=DEFAULT_CONFIG["announce_songs"]
     )
 
     @classmethod
